@@ -97,7 +97,7 @@ st.markdown("""
 def calculate_cable_fixed(p_kw, length, sigma, voltage=380, max_drop_percent=2):
     p_watts = p_kw * 1000
     try:
-        calculated_area = (p_watts * length * 100) / (sigma * (voltage2) * max_drop_percent)
+        calculated_area = (p_watts * length * 100) / (sigma * (voltage**2) * max_drop_percent)
     except ZeroDivisionError: return 0, 0, 0, 0
     current = p_watts / (math.sqrt(3) * voltage * 0.8)
     standard_sizes = [1.5, 2.5, 4, 6, 10, 16, 25, 35, 50, 70, 95, 120, 150, 185, 240, 300]
