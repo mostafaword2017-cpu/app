@@ -9,37 +9,46 @@ st.set_page_config(page_title="ElectroCalc M&F", page_icon="⚡️", layout="cen
 st.markdown("""
     <style>
 css
-    / ۱. راست‌چین کردن و حذف موارد اضافی هدر /
+    / ۱. راست‌چین کردن کل صفحه /
     .main, .stApp { direction: rtl; text-align: right; }
-    [data-testid="stHeaderDevelopmentMode"], 
-    [data-testid="stHeaderShareButton"],
+
+    / ۲. حذف هر نوع لینکی در هدر (گربه، فورک و...) /
     header a, 
+    [data-testid="stHeaderDevelopmentMode"], 
+    [data-testid="stHeaderShareButton"], 
     div[data-testid="stAppDeployButton"] {
         display: none !important;
     }
 
-    / ۲. بهینه‌سازی فونت برای موبایل (جلوگیری از شکستگی) /
-    h1 { font-size: 24px !important; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    / ۳. فیکس کردن تب‌ها (جلوگیری از شکستن و رفتن زیر هم) /
+    .stTabs [role="tab"] {
+        font-size: 12px !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        padding: 5px 10px !important;
+    }
+    .stTabs [role="tablist"] { direction: rtl !important; }
+
+    / ۴. اصلاح فونت تیتر برای موبایل /
+    h1 { font-size: 20px !important; white-space: nowrap; }
     @media screen and (max-width: 640px) {
-        h1 { font-size: 18px !important; }
-        .stTabs [role="tab"] { font-size: 12px !important; padding: 5px !important; }
-        label, .stMarkdown p { font-size: 13px !important; }
-        .result-text { font-size: 14px !important; }
+        h1 { font-size: 16px !important; }
+        .stTabs [role="tab"] { font-size: 10px !important; }
+        label, .stMarkdown p { font-size: 12px !important; }
     }
 
-    / ۳. استایل تب‌ها و دکمه‌ها /
-    .stTabs [role="tablist"] { direction: rtl; gap: 8px; }
-    .stTabs [aria-selected="true"] { background-color: #4CAF50 !important; color: white !important; }
+    / ۵. استایل دکمه‌ها و ورودی‌ها /
     .stButton > button { 
-        width: 100%; height: 50px; font-size: 18px !important; 
+        width: 100%; height: 50px; font-size: 16px !important; 
         border-radius: 12px; background-color: #007BFF !important; color: white !important; 
         font-weight: bold; margin-top: 10px;
     }
+    input { direction: ltr !important; text-align: center !important; }
 
-    / ۴. کادر نتایج و ورودی‌ها /
+    / ۶. کادر نتایج /
     .result-box { text-align: center; padding: 15px; border-radius: 15px; background-color: #f8f9fa; border: 1px solid #ddd; margin-top: 15px; }
     .result-text { font-size: 16px !important; font-weight: bold; color: #1a73e8; }
-    input { direction: ltr !important; text-align: center !important; }
     </style>
     """, unsafe_allow_html=True)
 # ==============================================================================
