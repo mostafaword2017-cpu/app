@@ -18,8 +18,6 @@ st.markdown("""
         background-color: #4CAF50 !important; 
         color: white !important;
     }
-
-
 css
 / کوچک کردن فونت تیتر در گوشی /
 .stApp h1 {
@@ -33,7 +31,6 @@ css
     .stApp h1 {
         font-size: 22px !important;
     }
-}
     / استایل دکمه‌ها /
     .stButton > button {
         width: 100%;
