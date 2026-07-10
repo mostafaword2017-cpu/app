@@ -31,6 +31,7 @@ css
     .stApp h1 {
         font-size: 22px !important;
     }
+    }
     / استایل دکمه‌ها /
     .stButton > button {
         width: 100%;
