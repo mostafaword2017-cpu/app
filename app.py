@@ -107,7 +107,7 @@ def suggest_breaker(current, type_load="مقاومتی"):
 # ==============================================================================
 st.title("⚡️ ElectroCalc M&F")
 tabs = st.tabs(["🔌 Cable", "🔋 UPS", "⚙️ Motor", "🛡️ Protective"])
-# --- تب اول: کابل ---
+# --- تب اول: Cable ---
 with tabs[0]:
     st.header("📏Cable-cross ")
     with st.container(border=True):
