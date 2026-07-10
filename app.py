@@ -1,7 +1,7 @@
 
 import streamlit as st
 import math
-
+st.set_page_config(page_title="ElectroCalc M&F", page_icon="⚡️")
 # --- تنظیمات استایل حرفه‌ای و بهینه ---
 st.markdown("""
     <style>
