@@ -108,7 +108,7 @@ def calculate_ups_fixed(load_kva, backup_min, num_batteries):
             m1, m2 = minutes_list[i], minutes_list[i+1]
             if m1 <= backup_min <= m2:
                 a1, a2 = base_data[m1], base_data[m2]
-                base_ah = a1 + ((a2 - a1)  (backup_min - m1) / (m2 - m1))
+                base_ah = a1 + ((a2 - a1) * (backup_min - m1) / (m2 - m1))
                 break
     return round((base_ah * (load_kva / 10) * 32) / num_batteries, 1)
 def calculate_motor_from_kva(p_kva, eff=0.85, cos_phi=0.8, voltage=380):
@@ -155,7 +155,7 @@ with tabs[1]:
         with c2:
             u_bat = st.number_input("تعداد باتری", value=32, key="u_bat")
     if st.button("محاسبه یو پی اس"):
-        res = calculate_ups_fixed(u_kva, u_min, u_bat)
+        res =calculate_ups_fixed(u_kva, u_min, u_bat)
         st.latex(r"Ah_{Final} = \frac{Ah_{Base} \times \frac{kVA}{10} \times 32}{N_{Battery}}")
         st.markdown(f"""<div class='result-box'><div class='result-text'>📦 ظرفیت هر باتری: {res} Ah</div><div class='result-text' style='color: #0d47a1;'>📌 نیاز به {u_bat} عدد باتری</div></div>""", unsafe_allow_html=True)
 # --- تب سوم: موتور ---
