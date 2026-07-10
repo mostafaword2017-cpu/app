@@ -9,46 +9,28 @@ st.set_page_config(page_title="ElectroCalc M&F", page_icon="⚡️", layout="cen
 st.markdown("""
     <style>
 css
-    / ۱. راست‌چین کردن کل صفحه /
-    .main, .stApp { direction: rtl; text-align: right; }
-
-    / ۲. حذف هر نوع لینکی در هدر (گربه، فورک و...) /
-    header a, 
-    [data-testid="stHeaderDevelopmentMode"], 
-    [data-testid="stHeaderShareButton"], 
-    div[data-testid="stAppDeployButton"] {
-        display: none !important;
+    / تست سریع: تغییر رنگ کل صفحه به светло-خاکستری برای اینکه بفهمیم کد اعمال می‌شود /
+    .stApp { 
+        background-color: #f0f2f6 !important; 
+        direction: rtl !important; 
+        text-align: right !important; 
     }
 
-    / ۳. فیکس کردن تب‌ها (جلوگیری از شکستن و رفتن زیر هم) /
-    .stTabs [role="tab"] {
-        font-size: 12px !important;
-        white-space: nowrap !important;
-        overflow: hidden !important;
-        text-overflow: ellipsis !important;
-        padding: 5px 10px !important;
-    }
-    .stTabs [role="tablist"] { direction: rtl !important; }
+    / حذف گربه و فورک به روش ساده‌تر /
+    header a { display: none !important; }
 
-    / ۴. اصلاح فونت تیتر برای موبایل /
-    h1 { font-size: 20px !important; white-space: nowrap; }
-    @media screen and (max-width: 640px) {
-        h1 { font-size: 16px !important; }
-        .stTabs [role="tab"] { font-size: 10px !important; }
-        label, .stMarkdown p { font-size: 12px !important; }
+    / فیکس کردن تب‌ها /
+    .stTabs [role="tab"] { 
+        font-size: 11px !important; 
+        white-space: nowrap !important; 
     }
 
-    / ۵. استایل دکمه‌ها و ورودی‌ها /
+    / دکمه‌ها /
     .stButton > button { 
-        width: 100%; height: 50px; font-size: 16px !important; 
-        border-radius: 12px; background-color: #007BFF !important; color: white !important; 
-        font-weight: bold; margin-top: 10px;
+        width: 100% !important; 
+        background-color: blue !important; 
+        color: white !important; 
     }
-    input { direction: ltr !important; text-align: center !important; }
-
-    / ۶. کادر نتایج /
-    .result-box { text-align: center; padding: 15px; border-radius: 15px; background-color: #f8f9fa; border: 1px solid #ddd; margin-top: 15px; }
-    .result-text { font-size: 16px !important; font-weight: bold; color: #1a73e8; }
     </style>
     """, unsafe_allow_html=True)
 # ==============================================================================
