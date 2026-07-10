@@ -1,10 +1,37 @@
-
 import streamlit as st
 import math
-st.set_page_config(page_title="ElectroCalc M&F", page_icon="⚡️")
-# --- تنظیمات استایل حرفه‌ای و بهینه ---
+
+# ۱. تنظیمات اولیه صفحه (باید اولین دستور باشد)
+st.set_page_config(page_title="ElectroCalc M&F", page_icon="⚡️", layout="centered")
+
+# ۲. استایل‌های پیشرفته (حذف هدر/فوتر و بهینه‌سازی فونت‌ها و دکمه‌ها)
 st.markdown("""
     <style>
+    / حذف منوی اصلی و فوتر /
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    div[data-testid="stAppDeployButton"] {display: none;}
+
+    / نگه داشتن دکمه تغییر تم در هدر اما حذف لینک گیت‌هاب /
+    .stApp header div[data-testid="stHeader"] {
+        visibility: visible;
+    }
+    header div[data-testid="stHeader"] a {
+        display: none !important;
+    }
+
+    / اصلاح فونت تیتر برای گوشی (تک خطی و مرتب) /
+    .stApp h1 {
+        font-size: 26px !important;
+        text-align: center;
+        white-space: nowrap;
+    }
+    @media screen and (max-width: 640px) {
+        .stApp h1 {
+            font-size: 20px !important;
+        }
+    }
+
     / استایل تب‌ها /
     .stTabs div[role="tablist"] { gap: 15px; }
     .stTabs [role="tab"] {
@@ -18,6 +45,7 @@ st.markdown("""
         background-color: #4CAF50 !important; 
         color: white !important;
     }
+
     / استایل دکمه‌ها /
     .stButton > button {
         width: 100%;
@@ -54,11 +82,11 @@ st.markdown("""
 # ==============================================================================
 
 def calculate_cable_fixed(p_kw, length, sigma, voltage=380, max_drop_percent=2):
-    p_watts = p_kw * 1000
+    p_watts = p_kw  1000
     try:
-        calculated_area = (p_watts * length * 100) / (sigma * (voltage**2) * max_drop_percent)
+        calculated_area = (p_watts  length  100) / (sigma  (voltage2)  max_drop_percent)
     except ZeroDivisionError: return 0, 0, 0, 0
-    current = p_watts / (math.sqrt(3) * voltage * 0.8)
+    current = p_watts / (math.sqrt(3)  voltage  0.8)
     standard_sizes = [1.5, 2.5, 4, 6, 10, 16, 25, 35, 50, 70, 95, 120, 150, 185, 240, 300]
     suggested_index = -1
     for i, size in enumerate(standard_sizes):
@@ -80,18 +108,19 @@ def calculate_ups_fixed(load_kva, backup_min, num_batteries):
             m1, m2 = minutes_list[i], minutes_list[i+1]
             if m1 <= backup_min <= m2:
                 a1, a2 = base_data[m1], base_data[m2]
-                base_ah = a1 + ((a2 - a1) * (backup_min - m1) / (m2 - m1))
+                base_ah = a1 + ((a2 - a1)  (backup_min - m1) / (m2 - m1))
                 break
-    return round((base_ah * (load_kva / 10) * 32) / num_batteries, 1)
+    return round((base_ah  (load_kva / 10)  32) / num_batteries, 1)
 def calculate_motor_from_kva(p_kva, eff=0.85, cos_phi=0.8, voltage=380):
-    p_kw_out = p_kva * cos_phi
+    p_kw_out = p_kva  cos_phi
     p_kw_in = p_kw_out / eff
-    current = (p_kw_in * 1000) / (math.sqrt(3) * voltage * cos_phi)
-    starting_current = current * 6
+    current = (p_kw_in  1000) / (math.sqrt(3)  voltage  cos_phi)
+    starting_current = current  6
     return round(current, 2), round(p_kw_in, 2), round(starting_current, 2), round(p_kw_out, 2)
+
 def suggest_breaker(current, type_load="مقاومتی"):
     multiplier = 1.25 if type_load == "مقاومتی" else 1.5 
-    required_current = current * multiplier
+    required_current = current  multiplier
     standard_breakers = [6, 10, 16, 20, 25, 32, 40, 50, 63, 80, 100, 125, 160, 200, 250]
     suggested = min([x for x in standard_breakers if x >= required_current] or [max(standard_breakers)])
     return suggested
@@ -126,7 +155,7 @@ with tabs[1]:
         with c2:
             u_bat = st.number_input("تعداد باتری", value=32, key="u_bat")
     if st.button("محاسبه یو پی اس"):
-        res =calculate_ups_fixed(u_kva, u_min, u_bat)
+        res = calculate_ups_fixed(u_kva, u_min, u_bat)
         st.latex(r"Ah_{Final} = \frac{Ah_{Base} \times \frac{kVA}{10} \times 32}{N_{Battery}}")
         st.markdown(f"""<div class='result-box'><div class='result-text'>📦 ظرفیت هر باتری: {res} Ah</div><div class='result-text' style='color: #0d47a1;'>📌 نیاز به {u_bat} عدد باتری</div></div>""", unsafe_allow_html=True)
 # --- تب سوم: موتور ---
