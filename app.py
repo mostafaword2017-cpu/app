@@ -120,7 +120,7 @@ def calculate_motor_from_kva(p_kva, eff=0.85, cos_phi=0.8, voltage=380):
 
 def suggest_breaker(current, type_load="مقاومتی"):
     multiplier = 1.25 if type_load == "مقاومتی" else 1.5 
-    required_current = current  multiplier
+    required_current = current * multiplier
     standard_breakers = [6, 10, 16, 20, 25, 32, 40, 50, 63, 80, 100, 125, 160, 200, 250]
     suggested = min([x for x in standard_breakers if x >= required_current] or [max(standard_breakers)])
     return suggested
