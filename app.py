@@ -19,6 +19,21 @@ st.markdown("""
         color: white !important;
     }
 
+
+css
+/ کوچک کردن فونت تیتر در گوشی /
+.stApp h1 {
+    font-size: 28px !important; / اندازه فونت را اینجا تنظیم کردیم /
+    text-align: center; / برای اینکه تیتر وسط‌چین باشد و زیباتر شود /
+    white-space: nowrap; / جلوگیری از شکستن خط /
+}
+
+/ اگر از موبایل استفاده می‌شود، فونت را باز هم کمی کوچک‌تر کن /
+@media screen and (max-width: 640px) {
+    .stApp h1 {
+        font-size: 22px !important;
+    }
+}
     / استایل دکمه‌ها /
     .stButton > button {
         width: 100%;
