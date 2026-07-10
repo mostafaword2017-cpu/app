@@ -27,7 +27,7 @@ css
     / استایل مخصوص گوشی‌های موبایل (صفحات زیر 640 پیکسل) /
     @media screen and (max-width: 640px) {
         .stApp h1 {
-            font-size: 18px !important; / اندازه فونت در موبایل خیلی کوچک شد تا نشکند /
+            font-size: 12px !important; / اندازه فونت در موبایل خیلی کوچک شد تا نشکند /
             letter-spacing: -1px !important;
         }
     }
