@@ -2,9 +2,8 @@
 import streamlit as st
 import math
 st.set_page_config(page_title="ElectroCalc M&F", page_icon="⚡️")
-# 
 # کد جدید برای حذف آیکون گیت‌هاب اما نگه داشتن تنظیمات تم
-hide_st_style = """
+hide_st_style = 
             <style>
             #MainMenu {visibility: hidden;}
             footer {visibility: hidden;}
@@ -18,7 +17,6 @@ hide_st_style = """
                 display: none !important;
             }
             </style>
-            """
 st.markdown(hide_st_style, unsafe_allow_html=True)
 st.markdown(hide_st_style, unsafe_allow_html=True)
 # --- تنظیمات استایل حرفه‌ای و بهینه ---
