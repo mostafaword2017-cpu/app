@@ -2,14 +2,24 @@
 import streamlit as st
 import math
 st.set_page_config(page_title="ElectroCalc M&F", page_icon="⚡️")
-# کد مخفی کردن منو و آیکون‌های بالای صفحه
+# 
+# کد جدید برای حذف آیکون گیت‌هاب اما نگه داشتن تنظیمات تم
 hide_st_style = """
             <style>
             #MainMenu {visibility: hidden;}
             footer {visibility: hidden;}
-            header {visibility: hidden;}
+            div[data-testid="stAppDeployButton"] {display: none;}
+
+            / این بخش فقط دکمه‌های گیت‌هاب و فورک را حذف می‌کند و تم را نگه می‌دارد /
+            .stApp header div[data-testid="stHeader"] {
+                visibility: visible;
+            }
+            header div[data-testid="stHeader"] a {
+                display: none !important;
+            }
             </style>
             """
+st.markdown(hide_st_style, unsafe_allow_html=True)
 st.markdown(hide_st_style, unsafe_allow_html=True)
 # --- تنظیمات استایل حرفه‌ای و بهینه ---
 st.markdown("""
