@@ -71,7 +71,7 @@ with tabs[0]:
     if st.button("شروع محاسبه کابل"):
         curr, f_size, s_size, raw = calculate_cable_fixed(p_in, l_in, s_in, 380, d_in)
         st.latex(r"Area = \frac{P \times L \times 100}{\sigma \times V^2 \times \Delta V\%}")
-        st.markdown(f"""<div class='result-box'><div class='result-text'> جریان تخمینی: {curr} آمپر</div><div class='result-text' style='color: #1b5e20;'>🎯 سایز استاندارد: {f_size} mm²</div><div class='result-text' style='color: #e65100;'>🚀 سایز پیشنهادی (Safe): {s_size} mm²</div><p style='color: #5f6368;'>عدد دقیق محاسباتی: {raw} mm²</p></div>""", unsafe_allow_html=True)
+        st.markdown(f"""<div class='result-box'><div class='result-text'> جریان تخمینی: {curr} آمپر</div><div class='result-text' style='color: #1b5e20;'> سایز استاندارد: {f_size} mm²</div><div class='result-text' style='color: #e65100;'>🚀 سایز پیشنهادی (Safe): {s_size} mm²</div><p style='color: #5f6368;'>عدد دقیق محاسباتی: {raw} mm²</p></div>""", unsafe_allow_html=True)
 # --- تب دوم: یو پی اس ---
 with tabs[1]:
     st.header("🔋 محاسبه ظرفیت باتری")
