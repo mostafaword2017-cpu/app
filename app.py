@@ -62,7 +62,7 @@ with tabs[0]:
     # --- بخش محاسبات ---
     # نکته: من اینجا فرمول ساده‌ای گذاشتم، تو فرمول‌های دقیق خودت را جایگزین کن
     # مثال: result_area = (some_formula)
-    result_area = (power  length) / (voltage_drop  sigma) 
+    result_area = (power * length) / (voltage_drop * sigma) 
 
     st.success(f"سطح مقطع محاسبه شده: {result_area:.2f} mm²")
 
