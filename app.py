@@ -7,7 +7,8 @@ st.set_page_config(page_title="ElectroCalc M&F", page_icon="⚡️", layout="cen
 
 # ۲. استایل‌های بهینه برای حذف لینک‌های خارجی و اصلاح فونت موبایل
 st.markdown("""
-    <style>css
+    <style>
+    css
     / راست‌چین کردن کلی /
     .main, .stApp, [data-testid="stAppViewContainer"] { 
         direction: rtl !important; 
