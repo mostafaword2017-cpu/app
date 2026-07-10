@@ -1,44 +1,56 @@
+
 import streamlit as st
 import math
 
-# ۱. تنظیمات اولیه صفحه (باید اولین دستور باشد)
+# ۱. تنظیمات اولیه صفحه
 st.set_page_config(page_title="ElectroCalc M&F", page_icon="⚡️", layout="centered")
 
-# ۲. استایل‌های پیشرفته (حذف هدر/فوتر و بهینه‌سازی فونت‌ها و دکمه‌ها)
+# ۲. استایل‌های بهینه برای حذف لینک‌های خارجی و اصلاح فونت موبایل
 st.markdown("""
     <style>
-    / حذف منوی اصلی و فوتر /
-    #MainMenu {visibility: hidden;}
-    footer {visibility: hidden;}
-    div[data-testid="stAppDeployButton"] {display: none;}
-
-    / نگه داشتن دکمه تغییر تم در هدر اما حذف لینک گیت‌هاب /
-    .stApp header div[data-testid="stHeader"] {
-        visibility: visible;
-    }
+    / حذف دکمه Fork و Deploy و لینک‌های گیت‌هاب در هدر /
     header div[data-testid="stHeader"] a {
         display: none !important;
     }
-
-    / اصلاح فونت تیتر برای گوشی (تک خطی و مرتب) /
-    .stApp h1 {
-        font-size: 26px !important;
-        text-align: center;
-        white-space: nowrap;
+    div[data-testid="stAppDeployButton"] {
+        display: none !important;
     }
-    @media screen and (max-width: 640px) {
+
+    / حذف منوی اصلی گوشه بالا (Hamburger Menu) در صورت نیاز، 
+       اما چون گفتی سه نقطه بماند، فقط لینک‌های متنی را حذف کردیم /
+    #MainMenu {visibility: hidden;}
+
+    / بهینه‌سازی فونت تیتر برای موبایل (جلوگیری از شکستگی) /
+    .stApp h1 {
+        font-size: 6vw !important; 
+        text-align: center !important;
+        white-space: nowrap !important;
+    }
+    @media screen and (min-width: 640px) {
         .stApp h1 {
-            font-size: 20px !important;
+            font-size: 26px !important;
         }
     }
 
-    / استایل تب‌ها /
-    .stTabs div[role="tablist"] { gap: 15px; }
+    / اصلاح فونت ورودی‌ها و لیبل‌ها برای موبایل /
+    label, .stMarkdown p {
+        font-size: 14px !important;
+    }
+    @media screen and (max-width: 640px) {
+        label, .stMarkdown p {
+            font-size: 12px !important;
+        }
+    }
+
+    / استایل تب‌ها - منعطف برای موبایل /
+    .stTabs div[role="tablist"] { 
+        gap: 5px !important; 
+        flex-wrap: wrap !important; 
+    }
     .stTabs [role="tab"] {
-        font-size: 16px !important;
-        font-weight: bold !important;
-        padding: 12px 20px !important;
-        border-radius: 10px 10px 0px 0px !important;
+        font-size: 13px !important;
+        padding: 8px 5px !important;
+        border-radius: 8px 8px 0px 0px !important;
         background-color: #f0f2f6 !important;
     }
     .stTabs [aria-selected="true"] {
@@ -48,43 +60,45 @@ st.markdown("""
 
     / استایل دکمه‌ها /
     .stButton > button {
-        width: 100%;
-        height: 60px !important;
-        font-size: 20px !important;
+        width: 100% !important;
+        height: 50px !important;
+        font-size: 18px !important;
         font-weight: bold !important;
-        border-radius: 15px !important;
+        border-radius: 12px !important;
         background-color: #007BFF !important;
         color: white !important;
-        border: none !important;
-        margin-top: 20px !important;
     }
 
-    / استایل کادر خروجی‌ها /
+    / استایل کادر خروجی‌ها - جلوگیری از شکستگی متن */
     .result-box {
         text-align: center;
-        padding: 20px;
+        padding: 15px;
         border-radius: 15px;
         background-color: #f1f3f4;
         border: 2px solid #3c4043;
-        margin: 20px 0;
+        margin: 15px 0;
     }
     .result-text {
-        font-size: 22px !important;
+        font-size: 18px !important;
         font-weight: bold !important;
         color: #1a73e8;
-        margin-bottom: 10px;
+        margin-bottom: 5px;
+        word-wrap: break-word;
+    }
+    @media screen and (max-width: 640px) {
+        .result-text {
+            font-size: 15px !important;
+        }
     }
     </style>
     """, unsafe_allow_html=True)
-
 # ==============================================================================
 # --- توابع محاسباتی (Backend) ---
 # ==============================================================================
-
 def calculate_cable_fixed(p_kw, length, sigma, voltage=380, max_drop_percent=2):
     p_watts = p_kw * 1000
     try:
-        calculated_area = (p_watts * length * 100) / (sigma * (voltage * voltage) * max_drop_percent)
+        calculated_area = (p_watts * length * 100) / (sigma * (voltage**2) * max_drop_percent)
     except ZeroDivisionError: return 0, 0, 0, 0
     current = p_watts / (math.sqrt(3) * voltage * 0.8)
     standard_sizes = [1.5, 2.5, 4, 6, 10, 16, 25, 35, 50, 70, 95, 120, 150, 185, 240, 300]
@@ -98,11 +112,12 @@ def calculate_cable_fixed(p_kw, length, sigma, voltage=380, max_drop_percent=2):
     final_size = standard_sizes[suggested_index]
     safe_size = standard_sizes[suggested_index + 1] if suggested_index + 1 < len(standard_sizes) else final_size
     return round(current, 1), final_size, safe_size, round(calculated_area, 2)
+
 def calculate_ups_fixed(load_kva, backup_min, num_batteries):
     base_data = {10: 7, 20: 12, 30: 18, 40: 23, 50: 28, 60: 32}
     minutes_list = sorted(base_data.keys())
     if backup_min <= minutes_list[0]: base_ah = base_data[minutes_list[0]]
-    elif backup_min >= minutes_list[-1]: base_ah = base_data[60]  (backup_min / 60)
+    elif backup_min >= minutes_list[-1]: base_ah = base_data[60] * (backup_min / 60)
     else:
         for i in range(len(minutes_list)-1):
             m1, m2 = minutes_list[i], minutes_list[i+1]
@@ -111,13 +126,13 @@ def calculate_ups_fixed(load_kva, backup_min, num_batteries):
                 base_ah = a1 + ((a2 - a1) * (backup_min - m1) / (m2 - m1))
                 break
     return round((base_ah * (load_kva / 10) * 32) / num_batteries, 1)
+
 def calculate_motor_from_kva(p_kva, eff=0.85, cos_phi=0.8, voltage=380):
     p_kw_out = p_kva * cos_phi
     p_kw_in = p_kw_out / eff
-    current = (p_kw_in * 1000) / (math.sqrt(3) * voltage * cos_phi)
-    starting_current = current * 6
+    current = (p_kw_in  1000) / (math.sqrt(3) * voltage * cos_phi)
+    starting_current = current  6
     return round(current, 2), round(p_kw_in, 2), round(starting_current, 2), round(p_kw_out, 2)
-
 def suggest_breaker(current, type_load="مقاومتی"):
     multiplier = 1.25 if type_load == "مقاومتی" else 1.5 
     required_current = current * multiplier
@@ -155,7 +170,7 @@ with tabs[1]:
         with c2:
             u_bat = st.number_input("تعداد باتری", value=32, key="u_bat")
     if st.button("محاسبه یو پی اس"):
-        res =calculate_ups_fixed(u_kva, u_min, u_bat)
+        res = calculate_ups_fixed(u_kva, u_min, u_bat)
         st.latex(r"Ah_{Final} = \frac{Ah_{Base} \times \frac{kVA}{10} \times 32}{N_{Battery}}")
         st.markdown(f"""<div class='result-box'><div class='result-text'>📦 ظرفیت هر باتری: {res} Ah</div><div class='result-text' style='color: #0d47a1;'>📌 نیاز به {u_bat} عدد باتری</div></div>""", unsafe_allow_html=True)
 # --- تب سوم: موتور ---
