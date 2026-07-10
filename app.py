@@ -8,88 +8,38 @@ st.set_page_config(page_title="ElectroCalc M&F", page_icon="⚡️", layout="cen
 # ۲. استایل‌های بهینه برای حذف لینک‌های خارجی و اصلاح فونت موبایل
 st.markdown("""
     <style>
-    / حذف دکمه Fork و Deploy و لینک‌های گیت‌هاب در هدر /
-    header div[data-testid="stHeader"] a {
-        display: none !important;
-    }
+  css
+    / ۱. راست‌چین کردن و حذف موارد اضافی هدر (گربه و فورک) /
+    .main, .stApp { direction: rtl; text-align: right; }
+    [data-testid="stHeaderDevelopmentMode"], 
+    [data-testid="stHeaderShareButton"],
+    header a, 
     div[data-testid="stAppDeployButton"] {
         display: none !important;
     }
 
-    / حذف منوی اصلی گوشه بالا (Hamburger Menu) در صورت نیاز، 
-       اما چون گفتی سه نقطه بماند، فقط لینک‌های متنی را حذف کردیم /
-    #MainMenu {visibility: hidden;}
-
-    / بهینه‌سازی فونت تیتر برای موبایل (جلوگیری از شکستگی) /
-    .stApp h1 {
-        font-size: 6vw !important; 
-        text-align: center !important;
-        white-space: nowrap !important;
-    }
-    @media screen and (min-width: 640px) {
-        .stApp h1 {
-            font-size: 26px !important;
-        }
-    }
-
-    / اصلاح فونت ورودی‌ها و لیبل‌ها برای موبایل /
-    label, .stMarkdown p {
-        font-size: 14px !important;
-    }
+    / ۲. بهینه‌سازی فونت برای موبایل تا متن‌ها نشکنند /
+    h1 { font-size: 24px !important; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     @media screen and (max-width: 640px) {
-        label, .stMarkdown p {
-            font-size: 12px !important;
-        }
+        h1 { font-size: 18px !important; }
+        .stTabs [role="tab"] { font-size: 12px !important; padding: 5px !important; }
+        label, .stMarkdown p { font-size: 13px !important; }
+        .result-text { font-size: 14px !important; }
     }
 
-    / استایل تب‌ها - منعطف برای موبایل /
-    .stTabs div[role="tablist"] { 
-        gap: 5px !important; 
-        flex-wrap: wrap !important; 
-    }
-    .stTabs [role="tab"] {
-        font-size: 13px !important;
-        padding: 8px 5px !important;
-        border-radius: 8px 8px 0px 0px !important;
-        background-color: #f0f2f6 !important;
-    }
-    .stTabs [aria-selected="true"] {
-        background-color: #4CAF50 !important; 
-        color: white !important;
+    / ۳. استایل تب‌ها و دکمه‌ها /
+    .stTabs [role="tablist"] { direction: rtl; gap: 8px; }
+    .stTabs [aria-selected="true"] { background-color: #4CAF50 !important; color: white !important; }
+    .stButton > button { 
+        width: 100%; height: 50px; font-size: 18px !important; 
+        border-radius: 12px; background-color: #007BFF !important; color: white !important; 
+        font-weight: bold; margin-top: 10px;
     }
 
-    / استایل دکمه‌ها /
-    .stButton > button {
-        width: 100% !important;
-        height: 50px !important;
-        font-size: 18px !important;
-        font-weight: bold !important;
-        border-radius: 12px !important;
-        background-color: #007BFF !important;
-        color: white !important;
-    }
-
-    / استایل کادر خروجی‌ها - جلوگیری از شکستگی متن */
-    .result-box {
-        text-align: center;
-        padding: 15px;
-        border-radius: 15px;
-        background-color: #f1f3f4;
-        border: 2px solid #3c4043;
-        margin: 15px 0;
-    }
-    .result-text {
-        font-size: 18px !important;
-        font-weight: bold !important;
-        color: #1a73e8;
-        margin-bottom: 5px;
-        word-wrap: break-word;
-    }
-    @media screen and (max-width: 640px) {
-        .result-text {
-            font-size: 15px !important;
-        }
-    }
+    / ۴. کادر نتایج و ورودی‌های عددی (اعداد چپ‌چین بمانند بهتر است) /
+    .result-box { text-align: center; padding: 15px; border-radius: 15px; background-color: #f8f9fa; border: 1px solid #ddd; margin-top: 15px; }
+    .result-text { font-size: 16px !important; font-weight: bold; color: #1a73e8; }
+    input { direction: ltr !important; text-align: center !important; }
     </style>
     """, unsafe_allow_html=True)
 # ==============================================================================
