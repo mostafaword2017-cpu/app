@@ -7,12 +7,14 @@ st.set_page_config(page_title="ElectroCalc M&F", page_icon="⚡️", layout="cen
 
 # ۲. استایل‌های بهینه برای حذف لینک‌های خارجی و اصلاح فونت موبایل
 st.markdown("""
-    <style>
-css
-    / ۱. راست‌چین کردن کل صفحه /
-    .main, .stApp { direction: rtl; text-align: right; }
+    <style>css
+    / راست‌چین کردن کلی /
+    .main, .stApp, [data-testid="stAppViewContainer"] { 
+        direction: rtl !important; 
+        text-align: right !important; 
+    }
 
-    / ۲. حذف هر نوع لینکی در هدر (گربه، فورک و...) /
+    / حذف گربه و فورک /
     header a, 
     [data-testid="stHeaderDevelopmentMode"], 
     [data-testid="stHeaderShareButton"], 
@@ -20,34 +22,35 @@ css
         display: none !important;
     }
 
-    / ۳. فیکس کردن تب‌ها (جلوگیری از شکستن و رفتن زیر هم) /
-    .stTabs [role="tab"] {
-        font-size: 12px !important;
-        white-space: nowrap !important;
-        overflow: hidden !important;
-        text-overflow: ellipsis !important;
-        padding: 5px 10px !important;
-    }
-    .stTabs [role="tablist"] { direction: rtl !important; }
-
-    / ۴. اصلاح فونت تیتر برای موبایل /
-    h1 { font-size: 20px !important; white-space: nowrap; }
-    @media screen and (max-width: 640px) {
-        h1 { font-size: 16px !important; }
-        .stTabs [role="tab"] { font-size: 10px !important; }
-        label, .stMarkdown p { font-size: 12px !important; }
+    / --- فیکس کردن تب‌ها با اندازه مشابه عنوان --- /
+    / این بخش تمام لایه‌های تب را هدف قرار می‌دهد /
+    .stTabs [role="tab"], 
+    .stTabs button, 
+    .stTabs div[data-testid="stHorizontalBlock"] {
+        font-size: 16px !important; / اندازه را مشابه عنوان قرار دادم /
+        white-space: nowrap !important; 
+        padding: 2px 5px !important;
     }
 
-    / ۵. استایل دکمه‌ها و ورودی‌ها /
+    / حذف حاشیه اضافی تب‌ها برای اینکه در موبایل جا شوند /
+    .stTabs [role="tablist"] { 
+        gap: 2px !important; 
+        direction: rtl !important; 
+    }
+
+    / دکمه‌های آبی و گرد /
     .stButton > button { 
-        width: 100%; height: 50px; font-size: 16px !important; 
-        border-radius: 12px; background-color: #007BFF !important; color: white !important; 
-        font-weight: bold; margin-top: 10px;
+        width: 100% !important; 
+        height: 50px !important; 
+        border-radius: 12px !important; 
+        background-color: #007BFF !important; 
+        color: white !important; 
+        font-weight: bold !important; 
     }
-    input { direction: ltr !important; text-align: center !important; }
 
-    / ۶. کادر نتایج /
-    .result-box { text-align: center; padding: 15px; border-radius: 15px; background-color: #f8f9fa; border: 1px solid #ddd; margin-top: 15px; }
+    / ورودی‌ها و نتایج /
+    input { direction: ltr !important; text-align: center !important; }
+    .result-box { text-align: center; padding: 15px; border-radius: 15px; background-color: #f8f9fa; border: 1px solid #ddd; }
     .result-text { font-size: 16px !important; font-weight: bold; color: #1a73e8; }
     </style>
     """, unsafe_allow_html=True)
