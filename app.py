@@ -8,87 +8,50 @@ st.set_page_config(page_title="ElectroCalc M&F", page_icon="⚡️", layout="cen
 # ۲. استایل‌های بهینه برای حذف لینک‌های خارجی و اصلاح فونت موبایل
 st.markdown("""
     <style>
-  css
-    / ۱. راست‌چین کردن و حذف موارد اضافی هدر (گربه و فورک) /
+ 
+```css
+    / ۱. راست‌چین کردن کل برنامه /
     .main, .stApp { direction: rtl; text-align: right; }
-    [data-testid="stHeaderDevelopmentMode"], 
-    [data-testid="stHeaderShareButton"],
+
+    / ۲. حذف هر چیزی در هدر که لینک است یا دکمه (گربه، فورک، Share و غیره) /
+    header div[data-testid="stHeader"] a, 
     header a, 
-    div[data-testid="stAppDeployButton"] {
+    div[data-testid="stAppDeployButton"],
+    div[data-testid="stHeaderDevelopmentMode"],
+    div[data-testid="stHeaderShareButton"] {
         display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
     }
 
-    / ۲. بهینه‌سازی فونت برای موبایل تا متن‌ها نشکنند /
-    h1 { font-size: 24px !important; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    / ۳. اجبار به نمایش منوی سه نقطه و تم /
+    header div[data-testid="stHeader"] {
+        display: flex !important;
+    }
+    #MainMenu {
+        visibility: visible !important;
+        display: block !important;
+    }
+
+    / ۴. فیکس کردن فونت موبایل /
+    h1 { font-size: 22px !important; white-space: nowrap; }
     @media screen and (max-width: 640px) {
-        h1 { font-size: 18px !important; }
-        .stTabs [role="tab"] { font-size: 12px !important; padding: 5px !important; }
-        label, .stMarkdown p { font-size: 13px !important; }
+        h1 { font-size: 16px !important; }
+        .stTabs [role="tab"] { font-size: 11px !important; padding: 5px !important; }
         .result-text { font-size: 14px !important; }
     }
 
-    / ۳. استایل تب‌ها و دکمه‌ها /
-    .stTabs [role="tablist"] { direction: rtl; gap: 8px; }
-    .stTabs [aria-selected="true"] { background-color: #4CAF50 !important; color: white !important; }
+    / ۵. استایل دکمه‌ها و ورودی‌ها /
     .stButton > button { 
         width: 100%; height: 50px; font-size: 18px !important; 
         border-radius: 12px; background-color: #007BFF !important; color: white !important; 
-        font-weight: bold; margin-top: 10px;
+        font-weight: bold; 
     }
-
-    / ۴. کادر نتایج و ورودی‌های عددی (اعداد چپ‌چین بمانند بهتر است) /
-    .result-box { text-align: center; padding: 15px; border-radius: 15px; background-color: #f8f9fa; border: 1px solid #ddd; margin-top: 15px; }
-    .result-text { font-size: 16px !important; font-weight: bold; color: #1a73e8; }
     input { direction: ltr !important; text-align: center !important; }
-    </style>
-    """, unsafe_allow_html=True)
-# ==============================================================================
-# --- توابع محاسباتی (Backend) ---
-# ==============================================================================
-def calculate_cable_fixed(p_kw, length, sigma, voltage=380, max_drop_percent=2):
-    p_watts = p_kw * 1000
-    try:
-        calculated_area = (p_watts * length * 100) / (sigma * (voltage**2) * max_drop_percent)
-    except ZeroDivisionError: return 0, 0, 0, 0
-    current = p_watts / (math.sqrt(3) * voltage * 0.8)
-    standard_sizes = [1.5, 2.5, 4, 6, 10, 16, 25, 35, 50, 70, 95, 120, 150, 185, 240, 300]
-    suggested_index = -1
-    for i, size in enumerate(standard_sizes):
-        if size >= calculated_area:
-            suggested_index = i
-            break
-    if suggested_index == -1: 
-        return round(current, 1), "خارج از محدوده", "خارج از محدوده", round(calculated_area, 2)
-    final_size = standard_sizes[suggested_index]
-    safe_size = standard_sizes[suggested_index + 1] if suggested_index + 1 < len(standard_sizes) else final_size
-    return round(current, 1), final_size, safe_size, round(calculated_area, 2)
 
-def calculate_ups_fixed(load_kva, backup_min, num_batteries):
-    base_data = {10: 7, 20: 12, 30: 18, 40: 23, 50: 28, 60: 32}
-    minutes_list = sorted(base_data.keys())
-    if backup_min <= minutes_list[0]: base_ah = base_data[minutes_list[0]]
-    elif backup_min >= minutes_list[-1]: base_ah = base_data[60] * (backup_min / 60)
-    else:
-        for i in range(len(minutes_list)-1):
-            m1, m2 = minutes_list[i], minutes_list[i+1]
-            if m1 <= backup_min <= m2:
-                a1, a2 = base_data[m1], base_data[m2]
-                base_ah = a1 + ((a2 - a1) * (backup_min - m1) / (m2 - m1))
-                break
-    return round((base_ah * (load_kva / 10) * 32) / num_batteries, 1)
-
-def calculate_motor_from_kva(p_kva, eff=0.85, cos_phi=0.8, voltage=380):
-    p_kw_out = p_kva * cos_phi
-    p_kw_in = p_kw_out / eff
-    current = (p_kw_in * 1000) / (math.sqrt(3) * voltage * cos_phi)
-    starting_current = current * 6
-    return round(current, 2), round(p_kw_in, 2), round(starting_current, 2), round(p_kw_out, 2)
-def suggest_breaker(current, type_load="مقاومتی"):
-    multiplier = 1.25 if type_load == "مقاومتی" else 1.5 
-    required_current = current * multiplier
-    standard_breakers = [6, 10, 16, 20, 25, 32, 40, 50, 63, 80, 100, 125, 160, 200, 250]
-    suggested = min([x for x in standard_breakers if x >= required_current] or [max(standard_breakers)])
-    return suggested
+    / ۶. کادر نتایج /
+    .result-box { text-align: center; padding: 15px; border-radius: 15px; background-color: #f8f9fa; border: 1px solid #ddd; }
+    .result-text { font-size: 16px !important; font-weight: bold; color: #1a73e8; }
 # ==============================================================================
 # --- رابط کاربری (UI) ---
 # ==============================================================================
