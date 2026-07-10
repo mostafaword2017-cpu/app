@@ -19,7 +19,7 @@ st.markdown("""
 css
     / استایل پیش‌فرض برای لپ‌تاپ و تبلت /
     .stApp h1 {
-        font-size: 26px !important; 
+        font-size: 16px !important; 
         text-align: center !important;
         white-space: nowrap !important;
     }
@@ -27,7 +27,7 @@ css
     / استایل مخصوص گوشی‌های موبایل (صفحات زیر 640 پیکسل) /
     @media screen and (max-width: 640px) {
         .stApp h1 {
-            font-size: 12px !important; / اندازه فونت در موبایل خیلی کوچک شد تا نشکند /
+            font-size: 10px !important; / اندازه فونت در موبایل خیلی کوچک شد تا نشکند /
             letter-spacing: -1px !important;
         }
     }
