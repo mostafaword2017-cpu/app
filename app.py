@@ -48,9 +48,9 @@ css
 def calculate_cable_fixed(p_kw, length, sigma, voltage=380, max_drop_percent=2):
     p_watts = p_kw  1000
     try:
-        calculated_area = (p_watts  length  100) / (sigma  (voltage**2)  max_drop_percent)
+        calculated_area = (p_watts * length * 100) / (sigma * (voltage**2) * max_drop_percent)
     except ZeroDivisionError: return 0, 0, 0, 0
-    current = p_watts / (math.sqrt(3)  voltage  0.8)
+    current = p_watts / (math.sqrt(3) * voltage * 0.8)
     standard_sizes = [1.5, 2.5, 4, 6, 10, 16, 25, 35, 50, 70, 95, 120, 150, 185, 240, 300]
     suggested_index = -1
     for i, size in enumerate(standard_sizes):
@@ -73,15 +73,15 @@ def calculate_ups_fixed(load_kva, backup_min, num_batteries):
             m1, m2 = minutes_list[i], minutes_list[i+1]
             if m1 <= backup_min <= m2:
                 a1, a2 = base_data[m1], base_data[m2]
-                base_ah = a1 + ((a2 - a1)  (backup_min - m1) / (m2 - m1))
+                base_ah = a1 + ((a2 - a1) * (backup_min - m1) / (m2 - m1))
                 break
-    return round((base_ah  (load_kva / 10)  32) / num_batteries, 1)
+    return round((base_ah * (load_kva / 10) * 32) / num_batteries, 1)
 
 def calculate_motor_from_kva(p_kva, eff=0.85, cos_phi=0.8, voltage=380):
-    p_kw_out = p_kva  cos_phi
+    p_kw_out = p_kva * cos_phi
     p_kw_in = p_kw_out / eff
-    current = (p_kw_in  1000) / (math.sqrt(3)  voltage  cos_phi)
-    starting_current = current  6
+    current = (p_kw_in * 1000) / (math.sqrt(3) * voltage * cos_phi)
+    starting_current = current * 6
     return round(current, 2), round(p_kw_in, 2), round(starting_current, 2), round(p_kw_out, 2)
 def suggest_breaker(current, type_load="مقاومتی"):
     multiplier = 1.25 if type_load == "مقاومتی" else 1.5 
