@@ -17,9 +17,10 @@ st.markdown("""
 
     / Optimize Title for Mobile /
     .stApp h1 {
-        font-size: 6vw !important; 
+        font-size: 5vw !important; 
         text-align: center !important;
         white-space: nowrap !important;
+        letter-spacing: -0.5px !important; 
     }
     @media screen and (min-width: 640px) {
         .stApp h1 {
