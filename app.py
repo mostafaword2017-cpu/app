@@ -28,7 +28,7 @@ st.markdown("""
     .stTabs [role="tab"], 
     .stTabs button, 
     .stTabs div[data-testid="stHorizontalBlock"] {
-        font-size: 16px !important; / اندازه را مشابه عنوان قرار دادم /
+        font-size: 14px !important; / اندازه را مشابه عنوان قرار دادم /
         white-space: nowrap !important; 
         padding: 2px 5px !important;
     }
