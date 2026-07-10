@@ -16,18 +16,21 @@ st.markdown("""
     }
 
     / Optimize Title for Mobile /
+css
+    / استایل پیش‌فرض برای لپ‌تاپ و تبلت /
     .stApp h1 {
-        font-size: 5vw !important; 
+        font-size: 26px !important; 
         text-align: center !important;
         white-space: nowrap !important;
-        letter-spacing: -0.5px !important; 
-    }
-    @media screen and (min-width: 640px) {
-        .stApp h1 {
-            font-size: 26px !important;
-        }
     }
 
+    / استایل مخصوص گوشی‌های موبایل (صفحات زیر 640 پیکسل) /
+    @media screen and (max-width: 640px) {
+        .stApp h1 {
+            font-size: 18px !important; / اندازه فونت در موبایل خیلی کوچک شد تا نشکند /
+            letter-spacing: -1px !important;
+        }
+    }
     / Label and Markdown fonts /
     label, .stMarkdown p {
         font-size: 14px !important;
