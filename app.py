@@ -388,13 +388,12 @@ def show_cable_size(current, label="Load"):
 def calculate_ups_cable(ups_kva, voltage_ac=400, length_ac=50):
     """
     محاسبه سایز کابل مناسب برای UPS (فقط AC)
-    - کابل ورودی AC (از شبکه به UPS)
-    - کابل خروجی AC (از UPS به بار)
+    - یک پله بالاتر از استاندارد برای ایمنی بیشتر
     """
     cos_phi = 0.8
     sigma = 56
     
-    # جریان ورودی AC - فرمول صحیح
+    # جریان ورودی AC
     current_ac_in = (ups_kva * 1000) / (math.sqrt(3) * voltage_ac * cos_phi)
     
     # جریان خروجی AC (با راندمان 90%)
@@ -405,11 +404,30 @@ def calculate_ups_cable(ups_kva, voltage_ac=400, length_ac=50):
     cable_ac_in = calculate_cable_from_current(current_ac_in, length_ac, sigma, voltage_ac)
     cable_ac_out = calculate_cable_from_current(current_ac_out, length_ac, sigma, voltage_ac)
     
+    # یک پله بالاتر برای ورودی و خروجی
+    standard_sizes = [1.5, 2.5, 4, 6, 10, 16, 25, 35, 50, 70, 95, 120, 150, 185, 240, 300]
+    
+    # ورودی: یک پله بالاتر
+    std_in = cable_ac_in[1]
+    if std_in in standard_sizes and std_in != "Out of Range":
+        idx = standard_sizes.index(std_in)
+        safe_in = standard_sizes[min(idx + 1, len(standard_sizes) - 1)]
+    else:
+        safe_in = std_in
+    
+    # خروجی: یک پله بالاتر
+    std_out = cable_ac_out[1]
+    if std_out in standard_sizes and std_out != "Out of Range":
+        idx = standard_sizes.index(std_out)
+        safe_out = standard_sizes[min(idx + 1, len(standard_sizes) - 1)]
+    else:
+        safe_out = std_out
+    
     return {
         'current_ac_in': round(current_ac_in, 2),
         'current_ac_out': round(current_ac_out, 2),
-        'cable_ac_in': cable_ac_in,
-        'cable_ac_out': cable_ac_out
+        'cable_ac_in': (cable_ac_in[0], cable_ac_in[1], safe_in, cable_ac_in[3]),
+        'cable_ac_out': (cable_ac_out[0], cable_ac_out[1], safe_out, cable_ac_out[3])
     }
 
 # ==============================================================================
@@ -472,7 +490,7 @@ with tabs[0]:
         """, unsafe_allow_html=True)
 
 # ==============================================================================
-# --- تب ۲: UPS (با محاسبه کابل AC) ---
+# --- تب ۲: UPS (با یک پله بالاتر) ---
 # ==============================================================================
 
 with tabs[1]:
@@ -500,7 +518,7 @@ with tabs[1]:
         bat_ah = calculate_ups_fixed(u_kva, u_min, u_bat, u_volt)
         volt_text = f"{u_volt}V" 
         
-        # محاسبه کابل‌های UPS (فقط AC)
+        # محاسبه کابل‌های UPS (با یک پله بالاتر)
         ups_cable = calculate_ups_cable(
             ups_kva=u_kva,
             voltage_ac=ac_voltage,
@@ -523,13 +541,13 @@ with tabs[1]:
         
         # نمایش نتایج کابل‌های AC
         st.markdown("### 🔌 AC Cable Sizing for UPS")
+        st.caption("⚠️ Safe Size = One level above standard (for safety)")
         
         col1, col2 = st.columns(2)
         
         with col1:
             st.markdown("#### 📥 Input AC Cable (Grid to UPS)")
             
-            # نمایش محاسبات دقیق برای ورودی
             curr_in = ups_cable['current_ac_in']
             std_in = ups_cable['cable_ac_in'][1]
             safe_in = ups_cable['cable_ac_in'][2]
@@ -539,13 +557,12 @@ with tabs[1]:
                 <div style='background-color:{card_bg}; padding:12px; border-radius:10px; border:1px solid {border_color};'>
                     <p style='font-size:14px;'><b>⚡ Current:</b> {curr_in} A</p>
                     <p style='font-size:14px; color:#1b5e20;'><b>📏 Standard Size:</b> {std_in} mm²</p>
-                    <p style='font-size:14px; color:#e65100;'><b>🚀 Safe Size:</b> {safe_in} mm²</p>
+                    <p style='font-size:14px; color:#e65100;'><b>🚀 Safe Size:</b> {safe_in} mm² ⬆️</p>
                     <p style='font-size:12px; color:#5f6368;'>Exact Calc: {raw_in} mm²</p>
                     <p style='font-size:12px; color:#5f6368;'>Length: {ac_length}m | Voltage: {ac_voltage}V</p>
                 </div>
             """, unsafe_allow_html=True)
             
-            # توصیه برای ورودی
             if safe_in <= 25:
                 st.success("✅ Suitable for UPS input")
             else:
@@ -554,7 +571,6 @@ with tabs[1]:
         with col2:
             st.markdown("#### 📤 Output AC Cable (UPS to Load)")
             
-            # نمایش محاسبات دقیق برای خروجی
             curr_out = ups_cable['current_ac_out']
             std_out = ups_cable['cable_ac_out'][1]
             safe_out = ups_cable['cable_ac_out'][2]
@@ -564,22 +580,21 @@ with tabs[1]:
                 <div style='background-color:{card_bg}; padding:12px; border-radius:10px; border:1px solid {border_color};'>
                     <p style='font-size:14px;'><b>⚡ Current:</b> {curr_out} A</p>
                     <p style='font-size:14px; color:#1b5e20;'><b>📏 Standard Size:</b> {std_out} mm²</p>
-                    <p style='font-size:14px; color:#e65100;'><b>🚀 Safe Size:</b> {safe_out} mm²</p>
+                    <p style='font-size:14px; color:#e65100;'><b>🚀 Safe Size:</b> {safe_out} mm² ⬆️</p>
                     <p style='font-size:12px; color:#5f6368;'>Exact Calc: {raw_out} mm²</p>
                     <p style='font-size:12px; color:#5f6368;'>Length: {ac_length}m | Voltage: {ac_voltage}V</p>
                 </div>
             """, unsafe_allow_html=True)
             
-            # توصیه برای خروجی
             if safe_out <= 35:
                 st.success("✅ Suitable for UPS output")
             else:
                 st.warning(f"⚠️ Consider larger cable for safety")
         
-        # راهنمای انتخاب کابل
-        with st.expander("💡 UPS Cable Sizing Guidelines"):
+        # جدول راهنما
+        with st.expander("📋 UPS Cable Sizing Reference Table"):
             st.markdown("""
-            ### 📋 Recommended Cable Sizes for UPS (AC Side)
+            ### Recommended Cable Sizes for UPS (AC Side)
             
             | UPS Power | Input Current | Input Cable | Output Current | Output Cable |
             |-----------|---------------|-------------|----------------|--------------|
@@ -591,13 +606,13 @@ with tabs[1]:
             | 80 kVA | 144 A | **50 mm²** | 160 A | **70 mm²** |
             | 100 kVA | 180 A | **70 mm²** | 200 A | **95 mm²** |
             
-            ### ⚠️ Important Notes:
+            ### 💡 Important Notes:
             
-            1. **Input Cable:** Always use the Safe Size for input side
-            2. **Output Cable:** Output current is higher due to UPS efficiency (~90%)
-            3. **Length Factor:** For lengths > 50m, increase cable size by one level
-            4. **Temperature:** For ambient temp > 40°C, increase cable size
-            5. **Future Expansion:** Consider adding 20% margin for future load growth
+            1. **Standard Size:** Minimum requirement based on current capacity
+            2. **Safe Size:** One level above standard (recommended for safety)
+            3. **Length Factor:** For lengths > 50m, increase cable size
+            4. **Temperature:** For ambient > 40°C, increase cable size
+            5. **Future Expansion:** Add 20% margin for future load growth
             """)
 
 # ==============================================================================
@@ -680,15 +695,4 @@ with tabs[3]:
                 <div class='cable-text'>📏 Standard Size: {cable_std} mm²</div>
                 <div class='cable-text' style='color: #e65100;'>🚀 Safe Size: {cable_safe} mm²</div>
                 <div class='cable-text' style='color: #1a73e8; font-size: 15px;'>⚡ Current: {cable_curr} A</div>
-                <p style='color: #5f6368; font-size: 13px; margin: 0;'>
-                    Length: {cable_length}m | {conductor_type} | Exact: {cable_raw} mm²
-                </p>
-            </div>
-        """, unsafe_allow_html=True)
-        
-        if p_type == "Motor":
-            st.info("💡 For motor circuits, it's recommended to use the 'Safe Size' or one size larger due to starting current")
-        elif p_type == "Inductive":
-            st.info("💡 Inductive loads may require larger cable due to inrush current")
-        else:
-            st.success("✅ Cable size is suitable for this resistive load")
+                <p style='color
