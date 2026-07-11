@@ -15,6 +15,42 @@ st.set_page_config(
 # ==============================================================================
 st.markdown("""
     <style>
+    /* ========== مخفی کردن عکس گربه و FORK ========== */
+    
+    /* مخفی کردن کل هدر بالایی */
+    .stAppHeader {
+        display: none !important;
+    }
+    
+    /* مخفی کردن دکمه Fork در گیت‌هاب */
+    .stDeployButton {
+        display: none !important;
+    }
+    
+    /* مخفی کردن عکس گربه (GitHub icon) */
+    .stAppHeader .stImage,
+    .stAppHeader img,
+    header img {
+        display: none !important;
+    }
+    
+    /* مخفی کردن کل بخش header */
+    header[data-testid="stHeader"] {
+        display: none !important;
+    }
+    
+    /* اگر روی موبایل هستید */
+    @media screen and (max-width: 640px) {
+        .stAppHeader {
+            display: none !important;
+        }
+        header {
+            display: none !important;
+        }
+    }
+    </style>
+""", unsafe_allow_html=True)
+    <style>
     /* حذف المان‌های اضافی Streamlit */
     header div[data-testid="stHeader"] a, 
     div[data-testid="stAppDeployButton"], 
