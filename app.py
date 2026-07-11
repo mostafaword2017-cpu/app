@@ -7,13 +7,13 @@ from typing import Tuple, Optional
 # --- تنظیمات صفحه ---
 # ==============================================================================
 st.set_page_config(
-    page_title="ElectroCalc ⚡ M&F", 
+    page_title="ElectroCalc⚡M&F ", 
     page_icon="⚡️", 
     layout="centered"
 )
 
 # ==============================================================================
-# --- استایل بهینه برای موبایل (فونت بسیار کوچک و وسطچین) ---
+# --- استایل بهینه برای موبایل ---
 # ==============================================================================
 st.markdown("""
     <style>
@@ -26,85 +26,59 @@ st.markdown("""
 
     /* ========== بهینه‌سازی تایتل اصلی ========== */
     .stApp h1 {
-        font-size: 13px !important;  /* فونت کوچک */
+        font-size: 18px !important;
         text-align: center !important;
         white-space: nowrap !important;
         letter-spacing: 0px !important;
         font-weight: 700 !important;
-        padding: 5px 0 !important;
+        padding: 8px 0 !important;
         margin: 0 auto !important;
         display: block !important;
         width: 100% !important;
         color: #1a1a1a !important;
     }
     
-    /* تایتل در موبایل‌های بسیار کوچک (زیر 480px) */
+    /* تایتل در موبایل */
     @media screen and (max-width: 480px) {
         .stApp h1 {
-            font-size: 10px !important;
-            letter-spacing: -0.5px !important;
+            font-size: 14px !important;
+            letter-spacing: -0.3px !important;
         }
     }
 
-    /* ========== بهینه‌سازی هدر تب‌ها (Tab Headers) ========== */
+    /* ========== بهینه‌سازی هدر تب‌ها ========== */
     .stTabs [role="tab"] {
-        font-size: 11px !important;
-        padding: 6px 8px !important;
+        font-size: 12px !important;
+        padding: 6px 10px !important;
         border-radius: 6px 6px 0px 0px !important;
         background-color: #f0f2f6 !important;
         white-space: nowrap !important;
-        min-width: 60px !important;
+        min-width: 65px !important;
         text-align: center !important;
     }
     
     @media screen and (max-width: 480px) {
         .stTabs [role="tab"] {
-            font-size: 9px !important;
-            padding: 4px 5px !important;
-            min-width: 45px !important;
+            font-size: 10px !important;
+            padding: 4px 6px !important;
+            min-width: 50px !important;
         }
     }
 
-    /* تب فعال */
     .stTabs [aria-selected="true"] {
         background-color: #4CAF50 !important; 
         color: white !important;
         font-weight: 600 !important;
     }
 
-    /* ========== بهینه‌سازی لیبل‌ها و متون ========== */
+    /* ========== لیبل‌ها ========== */
     label, .stMarkdown p, .stText, .stNumberInput label {
-        font-size: 12px !important;
+        font-size: 13px !important;
         margin-bottom: 2px !important;
     }
     
     @media screen and (max-width: 480px) {
         label, .stMarkdown p, .stText, .stNumberInput label {
-            font-size: 10px !important;
-        }
-    }
-
-    /* ========== بهینه‌سازی جعبه‌های نتیجه ========== */
-    .result-box {
-        text-align: center;
-        padding: 10px 8px !important;
-        border-radius: 12px;
-        background-color: #f8f9fa;
-        border: 2px solid #3c4043;
-        margin: 10px 0;
-    }
-    
-    .result-text {
-        font-size: 14px !important;
-        font-weight: 600 !important;
-        color: #1a73e8;
-        margin-bottom: 3px !important;
-        word-wrap: break-word !important;
-        line-height: 1.4 !important;
-    }
-    
-    @media screen and (max-width: 480px) {
-        .result-text {
             font-size: 11px !important;
         }
     }
@@ -112,8 +86,8 @@ st.markdown("""
     /* ========== دکمه‌ها ========== */
     .stButton > button {
         width: 100% !important;
-        height: 40px !important;
-        font-size: 13px !important;
+        height: 42px !important;
+        font-size: 14px !important;
         font-weight: 600 !important;
         border-radius: 10px !important;
         background-color: #007BFF !important;
@@ -123,12 +97,12 @@ st.markdown("""
     
     @media screen and (max-width: 480px) {
         .stButton > button {
-            height: 35px !important;
-            font-size: 11px !important;
+            height: 36px !important;
+            font-size: 12px !important;
         }
     }
 
-    /* ========== متریک‌ها (Metric Cards) ========== */
+    /* ========== متریک‌ها ========== */
     div[data-testid="metric-container"] {
         padding: 8px !important;
         background-color: #f8f9fa !important;
@@ -141,7 +115,7 @@ st.markdown("""
     }
     
     div[data-testid="metric-container"] .stMetricValue {
-        font-size: 16px !important;
+        font-size: 17px !important;
         font-weight: 700 !important;
     }
     
@@ -150,73 +124,49 @@ st.markdown("""
             font-size: 9px !important;
         }
         div[data-testid="metric-container"] .stMetricValue {
-            font-size: 13px !important;
+            font-size: 14px !important;
         }
     }
 
-    /* ========== کانتینرهای ورودی ========== */
-    .stNumberInput, .stSelectbox, .stSlider {
-        margin-bottom: 5px !important;
-    }
-    
+    /* ========== ورودی‌ها ========== */
     .stNumberInput input, .stSelectbox select {
-        font-size: 12px !important;
+        font-size: 13px !important;
         padding: 4px 8px !important;
     }
     
     @media screen and (max-width: 480px) {
         .stNumberInput input, .stSelectbox select {
-            font-size: 10px !important;
+            font-size: 11px !important;
             padding: 3px 6px !important;
         }
     }
 
-    /* ========== اکسپندر (Expanders) ========== */
+    /* ========== اکسپندر ========== */
     .streamlit-expanderHeader {
-        font-size: 12px !important;
+        font-size: 13px !important;
         font-weight: 600 !important;
         padding: 6px 10px !important;
     }
     
     @media screen and (max-width: 480px) {
         .streamlit-expanderHeader {
-            font-size: 10px !important;
+            font-size: 11px !important;
             padding: 4px 8px !important;
         }
     }
 
-    /* ========== سایدبار ========== */
-    .css-1d391kg, .css-12oz5g7 {
-        padding: 10px !important;
-    }
-    
-    .css-1d391kg p, .css-12oz5g7 p {
-        font-size: 11px !important;
-    }
-    
-    @media screen and (max-width: 480px) {
-        .css-1d391kg p, .css-12oz5g7 p {
-            font-size: 9px !important;
-        }
-    }
-
-    /* ========== ستون‌ها (Columns) ========== */
-    .row-widget.stColumns {
-        gap: 5px !important;
-    }
-    
     /* ========== لاتکس ========== */
     .katex, .katex-display {
-        font-size: 13px !important;
+        font-size: 14px !important;
     }
     
     @media screen and (max-width: 480px) {
         .katex, .katex-display {
-            font-size: 10px !important;
+            font-size: 11px !important;
         }
     }
 
-    /* ========== هدر تب‌ها را در یک خط نگه دار ========== */
+    /* ========== تب‌ها در یک خط ========== */
     .stTabs div[role="tablist"] { 
         gap: 3px !important; 
         flex-wrap: nowrap !important; 
@@ -224,21 +174,14 @@ st.markdown("""
         padding: 2px 0 !important;
     }
     
-    /* ========== اسکرول هموار ========== */
     .main {
         overflow-x: hidden !important;
-    }
-    
-    /* ========== وسط‌چین کردن هدر ========== */
-    .stAppHeader {
-        text-align: center !important;
-        justify-content: center !important;
     }
     </style>
     """, unsafe_allow_html=True)
 
 # ==============================================================================
-# --- هسته محاسباتی (دقیق و صنعتی) ---
+# --- هسته محاسباتی با فرمول صحیح کابل ---
 # ==============================================================================
 
 class PowerSystemCalculator:
@@ -249,13 +192,11 @@ class PowerSystemCalculator:
     
     # ثابتهای جهانی
     SQRT3 = math.sqrt(3)
-    VOLTAGE_380 = 380
-    VOLTAGE_400 = 400
     
     # جدول استاندارد سطح مقطع کابل (mm²)
     STANDARD_CABLE_SIZES = [1.5, 2.5, 4, 6, 10, 16, 25, 35, 50, 70, 95, 120, 150, 185, 240, 300]
     
-    # جریان مجاز برای کابل مسی (با فرض دمای ۳۰°C، نصب در هوا)
+    # جریان مجاز برای کابل مسی (دمای ۳۰°C، نصب در هوا)
     CABLE_CURRENT_CAPACITY = {
         1.5: 18, 2.5: 24, 4: 32, 6: 41, 10: 57, 16: 76,
         25: 101, 35: 125, 50: 151, 70: 192, 95: 232,
@@ -270,17 +211,23 @@ class PowerSystemCalculator:
                        voltage: float = 380, 
                        cos_phi: float = 0.8,
                        max_drop_percent: float = 2.0,
-                       conductivity: float = 56.0,
-                       ambient_temp: float = 30.0) -> dict:
+                       conductivity: float = 56.0) -> dict:
         """
         محاسبه دقیق سطح مقطع کابل بر اساس استاندارد IEC 60364
+        
+        ✅ فرمول صحیح:
+        S = (P × L × 100) / (σ × V² × ΔV%)
+        
+        ❌ اشتباه رایج (قبلی):
+        S = (P × L × 100) / (σ × V² × ΔV% × cos²φ)  <-- غلط!
         """
         # ۱. محاسبه جریان نامی (فرمول صحیح سهفاز)
         current = (power_kw * 1000) / (cls.SQRT3 * voltage * cos_phi)
         
         # ۲. محاسبه سطح مقطع بر اساس افت ولتاژ
+        # ✅ فرمول صحیح: کسینوس فی در مخرج نیست
         area_voltage_drop = (power_kw * 1000 * length_m * 100) / (
-            conductivity * (voltage ** 2) * max_drop_percent * (cos_phi ** 2)
+            conductivity * (voltage ** 2) * max_drop_percent
         )
         
         # ۳. محاسبه بر اساس جریان مجاز (حرارتی)
@@ -306,7 +253,7 @@ class PowerSystemCalculator:
             safe_size = standard_size
         
         # ۷. محاسبه افت ولتاژ واقعی با سایز انتخابی
-        actual_drop = cls._calculate_voltage_drop(power_kw, length_m, standard_size, voltage, cos_phi, conductivity)
+        actual_drop = cls._calculate_voltage_drop(power_kw, length_m, standard_size, voltage, conductivity)
         
         return {
             'current': round(current, 2),
@@ -328,12 +275,13 @@ class PowerSystemCalculator:
     @classmethod
     def _calculate_voltage_drop(cls, power_kw: float, length_m: float, 
                                 size: float, voltage: float, 
-                                cos_phi: float, conductivity: float) -> float:
+                                conductivity: float) -> float:
         """
         محاسبه دقیق افت ولتاژ بر حسب درصد
+        ✅ فرمول صحیح: ΔV% = (P × L × 100) / (σ × V² × S)
         """
         drop = (power_kw * 1000 * length_m * 100) / (
-            conductivity * (voltage ** 2) * size * (cos_phi ** 2)
+            conductivity * (voltage ** 2) * size
         )
         return drop
     
@@ -345,19 +293,10 @@ class PowerSystemCalculator:
         """
         محاسبه دقیق ظرفیت باتری UPS بر اساس استاندارد IEEE 485
         """
-        # ۱. محاسبه توان واقعی بار
         load_kw = load_kva * 0.8
-        
-        # ۲. محاسبه ولتاژ DC کل
         total_dc_voltage = num_batteries * battery_voltage
-        
-        # ۳. محاسبه جریان DC مورد نیاز
         dc_current = (load_kw * 1000) / (total_dc_voltage * inverter_efficiency)
-        
-        # ۴. محاسبه ظرفیت باتری بر حسب آمپر-ساعت
         ah_required = (dc_current * backup_min) / (60 * depth_of_discharge)
-        
-        # ۵. گرد کردن به سایز استاندارد باتری
         standard_ah = cls._round_battery_ah(ah_required)
         
         return {
@@ -384,19 +323,10 @@ class PowerSystemCalculator:
         """
         محاسبه پارامترهای موتور الکتریکی
         """
-        # ۱. توان خروجی مکانیکی
         power_out_kw = power_kva * cos_phi
-        
-        # ۲. توان ورودی الکتریکی
         power_in_kw = power_out_kw / efficiency
-        
-        # ۳. جریان نامی
         rated_current = (power_in_kw * 1000) / (cls.SQRT3 * voltage * cos_phi)
-        
-        # ۴. جریان راهاندازی
         starting_current = rated_current * starting_factor
-        
-        # ۵. گشتاور نامی (تخمینی)
         torque_nm = (power_out_kw * 9550) / 1500
         
         return {
@@ -438,28 +368,16 @@ class PowerSystemCalculator:
         }
 
 # ==============================================================================
-# --- رابط کاربری (UI) با تایتل ساده و کوچک ---
+# --- رابط کاربری (UI) با اسم جدید ---
 # ==============================================================================
 
-# ✅ عنوان ساده و کوچک با نشان برق در وسط
-st.markdown("""
-    <h1 style='
-        text-align: center; 
-        font-size: 13px; 
-        font-weight: 700; 
-        margin: 0; 
-        padding: 5px 0;
-        letter-spacing: 0px;
-        color: #1a1a1a;
-    '>
-    ⚡ ElectroCalc ⚡ M&F
-    </h1>
-""", unsafe_allow_html=True)
+# ✅ عنوان با علامت برق فقط در سمت راست
+st.title("ElectroCalc M&F ⚡")
 
-# تب‌ها با نام‌های کوتاه برای موبایل
+# تب‌ها
 tabs = st.tabs(["📏 Cable", "🔋 UPS", "⚙️ Motor", "🛡️ Protect"])
 
-# --- تب ۱: کابل (Cable) ---
+# --- تب ۱: کابل ---
 with tabs[0]:
     st.header("📐 Cable Sizing")
     
@@ -495,9 +413,11 @@ with tabs[0]:
             st.write(f"**Required Area:** {result['required_area']} mm²")
             st.write(f"**Voltage Drop:** {result['voltage_drop']}%")
             st.write(f"**Status:** {'✅ PASS' if result['is_ok'] else '❌ FAIL'}")
+            # ✅ فرمول صحیح نمایش داده میشود
             st.latex(r"""
-            S = \frac{P \times L \times 100}{\sigma \times V^2 \times \Delta V\% \times \cos^2\phi}
+            S = \frac{P \times L \times 100}{\sigma \times V^2 \times \Delta V\%}
             """)
+            st.caption("✅ فرمول صحیح - کسینوس فی در مخرج نیست")
 
 # --- تب ۲: UPS ---
 with tabs[1]:
@@ -532,7 +452,7 @@ with tabs[1]:
             Ah = \frac{P_{kW} \times 1000 \times T_{min}}{V_{DC} \times \eta \times 60 \times DOD}
             """)
 
-# --- تب ۳: موتور (Motor) ---
+# --- تب ۳: موتور ---
 with tabs[2]:
     st.header("⚙️ Motor Calc")
     
@@ -565,7 +485,7 @@ with tabs[2]:
             I_{rated} = \frac{P_{kW} \times 1000}{\eta \times \sqrt{3} \times V \times \cos\phi}
             """)
 
-# --- تب ۴: حفاظت (Protection) ---
+# --- تب ۴: حفاظت ---
 with tabs[3]:
     st.header("🛡️ Breaker Sizing")
     
@@ -592,7 +512,7 @@ with tabs[3]:
             I_{breaker} = I_{load} \times K_{safety}
             """)
 
-# --- سایدبار اطلاعات فنی ---
+# --- سایدبار ---
 with st.sidebar:
     st.header("📚 Standards")
     st.markdown("""
