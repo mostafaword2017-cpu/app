@@ -11,191 +11,328 @@ st.set_page_config(
 )
 
 # ==============================================================================
-# --- استایل بهینه برای موبایل با مخفی کردن هدر و FORK ---
+# --- مدیریت تم (Theme) ---
 # ==============================================================================
-st.markdown("""
+
+# مقداردهی اولیه تم
+if 'theme' not in st.session_state:
+    st.session_state.theme = 'light'
+
+def toggle_theme():
+    if st.session_state.theme == 'light':
+        st.session_state.theme = 'dark'
+    else:
+        st.session_state.theme = 'light'
+
+# تعیین رنگ‌ها بر اساس تم
+if st.session_state.theme == 'light':
+    bg_color = "#ffffff"
+    text_color = "#1a1a1a"
+    card_bg = "#f1f3f4"
+    border_color = "#3c4043"
+    tab_bg = "#f0f2f6"
+    tab_active = "#4CAF50"
+    button_bg = "#007BFF"
+    button_text = "#ffffff"
+    result_bg = "#f1f3f4"
+    sidebar_bg = "#f0f2f6"
+    input_bg = "#ffffff"
+else:  # dark
+    bg_color = "#1a1a1a"
+    text_color = "#f0f0f0"
+    card_bg = "#2d2d2d"
+    border_color = "#555555"
+    tab_bg = "#333333"
+    tab_active = "#4CAF50"
+    button_bg = "#0d6efd"
+    button_text = "#ffffff"
+    result_bg = "#2d2d2d"
+    sidebar_bg = "#252525"
+    input_bg = "#333333"
+
+# ==============================================================================
+# --- استایل با پشتیبانی از تم ---
+# ==============================================================================
+
+st.markdown(f"""
     <style>
+    /* ========== تنظیمات کلی تم ========== */
+    .stApp {{
+        background-color: {bg_color} !important;
+    }}
+    
+    .stApp h1, .stApp h2, .stApp h3, .stApp p, .stApp label {{
+        color: {text_color} !important;
+    }}
+
     /* ========== حذف کامل هدر Streamlit ========== */
-    /* مخفی کردن کل هدر بالایی */
-    .stAppHeader {
+    .stAppHeader {{
         display: none !important;
-    }
+    }}
     
-    /* مخفی کردن هدر اصلی */
-    header[data-testid="stHeader"] {
+    header[data-testid="stHeader"] {{
         display: none !important;
-    }
+    }}
     
-    /* مخفی کردن دکمه Fork و Deploy */
     .stDeployButton,
     .stAppDeployButton,
-    div[data-testid="stAppDeployButton"] {
+    div[data-testid="stAppDeployButton"] {{
         display: none !important;
-    }
+    }}
     
-    /* مخفی کردن عکس گربه و لینک‌های گیت‌هاب */
     .stAppHeader img,
     header img,
     .stImage,
     .css-1v3fvcr,
-    .css-1v3fvcr a {
+    .css-1v3fvcr a {{
         display: none !important;
-    }
+    }}
     
-    /* مخفی کردن منوی اصلی Streamlit */
-    #MainMenu {
+    #MainMenu {{
         display: none !important;
-    }
+    }}
     
-    /* مخفی کردن المان‌های اضافی هدر */
-    header div[data-testid="stHeader"] a {
+    header div[data-testid="stHeader"] a {{
         display: none !important;
-    }
+    }}
 
-    /* ========== تایتل اصلی (بسیار بزرگ) ========== */
-    .stApp h1 {
+    /* ========== دکمه سه‌نقطه (Theme Toggle) ========== */
+    .theme-toggle-container {{
+        position: fixed;
+        top: 15px;
+        right: 15px;
+        z-index: 9999;
+    }}
+    
+    .theme-toggle-btn {{
+        background-color: {tab_bg};
+        color: {text_color};
+        border: 2px solid {border_color};
+        border-radius: 50%;
+        width: 44px;
+        height: 44px;
+        font-size: 22px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        padding: 0;
+        line-height: 1;
+    }}
+    
+    .theme-toggle-btn:hover {{
+        transform: scale(1.15);
+        box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+        background-color: {tab_active};
+        color: white;
+    }}
+    
+    @media screen and (max-width: 640px) {{
+        .theme-toggle-btn {{
+            width: 36px;
+            height: 36px;
+            font-size: 18px;
+            top: 10px;
+            right: 10px;
+        }}
+    }}
+
+    /* ========== تایتل اصلی ========== */
+    .stApp h1 {{
         font-size: 49.5px !important;
         text-align: center !important;
         white-space: nowrap !important;
         font-weight: 700 !important;
-        color: #1a1a1a !important;
+        color: {text_color} !important;
         padding: 5px 0 !important;
         margin-top: 0 !important;
-    }
+    }}
 
-    @media screen and (max-width: 640px) {
-        .stApp h1 {
+    @media screen and (max-width: 640px) {{
+        .stApp h1 {{
             font-size: 36px !important;
             letter-spacing: -0.5px !important;
-        }
-    }
+        }}
+    }}
 
     /* ========== لیبل‌ها و متون ========== */
-    label, .stMarkdown p {
+    label, .stMarkdown p {{
         font-size: 14px !important;
-    }
+        color: {text_color} !important;
+    }}
     
-    @media screen and (max-width: 640px) {
-        label, .stMarkdown p {
+    @media screen and (max-width: 640px) {{
+        label, .stMarkdown p {{
             font-size: 12px !important;
-        }
-    }
+        }}
+    }}
 
-    /* ========== تب‌ها (بزرگ) ========== */
-    .stTabs div[role="tablist"] { 
+    /* ========== تب‌ها ========== */
+    .stTabs div[role="tablist"] {{ 
         gap: 5px !important; 
         flex-wrap: nowrap !important; 
         overflow-x: auto !important;
         justify-content: center !important;
         display: flex !important;
         padding-top: 5px !important;
-    }
+    }}
     
-    .stTabs [role="tab"] {
+    .stTabs [role="tab"] {{
         font-size: 19.5px !important;
         padding: 12px 18px !important;
         border-radius: 8px 8px 0px 0px !important;
-        background-color: #f0f2f6 !important;
+        background-color: {tab_bg} !important;
+        color: {text_color} !important;
         white-space: nowrap !important;
         min-width: 90px !important;
         text-align: center !important;
         font-weight: 500 !important;
-        border: none !important;
-    }
+        border: 1px solid {border_color} !important;
+        border-bottom: none !important;
+    }}
     
-    .stTabs [aria-selected="true"] {
-        background-color: #4CAF50 !important; 
+    .stTabs [aria-selected="true"] {{
+        background-color: {tab_active} !important; 
         color: white !important;
         font-weight: 700 !important;
-    }
+        border-color: {tab_active} !important;
+    }}
 
-    @media screen and (max-width: 640px) {
-        .stTabs [role="tab"] {
+    @media screen and (max-width: 640px) {{
+        .stTabs [role="tab"] {{
             font-size: 16.5px !important;
             padding: 9px 12px !important;
             min-width: 75px !important;
-        }
-    }
+        }}
+    }}
 
     /* ========== دکمه‌ها ========== */
-    .stButton > button {
+    .stButton > button {{
         width: 100% !important;
         height: 45px !important;
         font-size: 16px !important;
         font-weight: 600 !important;
         border-radius: 12px !important;
-        background-color: #007BFF !important;
-        color: white !important;
+        background-color: {button_bg} !important;
+        color: {button_text} !important;
         border: none !important;
         cursor: pointer !important;
         transition: all 0.3s ease !important;
-    }
+    }}
 
-    .stButton > button:hover {
-        background-color: #0056b3 !important;
+    .stButton > button:hover {{
+        opacity: 0.85 !important;
         transform: scale(1.02) !important;
-    }
+    }}
 
-    @media screen and (max-width: 640px) {
-        .stButton > button {
+    @media screen and (max-width: 640px) {{
+        .stButton > button {{
             height: 38px !important;
             font-size: 14px !important;
-        }
-    }
+        }}
+    }}
 
     /* ========== جعبه نتایج ========== */
-    .result-box {
+    .result-box {{
         text-align: center;
         padding: 15px;
         border-radius: 15px;
-        background-color: #f1f3f4;
-        border: 2px solid #3c4043;
+        background-color: {result_bg} !important;
+        border: 2px solid {border_color};
         margin: 15px 0;
-    }
+    }}
     
-    .result-text {
+    .result-text {{
         font-size: 18px !important;
         font-weight: 600 !important;
-        color: #1a73e8;
+        color: #1a73e8 !important;
         margin-bottom: 5px;
         word-wrap: break-word;
-    }
+    }}
 
-    @media screen and (max-width: 640px) {
-        .result-text {
+    @media screen and (max-width: 640px) {{
+        .result-text {{
             font-size: 14px !important;
-        }
-    }
+        }}
+    }}
+
+    /* ========== سایدبار ========== */
+    .css-1d391kg, .css-12oz5g7 {{
+        background-color: {sidebar_bg} !important;
+    }}
+
+    /* ========== ورودی‌ها ========== */
+    .stNumberInput input, .stSelectbox select {{
+        background-color: {input_bg} !important;
+        color: {text_color} !important;
+        border: 1px solid {border_color} !important;
+        border-radius: 6px !important;
+    }}
+
+    .stNumberInput input:focus, .stSelectbox select:focus {{
+        border-color: {tab_active} !important;
+    }}
 
     /* ========== هدر تب‌ها ========== */
-    .stHeader {
+    .stHeader {{
         font-size: 18px !important;
-    }
-
-    /* ========== مخفی کردن فضای خالی بالای صفحه ========== */
-    .main > div {
-        padding-top: 0 !important;
-    }
+        color: {text_color} !important;
+    }}
 
     /* ========== کانتینر ورودی ========== */
-    .stNumberInput, .stSelectbox {
+    .stNumberInput, .stSelectbox {{
         margin-bottom: 8px !important;
-    }
+    }}
 
     /* ========== لاتکس ========== */
-    .katex-display {
+    .katex-display {{
         text-align: center !important;
         margin: 10px 0 !important;
         font-size: 16px !important;
-    }
+        color: {text_color} !important;
+    }}
 
-    @media screen and (max-width: 640px) {
-        .katex-display {
+    @media screen and (max-width: 640px) {{
+        .katex-display {{
             font-size: 13px !important;
-        }
-    }
+        }}
+    }}
+
+    /* ========== کانتینر ========== */
+    .stContainer {{
+        background-color: {card_bg} !important;
+        border-radius: 12px !important;
+        padding: 10px !important;
+        border: 1px solid {border_color} !important;
+    }}
     </style>
 """, unsafe_allow_html=True)
+
+# ==============================================================================
+# --- دکمه سه‌نقطه تغییر تم ---
+# ==============================================================================
+
+# آیکون مناسب برای تم
+theme_icon = "🌙" if st.session_state.theme == 'light' else "☀️"
+theme_tooltip = "Switch to Dark Mode" if st.session_state.theme == 'light' else "Switch to Light Mode"
+
+st.markdown(f"""
+    <div class="theme-toggle-container">
+        <button class="theme-toggle-btn" onclick="location.href='?theme=toggle'" title="{theme_tooltip}">
+            {theme_icon}
+        </button>
+    </div>
+""", unsafe_allow_html=True)
+
+# بررسی تغییر تم از طریق URL
+import urllib.parse
+query_params = st.query_params
+if 'theme' in query_params and query_params['theme'] == 'toggle':
+    toggle_theme()
+    st.query_params.clear()
+    st.rerun()
 
 # ==============================================================================
 # --- توابع محاسباتی ---
@@ -405,5 +542,9 @@ with st.sidebar:
     **IEC 60947** - Breaker Selection  
     """)
     st.divider()
+    
+    # نمایش تم فعلی
+    theme_status = "🌞 Light" if st.session_state.theme == 'light' else "🌙 Dark"
+    st.caption(f"Theme: {theme_status}")
     st.caption("⚡ ElectroCalc M&F v2.0")
     st.caption("📱 Optimized for Mobile")
