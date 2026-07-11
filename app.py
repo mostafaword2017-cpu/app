@@ -47,7 +47,7 @@ else:
     theme_label = "Light Mode"
 
 # ==============================================================================
-# --- استایل با اسم در بالای صفحه ---
+# --- استایل با فاصله مناسب بین اسم و تب‌ها ---
 # ==============================================================================
 
 st.markdown(f"""
@@ -76,7 +76,7 @@ st.markdown(f"""
         display: none !important;
     }}
 
-    /* ========== بردن اسم به بالای صفحه ========== */
+    /* ========== اسم با فاصله مناسب از تب‌ها ========== */
     .stApp h1 {{
         font-size: 49.5px !important;
         text-align: center !important;
@@ -85,7 +85,7 @@ st.markdown(f"""
         color: {text_color} !important;
         padding: 0px 0 0px 0 !important;
         margin-top: -25px !important;
-        margin-bottom: -12px !important;
+        margin-bottom: 20px !important;  /* فاصله از تب‌ها */
     }}
 
     @media screen and (max-width: 640px) {{
@@ -93,11 +93,11 @@ st.markdown(f"""
             font-size: 36px !important;
             letter-spacing: -0.5px !important;
             margin-top: -15px !important;
-            margin-bottom: -8px !important;
+            margin-bottom: 15px !important;
         }}
     }}
 
-    /* ========== تب‌ها با فاصله کم از عنوان ========== */
+    /* ========== تب‌ها با فاصله مناسب از عنوان ========== */
     .stTabs div[role="tablist"] {{ 
         gap: 5px !important; 
         flex-wrap: nowrap !important; 
@@ -105,7 +105,7 @@ st.markdown(f"""
         justify-content: center !important;
         display: flex !important;
         padding-top: 0px !important;
-        margin-top: -5px !important;
+        margin-top: 0px !important;
     }}
     
     .stTabs [role="tab"] {{
@@ -134,9 +134,6 @@ st.markdown(f"""
             font-size: 16.5px !important;
             padding: 8px 12px !important;
             min-width: 75px !important;
-        }}
-        .stTabs div[role="tablist"] {{
-            margin-top: -3px !important;
         }}
     }}
 
