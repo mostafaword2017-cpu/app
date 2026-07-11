@@ -26,7 +26,7 @@ st.markdown("""
 
     /* ========== بهینه‌سازی تایتل اصلی ========== */
     .stApp h1 {
-        font-size: 26px !important;  /* دو درجه بزرگتر (از 22 به 26) */
+        font-size: 30px !important;  /* دو درجه بزرگتر (از 26 به 30) */
         text-align: center !important;
         white-space: nowrap !important;
         letter-spacing: 0px !important;
@@ -41,7 +41,7 @@ st.markdown("""
     /* تایتل در موبایل */
     @media screen and (max-width: 480px) {
         .stApp h1 {
-            font-size: 20px !important;  /* دو درجه بزرگتر (از 17 به 20) */
+            font-size: 23px !important;  /* دو درجه بزرگتر (از 20 به 23) */
             letter-spacing: -0.3px !important;
         }
     }
@@ -52,17 +52,17 @@ st.markdown("""
         flex-wrap: nowrap !important; 
         overflow-x: auto !important;
         padding: 2px 0 !important;
-        justify-content: center !important;  /* وسط‌چین کردن تب‌ها */
+        justify-content: center !important;
         display: flex !important;
     }
     
     .stTabs [role="tab"] {
-        font-size: 13px !important;
-        padding: 8px 14px !important;
+        font-size: 16px !important;  /* دو درجه بزرگتر (از 13 به 16) */
+        padding: 10px 18px !important;
         border-radius: 8px 8px 0px 0px !important;
         background-color: #f0f2f6 !important;
         white-space: nowrap !important;
-        min-width: 70px !important;
+        min-width: 80px !important;
         text-align: center !important;
         flex: 0 0 auto !important;
     }
@@ -73,9 +73,9 @@ st.markdown("""
             justify-content: center !important;
         }
         .stTabs [role="tab"] {
-            font-size: 10px !important;
-            padding: 5px 8px !important;
-            min-width: 50px !important;
+            font-size: 13px !important;  /* دو درجه بزرگتر (از 10 به 13) */
+            padding: 6px 10px !important;
+            min-width: 55px !important;
         }
     }
 
@@ -395,7 +395,7 @@ class PowerSystemCalculator:
 st.markdown("""
     <h1 style='
         text-align: center; 
-        font-size: 26px; 
+        font-size: 30px; 
         font-weight: 700; 
         margin: 0; 
         padding: 10px 0;
@@ -448,7 +448,7 @@ with tabs[0]:
             st.latex(r"""
             S = \frac{P \times L \times 100}{\sigma \times V^2 \times \Delta V\%}
             """)
-            st.caption("✅ فرمول صحیح - کسینوس فی در مخرج نیست")
+            # ✅ متن فارسی حذف شد
 
 # --- تب ۲: UPS ---
 with tabs[1]:
