@@ -47,7 +47,7 @@ else:
     theme_label = "Light Mode"
 
 # ==============================================================================
-# --- استایل ---
+# --- استایل با فاصله کم بین اسم و تب‌ها ---
 # ==============================================================================
 
 st.markdown(f"""
@@ -76,13 +76,15 @@ st.markdown(f"""
         display: none !important;
     }}
 
+    /* ========== عنوان با فاصله کم از تب‌ها ========== */
     .stApp h1 {{
         font-size: 49.5px !important;
         text-align: center !important;
         white-space: nowrap !important;
         font-weight: 700 !important;
         color: {text_color} !important;
-        padding: 5px 0 !important;
+        padding: 5px 0 0px 0 !important;
+        margin-bottom: -8px !important;
         margin-top: 0 !important;
     }}
 
@@ -90,32 +92,24 @@ st.markdown(f"""
         .stApp h1 {{
             font-size: 36px !important;
             letter-spacing: -0.5px !important;
+            margin-bottom: -5px !important;
         }}
     }}
 
-    label, .stMarkdown p {{
-        font-size: 14px !important;
-        color: {text_color} !important;
-    }}
-    
-    @media screen and (max-width: 640px) {{
-        label, .stMarkdown p {{
-            font-size: 12px !important;
-        }}
-    }}
-
+    /* ========== تب‌ها با فاصله کم از عنوان ========== */
     .stTabs div[role="tablist"] {{ 
         gap: 5px !important; 
         flex-wrap: nowrap !important; 
         overflow-x: auto !important;
         justify-content: center !important;
         display: flex !important;
-        padding-top: 5px !important;
+        padding-top: 0px !important;
+        margin-top: -5px !important;
     }}
     
     .stTabs [role="tab"] {{
         font-size: 19.5px !important;
-        padding: 12px 18px !important;
+        padding: 10px 18px !important;
         border-radius: 8px 8px 0px 0px !important;
         background-color: {tab_bg} !important;
         color: {text_color} !important;
@@ -137,8 +131,23 @@ st.markdown(f"""
     @media screen and (max-width: 640px) {{
         .stTabs [role="tab"] {{
             font-size: 16.5px !important;
-            padding: 9px 12px !important;
+            padding: 8px 12px !important;
             min-width: 75px !important;
+        }}
+        .stTabs div[role="tablist"] {{
+            margin-top: -3px !important;
+        }}
+    }}
+
+    /* ========== بقیه استایل‌ها ========== */
+    label, .stMarkdown p {{
+        font-size: 14px !important;
+        color: {text_color} !important;
+    }}
+    
+    @media screen and (max-width: 640px) {{
+        label, .stMarkdown p {{
+            font-size: 12px !important;
         }}
     }}
 
