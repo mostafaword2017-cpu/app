@@ -47,7 +47,7 @@ else:
     theme_label = "Light Mode"
 
 # ==============================================================================
-# --- استایل با فاصله مناسب بین اسم و تب‌ها ---
+# --- استایل با فاصله دو برابر بین اسم و تب‌ها ---
 # ==============================================================================
 
 st.markdown(f"""
@@ -76,7 +76,7 @@ st.markdown(f"""
         display: none !important;
     }}
 
-    /* ========== اسم با فاصله مناسب از تب‌ها ========== */
+    /* ========== اسم با فاصله دو برابر از تب‌ها ========== */
     .stApp h1 {{
         font-size: 49.5px !important;
         text-align: center !important;
@@ -85,7 +85,7 @@ st.markdown(f"""
         color: {text_color} !important;
         padding: 0px 0 0px 0 !important;
         margin-top: -25px !important;
-        margin-bottom: 20px !important;  /* فاصله از تب‌ها */
+        margin-bottom: 40px !important;  /* فاصله دو برابر */
     }}
 
     @media screen and (max-width: 640px) {{
@@ -93,11 +93,11 @@ st.markdown(f"""
             font-size: 36px !important;
             letter-spacing: -0.5px !important;
             margin-top: -15px !important;
-            margin-bottom: 15px !important;
+            margin-bottom: 30px !important;  /* فاصله دو برابر در موبایل */
         }}
     }}
 
-    /* ========== تب‌ها با فاصله مناسب از عنوان ========== */
+    /* ========== تب‌ها ========== */
     .stTabs div[role="tablist"] {{ 
         gap: 5px !important; 
         flex-wrap: nowrap !important; 
