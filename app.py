@@ -114,8 +114,8 @@ with tab1:
             dV = I * (R_total * cos + X_total * sin)
             dV_percent = (dV / V) * 100
             P_loss = 3 * (I**2) * R_total
-            Q_loss = 3 * (I**2) * X_total
-    st.markdown("---")
+            Q_loss = 3 * (I**2) * X_tota
+  st.markdown("---")
             st.subheader("📊 نتایج محاسبه")
             
             col_res1, col_res2, col_res3 = st.columns(3)
