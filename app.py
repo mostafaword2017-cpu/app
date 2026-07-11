@@ -24,7 +24,7 @@ st.markdown("""
 
     /* ========== تایتل اصلی (۱.۵ برابر بزرگتر) ========== */
     .stApp h1 {
-        font-size: 33px !important;  /* 22px × 1.5 = 33px */
+        font-size: 49.5px !important;  /* 33px × 1.5 = 49.5px */
         text-align: center !important;
         white-space: nowrap !important;
         font-weight: 700 !important;
@@ -34,7 +34,7 @@ st.markdown("""
 
     @media screen and (max-width: 640px) {
         .stApp h1 {
-            font-size: 24px !important;  /* 16px × 1.5 = 24px */
+            font-size: 36px !important;  /* 24px × 1.5 = 36px */
             letter-spacing: -0.5px !important;
         }
     }
@@ -50,7 +50,7 @@ st.markdown("""
         }
     }
 
-    /* ========== تب‌ها (۱.۵ برابر بزرگتر) ========== */
+    /* ========== تب‌ها ========== */
     .stTabs div[role="tablist"] { 
         gap: 5px !important; 
         flex-wrap: nowrap !important; 
@@ -60,8 +60,8 @@ st.markdown("""
     }
     
     .stTabs [role="tab"] {
-        font-size: 19.5px !important;  /* 13px × 1.5 = 19.5px */
-        padding: 12px 18px !important;  /* بزرگتر */
+        font-size: 19.5px !important;
+        padding: 12px 18px !important;
         border-radius: 8px 8px 0px 0px !important;
         background-color: #f0f2f6 !important;
         white-space: nowrap !important;
@@ -78,7 +78,7 @@ st.markdown("""
 
     @media screen and (max-width: 640px) {
         .stTabs [role="tab"] {
-            font-size: 16.5px !important;  /* 11px × 1.5 = 16.5px */
+            font-size: 16.5px !important;
             padding: 9px 12px !important;
             min-width: 75px !important;
         }
@@ -226,10 +226,10 @@ def suggest_breaker(current, type_load="Resistive"):
 # --- رابط کاربری ---
 # ==============================================================================
 
-# ✅ عنوان با سایز بزرگتر
+# ✅ عنوان با سایز ۱.۵ برابر بزرگتر
 st.title("ElectroCalc ⚡ M&F")
 
-# تب‌ها با سایز بزرگتر
+# تب‌ها
 tabs = st.tabs(["📏 Cable", "🔋 UPS", "⚙️ Motor", "🛡️ Protect"])
 
 # ==============================================================================
