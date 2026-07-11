@@ -11,65 +11,61 @@ st.set_page_config(
 )
 
 # ==============================================================================
-# --- استایل بهینه برای موبایل با سایز ۱.۵ برابر ---
+# --- استایل بهینه برای موبایل با مخفی کردن هدر و FORK ---
 # ==============================================================================
 st.markdown("""
     <style>
-    /* ========== مخفی کردن عکس گربه و FORK ========== */
-    
+    /* ========== حذف کامل هدر Streamlit ========== */
     /* مخفی کردن کل هدر بالایی */
     .stAppHeader {
         display: none !important;
     }
     
-    /* مخفی کردن دکمه Fork در گیت‌هاب */
-    .stDeployButton {
-        display: none !important;
-    }
-    
-    /* مخفی کردن عکس گربه (GitHub icon) */
-    .stAppHeader .stImage,
-    .stAppHeader img,
-    header img {
-        display: none !important;
-    }
-    
-    /* مخفی کردن کل بخش header */
+    /* مخفی کردن هدر اصلی */
     header[data-testid="stHeader"] {
         display: none !important;
     }
     
-    /* اگر روی موبایل هستید */
-    @media screen and (max-width: 640px) {
-        .stAppHeader {
-            display: none !important;
-        }
-        header {
-            display: none !important;
-        }
+    /* مخفی کردن دکمه Fork و Deploy */
+    .stDeployButton,
+    .stAppDeployButton,
+    div[data-testid="stAppDeployButton"] {
+        display: none !important;
     }
-    </style>
-    """, unsafe_allow_html=True)
-    /* حذف المان‌های اضافی Streamlit */
-    header div[data-testid="stHeader"] a, 
-    div[data-testid="stAppDeployButton"], 
+    
+    /* مخفی کردن عکس گربه و لینک‌های گیت‌هاب */
+    .stAppHeader img,
+    header img,
+    .stImage,
+    .css-1v3fvcr,
+    .css-1v3fvcr a {
+        display: none !important;
+    }
+    
+    /* مخفی کردن منوی اصلی Streamlit */
     #MainMenu {
         display: none !important;
     }
+    
+    /* مخفی کردن المان‌های اضافی هدر */
+    header div[data-testid="stHeader"] a {
+        display: none !important;
+    }
 
-    /* ========== تایتل اصلی (۱.۵ برابر بزرگتر) ========== */
+    /* ========== تایتل اصلی (بسیار بزرگ) ========== */
     .stApp h1 {
-        font-size: 49.5px !important;  /* 33px × 1.5 = 49.5px */
+        font-size: 49.5px !important;
         text-align: center !important;
         white-space: nowrap !important;
         font-weight: 700 !important;
         color: #1a1a1a !important;
         padding: 5px 0 !important;
+        margin-top: 0 !important;
     }
 
     @media screen and (max-width: 640px) {
         .stApp h1 {
-            font-size: 36px !important;  /* 24px × 1.5 = 36px */
+            font-size: 36px !important;
             letter-spacing: -0.5px !important;
         }
     }
@@ -85,13 +81,14 @@ st.markdown("""
         }
     }
 
-    /* ========== تب‌ها ========== */
+    /* ========== تب‌ها (بزرگ) ========== */
     .stTabs div[role="tablist"] { 
         gap: 5px !important; 
         flex-wrap: nowrap !important; 
         overflow-x: auto !important;
         justify-content: center !important;
         display: flex !important;
+        padding-top: 5px !important;
     }
     
     .stTabs [role="tab"] {
@@ -103,6 +100,7 @@ st.markdown("""
         min-width: 90px !important;
         text-align: center !important;
         font-weight: 500 !important;
+        border: none !important;
     }
     
     .stTabs [aria-selected="true"] {
@@ -129,6 +127,13 @@ st.markdown("""
         background-color: #007BFF !important;
         color: white !important;
         border: none !important;
+        cursor: pointer !important;
+        transition: all 0.3s ease !important;
+    }
+
+    .stButton > button:hover {
+        background-color: #0056b3 !important;
+        transform: scale(1.02) !important;
     }
 
     @media screen and (max-width: 640px) {
@@ -165,6 +170,29 @@ st.markdown("""
     /* ========== هدر تب‌ها ========== */
     .stHeader {
         font-size: 18px !important;
+    }
+
+    /* ========== مخفی کردن فضای خالی بالای صفحه ========== */
+    .main > div {
+        padding-top: 0 !important;
+    }
+
+    /* ========== کانتینر ورودی ========== */
+    .stNumberInput, .stSelectbox {
+        margin-bottom: 8px !important;
+    }
+
+    /* ========== لاتکس ========== */
+    .katex-display {
+        text-align: center !important;
+        margin: 10px 0 !important;
+        font-size: 16px !important;
+    }
+
+    @media screen and (max-width: 640px) {
+        .katex-display {
+            font-size: 13px !important;
+        }
     }
     </style>
 """, unsafe_allow_html=True)
@@ -261,7 +289,7 @@ def suggest_breaker(current, type_load="Resistive"):
 # --- رابط کاربری ---
 # ==============================================================================
 
-# ✅ عنوان با سایز ۱.۵ برابر بزرگتر
+# ✅ عنوان با سایز بزرگ
 st.title("ElectroCalc ⚡ M&F")
 
 # تب‌ها
@@ -276,11 +304,11 @@ with tabs[0]:
     with st.container(border=True):
         c1, c2 = st.columns(2)
         with c1:
-            p_in = st.number_input("Power (kW)", value=85.0, key="p_c")
-            l_in = st.number_input("Length (m)", value=90.0, key="l_c")
+            p_in = st.number_input("Power (kW)", value=85.0, step=1.0, key="p_c")
+            l_in = st.number_input("Length (m)", value=90.0, step=5.0, key="l_c")
         with c2:
-            s_in = st.number_input("Sigma (Conductivity)", value=56.0, key="s_c")
-            d_in = st.number_input("Voltage Drop (%)", value=2.0, key="d_c")
+            s_in = st.number_input("Sigma (Conductivity)", value=56.0, step=1.0, key="s_c")
+            d_in = st.number_input("Voltage Drop (%)", value=2.0, step=0.1, key="d_c")
     
     if st.button("🔍 Calculate Cable", use_container_width=True):
         curr, f_size, s_size, raw = calculate_cable_fixed(p_in, l_in, s_in, 380, d_in)
@@ -303,10 +331,10 @@ with tabs[1]:
     with st.container(border=True):
         c1, c2 = st.columns(2)
         with c1:
-            u_kva = st.number_input("UPS Power (kVA)", value=40.0, key="u_kva")
-            u_min = st.number_input("Time (min)", value=15, key="u_min")
+            u_kva = st.number_input("UPS Power (kVA)", value=40.0, step=1.0, key="u_kva")
+            u_min = st.number_input("Time (min)", value=15, step=5, key="u_min")
         with c2:
-            u_bat = st.number_input("Number of Batteries", value=32, key="u_bat")
+            u_bat = st.number_input("Number of Batteries", value=32, step=1, key="u_bat")
     
     if st.button("🔍 Calculate UPS", use_container_width=True):
         res = calculate_ups_fixed(u_kva, u_min, u_bat)
@@ -327,11 +355,11 @@ with tabs[2]:
     with st.container(border=True):
         c1, c2 = st.columns(2)
         with c1:
-            m_kva = st.number_input("Power (kVA)", value=150.0, key="m_kva")
+            m_kva = st.number_input("Power (kVA)", value=150.0, step=5.0, key="m_kva")
             m_eff = st.number_input("Efficiency", value=0.85, step=0.01, key="m_eff")
         with c2:
             m_cos = st.number_input("Power Factor (cos φ)", value=0.8, step=0.01, key="m_cos")
-            m_vol = st.number_input("Voltage (V)", value=380, key="m_vol")
+            m_vol = st.number_input("Voltage (V)", value=380, step=10, key="m_vol")
     
     if st.button("🔍 Calculate Motor", use_container_width=True):
         curr, p_in, s_curr, p_kw_out = calculate_motor_from_kva(m_kva, m_eff, m_cos, m_vol)
@@ -352,7 +380,7 @@ with tabs[2]:
 with tabs[3]:
     st.header("🛡️ Breaker Sizing")
     with st.container(border=True):
-        p_curr = st.number_input("Load Current (A)", value=100.0, key="p_curr")
+        p_curr = st.number_input("Load Current (A)", value=100.0, step=1.0, key="p_curr")
         p_type = st.selectbox("Load Type", ["Resistive", "Inductive"], key="p_type")
     
     if st.button("🔍 Suggest Breaker", use_container_width=True):
@@ -378,3 +406,4 @@ with st.sidebar:
     """)
     st.divider()
     st.caption("⚡ ElectroCalc M&F v2.0")
+    st.caption("📱 Optimized for Mobile")
