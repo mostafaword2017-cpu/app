@@ -11,7 +11,7 @@ st.set_page_config(
 )
 
 # ==============================================================================
-# --- استایل بهینه برای موبایل ---
+# --- استایل بهینه برای موبایل با سایز ۱.۵ برابر ---
 # ==============================================================================
 st.markdown("""
     <style>
@@ -22,9 +22,9 @@ st.markdown("""
         display: none !important;
     }
 
-    /* ========== تایتل اصلی ========== */
+    /* ========== تایتل اصلی (۱.۵ برابر بزرگتر) ========== */
     .stApp h1 {
-        font-size: 22px !important;
+        font-size: 33px !important;  /* 22px × 1.5 = 33px */
         text-align: center !important;
         white-space: nowrap !important;
         font-weight: 700 !important;
@@ -34,7 +34,7 @@ st.markdown("""
 
     @media screen and (max-width: 640px) {
         .stApp h1 {
-            font-size: 16px !important;
+            font-size: 24px !important;  /* 16px × 1.5 = 24px */
             letter-spacing: -0.5px !important;
         }
     }
@@ -50,7 +50,7 @@ st.markdown("""
         }
     }
 
-    /* ========== تب‌ها ========== */
+    /* ========== تب‌ها (۱.۵ برابر بزرگتر) ========== */
     .stTabs div[role="tablist"] { 
         gap: 5px !important; 
         flex-wrap: nowrap !important; 
@@ -60,26 +60,27 @@ st.markdown("""
     }
     
     .stTabs [role="tab"] {
-        font-size: 13px !important;
-        padding: 8px 12px !important;
+        font-size: 19.5px !important;  /* 13px × 1.5 = 19.5px */
+        padding: 12px 18px !important;  /* بزرگتر */
         border-radius: 8px 8px 0px 0px !important;
         background-color: #f0f2f6 !important;
         white-space: nowrap !important;
-        min-width: 60px !important;
+        min-width: 90px !important;
         text-align: center !important;
+        font-weight: 500 !important;
     }
     
     .stTabs [aria-selected="true"] {
         background-color: #4CAF50 !important; 
         color: white !important;
-        font-weight: 600 !important;
+        font-weight: 700 !important;
     }
 
     @media screen and (max-width: 640px) {
         .stTabs [role="tab"] {
-            font-size: 11px !important;
-            padding: 6px 8px !important;
-            min-width: 50px !important;
+            font-size: 16.5px !important;  /* 11px × 1.5 = 16.5px */
+            padding: 9px 12px !important;
+            min-width: 75px !important;
         }
     }
 
@@ -225,10 +226,10 @@ def suggest_breaker(current, type_load="Resistive"):
 # --- رابط کاربری ---
 # ==============================================================================
 
-# ✅ عنوان جدید با علامت برق در وسط
+# ✅ عنوان با سایز بزرگتر
 st.title("ElectroCalc ⚡ M&F")
 
-# تب‌ها
+# تب‌ها با سایز بزرگتر
 tabs = st.tabs(["📏 Cable", "🔋 UPS", "⚙️ Motor", "🛡️ Protect"])
 
 # ==============================================================================
