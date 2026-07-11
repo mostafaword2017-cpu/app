@@ -4,35 +4,40 @@ import math
 
 # 1. Page Configuration
 st.set_page_config(page_title="ElectroCalc M&F", page_icon="⚡️", layout="centered")
-
 import streamlit as st
 
-# تنظیمات صفحه (اگر قبلاً داری، این خط را ننویس)
-st.set_page_config(page_title="محاسبه کابل", layout="centered")
-
-# --- کد CSS برای حذف هدر و فوتر ---
+# حتماً این بخش را بعد از st.set_page_config قرار بده
 st.markdown(
     """
     <style>
-        / مخفی کردن هدر (منوی بالای صفحه) /
-        header {
-            visibility: hidden;
-        }
+    / حذف هدر استریم لیت /
+    header {
+        display: none !important;
+    }
 
-        / مخفی کردن فوتر (Made with Streamlit) /
-        footer {
-            visibility: hidden;
-        }
+    / حذف فوتر (Made with Streamlit) /
+    footer {
+        display: none !important;
+    }
 
-        / حذف فضای خالی بالای صفحه که اثر مخفی کردن هدر است /
-        .stApp {
-            margin-top: -50px;
-        }
+    / حذف دکمه منوی بالای صفحه /
+    #MainMenu {
+        display: none !important;
+    }
+
+    / حذف فضای خالی بالای صفحه /
+    .stApp {
+        margin-top: -100px;
+    }
+
+    / حذف خط تزیینی بالای صفحه در برخی ورژن‌ها /
+    div[data-testid="stAppViewContainer"] {
+        padding-top: 0;
+    }
     </style>
     """, 
     unsafe_allow_html=True
 )
-# ---------------------------------
 # 2. Optimized Styles for Mobile & English Tabs
 st.markdown("""
     <style>
