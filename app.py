@@ -7,9 +7,6 @@ st.set_page_config(page_title="ElectroCalc M&F", page_icon="⚡️", layout="cen
 
 # 2. Optimized Styles for Mobile & English Tabs
 st.markdown("""
-
-st.markdown(
-    """
     <style>
     / وسط چین کردن تیترها و اسم نرم افزار /
     h1, h2, h3 {
