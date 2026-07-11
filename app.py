@@ -490,7 +490,7 @@ with tabs[0]:
         """, unsafe_allow_html=True)
 
 # ==============================================================================
-# --- تب ۲: UPS (با یک پله بالاتر) ---
+# --- تب ۲: UPS ---
 # ==============================================================================
 
 with tabs[1]:
@@ -518,7 +518,7 @@ with tabs[1]:
         bat_ah = calculate_ups_fixed(u_kva, u_min, u_bat, u_volt)
         volt_text = f"{u_volt}V" 
         
-        # محاسبه کابل‌های UPS (با یک پله بالاتر)
+        # محاسبه کابل‌های UPS
         ups_cable = calculate_ups_cable(
             ups_kva=u_kva,
             voltage_ac=ac_voltage,
@@ -566,7 +566,7 @@ with tabs[1]:
             if safe_in <= 25:
                 st.success("✅ Suitable for UPS input")
             else:
-                st.warning(f"⚠️ Consider larger cable for safety")
+                st.warning("⚠️ Consider larger cable for safety")
         
         with col2:
             st.markdown("#### 📤 Output AC Cable (UPS to Load)")
@@ -589,7 +589,7 @@ with tabs[1]:
             if safe_out <= 35:
                 st.success("✅ Suitable for UPS output")
             else:
-                st.warning(f"⚠️ Consider larger cable for safety")
+                st.warning("⚠️ Consider larger cable for safety")
         
         # جدول راهنما
         with st.expander("📋 UPS Cable Sizing Reference Table"):
@@ -652,7 +652,7 @@ with tabs[2]:
             **Cable Sizing Guidelines for Motors:**
             
             - **Rated Current:** Use for normal operation
-            - **Starting Current:** 6× rated current (for direct-on-line starting)
+            - **Starting Current:** 6x rated current (for direct-on-line starting)
             - **Recommendation:** For motors, increase cable size by 1-2 levels above standard
             - **Voltage Drop:** Max 2% for motor circuits
             """)
@@ -695,4 +695,15 @@ with tabs[3]:
                 <div class='cable-text'>📏 Standard Size: {cable_std} mm²</div>
                 <div class='cable-text' style='color: #e65100;'>🚀 Safe Size: {cable_safe} mm²</div>
                 <div class='cable-text' style='color: #1a73e8; font-size: 15px;'>⚡ Current: {cable_curr} A</div>
-                <p style='color
+                <p style='color: #5f6368; font-size: 13px; margin: 0;'>
+                    Length: {cable_length}m | {conductor_type} | Exact: {cable_raw} mm²
+                </p>
+            </div>
+        """, unsafe_allow_html=True)
+        
+        if p_type == "Motor":
+            st.info("💡 For motor circuits, it's recommended to use the 'Safe Size' or one size larger due to starting current")
+        elif p_type == "Inductive":
+            st.info("💡 Inductive loads may require larger cable due to inrush current")
+        else:
+            st.success("✅ Cable size is suitable for this resistive load")
