@@ -47,7 +47,7 @@ else:
     theme_label = "Light Mode"
 
 # ==============================================================================
-# --- استایل با فاصله دو برابر بین اسم و تب‌ها ---
+# --- استایل ---
 # ==============================================================================
 
 st.markdown(f"""
@@ -76,7 +76,6 @@ st.markdown(f"""
         display: none !important;
     }}
 
-    /* ========== اسم با فاصله دو برابر از تب‌ها ========== */
     .stApp h1 {{
         font-size: 49.5px !important;
         text-align: center !important;
@@ -85,7 +84,7 @@ st.markdown(f"""
         color: {text_color} !important;
         padding: 0px 0 0px 0 !important;
         margin-top: -25px !important;
-        margin-bottom: 40px !important;  /* فاصله دو برابر */
+        margin-bottom: 40px !important;
     }}
 
     @media screen and (max-width: 640px) {{
@@ -93,11 +92,10 @@ st.markdown(f"""
             font-size: 36px !important;
             letter-spacing: -0.5px !important;
             margin-top: -15px !important;
-            margin-bottom: 30px !important;  /* فاصله دو برابر در موبایل */
+            margin-bottom: 30px !important;
         }}
     }}
 
-    /* ========== تب‌ها ========== */
     .stTabs div[role="tablist"] {{ 
         gap: 5px !important; 
         flex-wrap: nowrap !important; 
@@ -137,7 +135,6 @@ st.markdown(f"""
         }}
     }}
 
-    /* ========== بقیه استایل‌ها ========== */
     label, .stMarkdown p {{
         font-size: 14px !important;
         color: {text_color} !important;
@@ -388,6 +385,46 @@ def show_cable_size(current, label="Load"):
     return cable_curr, cable_std, cable_safe, cable_raw
 
 # ==============================================================================
+# --- تابع محاسبه کابل UPS ---
+# ==============================================================================
+
+def calculate_ups_cable(ups_kva, voltage_ac=400, voltage_dc=48, length_ac=50, length_dc=10):
+    """
+    محاسبه سایز کابل مناسب برای UPS
+    - کابل ورودی AC (از شبکه به UPS)
+    - کابل خروجی AC (از UPS به بار)
+    - کابل DC (از باتری به UPS)
+    """
+    cos_phi = 0.8
+    sigma = 56  # مس
+    
+    # جریان ورودی AC
+    current_ac = (ups_kva * 1000) / (math.sqrt(3) * voltage_ac)
+    
+    # جریان خروجی AC (همان جریان ورودی با فرض راندمان 90%)
+    efficiency = 0.9
+    current_ac_out = (ups_kva * 1000) / (math.sqrt(3) * voltage_ac * efficiency)
+    
+    # جریان DC (باتری)
+    # P = V × I → I = P / V
+    power_kw = ups_kva * 0.8  # با فرض PF=0.8
+    current_dc = (power_kw * 1000) / voltage_dc
+    
+    # محاسبه سایز کابل‌ها
+    cable_ac_in = calculate_cable_from_current(current_ac, length_ac, sigma, voltage_ac)
+    cable_ac_out = calculate_cable_from_current(current_ac_out, length_ac, sigma, voltage_ac)
+    cable_dc = calculate_cable_from_current(current_dc, length_dc, sigma, voltage_dc)
+    
+    return {
+        'current_ac_in': round(current_ac, 2),
+        'current_ac_out': round(current_ac_out, 2),
+        'current_dc': round(current_dc, 2),
+        'cable_ac_in': cable_ac_in,
+        'cable_ac_out': cable_ac_out,
+        'cable_dc': cable_dc
+    }
+
+# ==============================================================================
 # --- رابط کاربری ---
 # ==============================================================================
 
@@ -447,33 +484,116 @@ with tabs[0]:
         """, unsafe_allow_html=True)
 
 # ==============================================================================
-# --- تب ۲: UPS ---
+# --- تب ۲: UPS (با محاسبه کابل) ---
 # ==============================================================================
 
 with tabs[1]:
-    st.header("🔋 Battery Sizing")
+    st.header("🔋 UPS & Cable Sizing")
+    
     with st.container(border=True):
+        st.subheader("⚙️ UPS Parameters")
         c1, c2 = st.columns(2)
         with c1:
             u_kva = st.number_input("UPS Power (kVA)", value=40.0, step=1.0, key="u_kva")
-            u_min = st.number_input("Time (min)", value=15, step=5, key="u_min")
+            u_min = st.number_input("Backup Time (min)", value=15, step=5, key="u_min")
         with c2:
             u_bat = st.number_input("Number of Batteries", value=32, step=1, key="u_bat")
-            u_volt = st.selectbox("Battery Voltage", [12, 24], index=0, key="u_volt")
+            u_volt = st.selectbox("Battery Voltage (V)", [12, 24, 48, 96], index=0, key="u_volt")
     
-    if st.button("🔍 Calculate UPS", use_container_width=True):
-        res = calculate_ups_fixed(u_kva, u_min, u_bat, u_volt)
-        volt_text = "12V" if u_volt == 12 else "24V"
+    with st.expander("🔌 Cable Parameters", expanded=False):
+        c1, c2 = st.columns(2)
+        with c1:
+            ac_voltage = st.number_input("AC Voltage (V)", value=400, step=10, key="ups_ac_v")
+            ac_length = st.number_input("AC Cable Length (m)", value=50, step=5, key="ups_ac_l")
+        with c2:
+            dc_voltage = st.number_input("DC Voltage (V)", value=48, step=6, key="ups_dc_v")
+            dc_length = st.number_input("DC Cable Length (m)", value=10, step=2, key="ups_dc_l")
+    
+    if st.button("🔍 Calculate UPS & Cables", use_container_width=True):
+        # محاسبه باتری
+        bat_ah = calculate_ups_fixed(u_kva, u_min, u_bat, u_volt)
+        volt_text = f"{u_volt}V" 
+        
+        # محاسبه کابل‌های UPS
+        ups_cable = calculate_ups_cable(
+            ups_kva=u_kva,
+            voltage_ac=ac_voltage,
+            voltage_dc=dc_voltage,
+            length_ac=ac_length,
+            length_dc=dc_length
+        )
+        
+        # نمایش نتایج باتری
+        st.markdown("### 🔋 Battery Results")
         st.latex(r"Ah = \frac{Ah_{Base} \times \frac{kVA}{10} \times 32}{N_{Battery} \times \frac{V_{Battery}}{12}}")
         st.markdown(f"""
             <div class='result-box'>
-                <div class='result-text'>📦 Battery Capacity: {res} Ah</div>
-                <div class='result-text' style='color: #0d47a1;'>🔋 Required: {u_bat} Batteries</div>
+                <div class='result-text'>📦 Battery Capacity: {bat_ah} Ah</div>
+                <div class='result-text' style='color: #0d47a1;'>🔋 Number of Batteries: {u_bat}</div>
                 <div class='result-text' style='color: #e65100;'>⚡ System Voltage: {volt_text}</div>
             </div>
         """, unsafe_allow_html=True)
-        if u_volt == 24:
-            st.info("💡 With 24V system, required Ah is HALF of 12V system")
+        
+        if u_volt >= 24:
+            st.info(f"💡 With {volt_text} system, required Ah is {12/u_volt:.1f}x of 12V system")
+        
+        # نمایش نتایج کابل‌ها
+        st.markdown("### 🔌 Cable Sizing for UPS")
+        
+        col1, col2, col3 = st.columns(3)
+        
+        with col1:
+            st.markdown("#### 📥 Input AC Cable")
+            st.markdown(f"""
+                <div style='background-color:{card_bg}; padding:10px; border-radius:10px; border:1px solid {border_color};'>
+                    <p style='font-size:14px;'><b>Current:</b> {ups_cable['current_ac_in']} A</p>
+                    <p style='font-size:14px; color:#1b5e20;'><b>📏 Std:</b> {ups_cable['cable_ac_in'][1]} mm²</p>
+                    <p style='font-size:14px; color:#e65100;'><b>🚀 Safe:</b> {ups_cable['cable_ac_in'][2]} mm²</p>
+                    <p style='font-size:12px; color:#5f6368;'>Length: {ac_length}m</p>
+                </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            st.markdown("#### 📤 Output AC Cable")
+            st.markdown(f"""
+                <div style='background-color:{card_bg}; padding:10px; border-radius:10px; border:1px solid {border_color};'>
+                    <p style='font-size:14px;'><b>Current:</b> {ups_cable['current_ac_out']} A</p>
+                    <p style='font-size:14px; color:#1b5e20;'><b>📏 Std:</b> {ups_cable['cable_ac_out'][1]} mm²</p>
+                    <p style='font-size:14px; color:#e65100;'><b>🚀 Safe:</b> {ups_cable['cable_ac_out'][2]} mm²</p>
+                    <p style='font-size:12px; color:#5f6368;'>Length: {ac_length}m</p>
+                </div>
+            """, unsafe_allow_html=True)
+        
+        with col3:
+            st.markdown("#### 🔋 DC Battery Cable")
+            st.markdown(f"""
+                <div style='background-color:{card_bg}; padding:10px; border-radius:10px; border:1px solid {border_color};'>
+                    <p style='font-size:14px;'><b>Current:</b> {ups_cable['current_dc']} A</p>
+                    <p style='font-size:14px; color:#1b5e20;'><b>📏 Std:</b> {ups_cable['cable_dc'][1]} mm²</p>
+                    <p style='font-size:14px; color:#e65100;'><b>🚀 Safe:</b> {ups_cable['cable_dc'][2]} mm²</p>
+                    <p style='font-size:12px; color:#5f6368;'>Length: {dc_length}m</p>
+                </div>
+            """, unsafe_allow_html=True)
+        
+        # توصیه‌ها
+        with st.expander("💡 UPS Cable Sizing Recommendations"):
+            st.markdown("""
+            **AC Cable Sizing Guidelines:**
+            - Use copper conductors for AC side
+            - Max voltage drop: 2% for input, 2% for output
+            - Consider future expansion (add 20% margin)
+            
+            **DC Cable Sizing Guidelines:**
+            - Use copper conductors with proper insulation (PVC/XLPE)
+            - DC cables should be as short as possible
+            - Max voltage drop: 1% for DC side
+            - Consider temperature derating for battery room
+            
+            **Recommended Safety Factors:**
+            - UPS input: 1.25 × rated current
+            - UPS output: 1.25 × rated current
+            - DC battery: 1.5 × rated current (for starting)
+            """)
 
 # ==============================================================================
 # --- تب ۳: موتور ---
