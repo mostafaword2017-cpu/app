@@ -26,7 +26,7 @@ st.markdown("""
 
     /* ========== بهینه‌سازی تایتل اصلی ========== */
     .stApp h1 {
-        font-size: 22px !important;  /* دو درجه بزرگتر (از 18 به 22) */
+        font-size: 24px !important;  /* دو درجه بزرگتر (از 22 به 24) */
         text-align: center !important;
         white-space: nowrap !important;
         letter-spacing: 0px !important;
