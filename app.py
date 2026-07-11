@@ -28,7 +28,7 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-st.markdown("<h1 style='text-align: center;'>اسم نرم‌افزار شما</h1>", unsafe_allow_html=True)
+st.markdown("<h1 style='text-align: center;'>ElectroCalc⚡️M&F</h1>", unsafe_allow_html=True)
 
 # ==============================================================================
 # --- Backend Calculation Functions ---
