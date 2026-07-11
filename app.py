@@ -50,7 +50,6 @@ st.markdown("""
     }
     </style>
     """, unsafe_allow_html=True)
-    <style>
     /* حذف المان‌های اضافی Streamlit */
     header div[data-testid="stHeader"] a, 
     div[data-testid="stAppDeployButton"], 
