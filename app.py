@@ -13,20 +13,100 @@ st.set_page_config(
 )
 
 # ==============================================================================
-# --- استایل بهینه برای موبایل ---
+# --- مدیریت تم (Theme) ---
 # ==============================================================================
-st.markdown("""
+
+# مقداردهی اولیه تم در session_state
+if 'theme' not in st.session_state:
+    st.session_state.theme = 'light'
+
+# تابع تغییر تم
+def toggle_theme():
+    if st.session_state.theme == 'light':
+        st.session_state.theme = 'dark'
+    else:
+        st.session_state.theme = 'light'
+
+# ==============================================================================
+# --- استایل با پشتیبانی از تم ---
+# ==============================================================================
+
+# تعیین رنگ‌ها بر اساس تم فعلی
+if st.session_state.theme == 'light':
+    bg_color = "#ffffff"
+    text_color = "#1a1a1a"
+    card_bg = "#f8f9fa"
+    border_color = "#e0e0e0"
+    tab_bg = "#f0f2f6"
+    tab_active = "#4CAF50"
+    button_bg = "#007BFF"
+    button_text = "#ffffff"
+    metric_bg = "#f8f9fa"
+    input_bg = "#ffffff"
+    expander_bg = "#f8f9fa"
+else:  # dark
+    bg_color = "#1a1a1a"
+    text_color = "#f0f0f0"
+    card_bg = "#2d2d2d"
+    border_color = "#404040"
+    tab_bg = "#333333"
+    tab_active = "#4CAF50"
+    button_bg = "#0d6efd"
+    button_text = "#ffffff"
+    metric_bg = "#2d2d2d"
+    input_bg = "#333333"
+    expander_bg = "#2d2d2d"
+
+st.markdown(f"""
     <style>
+    /* ========== تنظیمات کلی تم ========== */
+    .stApp {{
+        background-color: {bg_color} !important;
+    }}
+    
+    .stApp h1, .stApp h2, .stApp h3, .stApp p, .stApp label {{
+        color: {text_color} !important;
+    }}
+    
     /* حذف المان‌های اضافی Streamlit */
     header div[data-testid="stHeader"] a, 
     div[data-testid="stAppDeployButton"], 
-    #MainMenu {
+    #MainMenu {{
         display: none !important;
-    }
-
+    }}
+    
+    /* ========== دکمه تغییر تم در سمت راست بالا ========== */
+    .theme-button-container {{
+        position: fixed;
+        top: 10px;
+        right: 10px;
+        z-index: 9999;
+    }}
+    
+    .theme-button {{
+        background-color: {tab_bg};
+        color: {text_color};
+        border: 1px solid {border_color};
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        font-size: 20px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }}
+    
+    .theme-button:hover {{
+        transform: scale(1.1);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }}
+    
     /* ========== بهینه‌سازی تایتل اصلی ========== */
-    .stApp h1 {
-        font-size: 34px !important;  /* دو درجه بزرگتر (از 30 به 34) */
+    .stApp h1 {{
+        font-size: 34px !important;
         text-align: center !important;
         white-space: nowrap !important;
         letter-spacing: 0px !important;
@@ -35,174 +115,214 @@ st.markdown("""
         margin: 0 auto !important;
         display: block !important;
         width: 100% !important;
-        color: #1a1a1a !important;
-    }
+        color: {text_color} !important;
+    }}
     
-    /* تایتل در موبایل */
-    @media screen and (max-width: 480px) {
-        .stApp h1 {
-            font-size: 26px !important;  /* دو درجه بزرگتر (از 23 به 26) */
+    @media screen and (max-width: 480px) {{
+        .stApp h1 {{
+            font-size: 26px !important;
             letter-spacing: -0.3px !important;
-        }
-    }
+        }}
+        .theme-button {{
+            width: 32px;
+            height: 32px;
+            font-size: 16px;
+        }}
+    }}
 
-    /* ========== بهینه‌سازی هدر تب‌ها (وسط‌چین) ========== */
-    .stTabs div[role="tablist"] { 
+    /* ========== بهینه‌سازی هدر تب‌ها ========== */
+    .stTabs div[role="tablist"] {{ 
         gap: 5px !important; 
         flex-wrap: nowrap !important; 
         overflow-x: auto !important;
         padding: 2px 0 !important;
         justify-content: center !important;
         display: flex !important;
-    }
+    }}
     
-    .stTabs [role="tab"] {
+    .stTabs [role="tab"] {{
         font-size: 16px !important;
         padding: 10px 18px !important;
         border-radius: 8px 8px 0px 0px !important;
-        background-color: #f0f2f6 !important;
+        background-color: {tab_bg} !important;
+        color: {text_color} !important;
         white-space: nowrap !important;
         min-width: 80px !important;
         text-align: center !important;
         flex: 0 0 auto !important;
-    }
+        border: 1px solid {border_color} !important;
+        border-bottom: none !important;
+    }}
     
-    @media screen and (max-width: 480px) {
-        .stTabs div[role="tablist"] {
+    @media screen and (max-width: 480px) {{
+        .stTabs div[role="tablist"] {{
             gap: 3px !important;
             justify-content: center !important;
-        }
-        .stTabs [role="tab"] {
+        }}
+        .stTabs [role="tab"] {{
             font-size: 13px !important;
             padding: 6px 10px !important;
             min-width: 55px !important;
-        }
-    }
+        }}
+    }}
 
-    /* تب فعال */
-    .stTabs [aria-selected="true"] {
-        background-color: #4CAF50 !important; 
+    .stTabs [aria-selected="true"] {{
+        background-color: {tab_active} !important; 
         color: white !important;
         font-weight: 600 !important;
-    }
+    }}
 
     /* ========== لیبل‌ها ========== */
-    label, .stMarkdown p, .stText, .stNumberInput label {
+    label, .stMarkdown p, .stText, .stNumberInput label {{
         font-size: 13px !important;
         margin-bottom: 2px !important;
-    }
+        color: {text_color} !important;
+    }}
     
-    @media screen and (max-width: 480px) {
-        label, .stMarkdown p, .stText, .stNumberInput label {
+    @media screen and (max-width: 480px) {{
+        label, .stMarkdown p, .stText, .stNumberInput label {{
             font-size: 11px !important;
-        }
-    }
+        }}
+    }}
 
     /* ========== دکمه‌ها ========== */
-    .stButton > button {
+    .stButton > button {{
         width: 100% !important;
         height: 42px !important;
         font-size: 14px !important;
         font-weight: 600 !important;
         border-radius: 10px !important;
-        background-color: #007BFF !important;
-        color: white !important;
+        background-color: {button_bg} !important;
+        color: {button_text} !important;
         padding: 0 10px !important;
-    }
+        border: none !important;
+    }}
     
-    @media screen and (max-width: 480px) {
-        .stButton > button {
+    @media screen and (max-width: 480px) {{
+        .stButton > button {{
             height: 36px !important;
             font-size: 12px !important;
-        }
-    }
+        }}
+    }}
 
     /* ========== متریک‌ها ========== */
-    div[data-testid="metric-container"] {
+    div[data-testid="metric-container"] {{
         padding: 8px !important;
-        background-color: #f8f9fa !important;
+        background-color: {metric_bg} !important;
         border-radius: 10px !important;
-        border: 1px solid #e0e0e0 !important;
-    }
+        border: 1px solid {border_color} !important;
+    }}
     
-    div[data-testid="metric-container"] label {
+    div[data-testid="metric-container"] label {{
         font-size: 11px !important;
-    }
+        color: {text_color} !important;
+    }}
     
-    div[data-testid="metric-container"] .stMetricValue {
+    div[data-testid="metric-container"] .stMetricValue {{
         font-size: 17px !important;
         font-weight: 700 !important;
-    }
+        color: {text_color} !important;
+    }}
     
-    @media screen and (max-width: 480px) {
-        div[data-testid="metric-container"] label {
+    @media screen and (max-width: 480px) {{
+        div[data-testid="metric-container"] label {{
             font-size: 9px !important;
-        }
-        div[data-testid="metric-container"] .stMetricValue {
+        }}
+        div[data-testid="metric-container"] .stMetricValue {{
             font-size: 14px !important;
-        }
-    }
+        }}
+    }}
 
     /* ========== ورودی‌ها ========== */
-    .stNumberInput input, .stSelectbox select {
+    .stNumberInput input, .stSelectbox select {{
         font-size: 13px !important;
         padding: 4px 8px !important;
-    }
+        background-color: {input_bg} !important;
+        color: {text_color} !important;
+        border: 1px solid {border_color} !important;
+        border-radius: 6px !important;
+    }}
     
-    @media screen and (max-width: 480px) {
-        .stNumberInput input, .stSelectbox select {
+    @media screen and (max-width: 480px) {{
+        .stNumberInput input, .stSelectbox select {{
             font-size: 11px !important;
             padding: 3px 6px !important;
-        }
-    }
+        }}
+    }}
 
     /* ========== اکسپندر ========== */
-    .streamlit-expanderHeader {
+    .streamlit-expanderHeader {{
         font-size: 13px !important;
         font-weight: 600 !important;
         padding: 6px 10px !important;
-    }
+        background-color: {expander_bg} !important;
+        color: {text_color} !important;
+        border: 1px solid {border_color} !important;
+        border-radius: 8px !important;
+    }}
     
-    @media screen and (max-width: 480px) {
-        .streamlit-expanderHeader {
+    @media screen and (max-width: 480px) {{
+        .streamlit-expanderHeader {{
             font-size: 11px !important;
             padding: 4px 8px !important;
-        }
-    }
+        }}
+    }}
 
     /* ========== لاتکس ========== */
-    .katex, .katex-display {
+    .katex, .katex-display {{
         font-size: 14px !important;
-    }
+        color: {text_color} !important;
+    }}
     
-    @media screen and (max-width: 480px) {
-        .katex, .katex-display {
+    @media screen and (max-width: 480px) {{
+        .katex, .katex-display {{
             font-size: 11px !important;
-        }
-    }
+        }}
+    }}
 
-    /* ========== تب‌ها در یک خط ========== */
-    .stTabs div[role="tablist"] { 
-        gap: 3px !important; 
-        flex-wrap: nowrap !important; 
-        overflow-x: auto !important;
-        padding: 2px 0 !important;
-        justify-content: center !important;
-        display: flex !important;
-    }
-    
-    .main {
-        overflow-x: hidden !important;
-    }
-    
     /* ========== علامت برق در تایتل ========== */
-    .stApp h1 .lightning {
+    .stApp h1 .lightning {{
         color: #f9a825 !important;
         display: inline-block !important;
         margin: 0 4px !important;
-    }
+    }}
+    
+    /* ========== اسکرول ========== */
+    .main {{
+        overflow-x: hidden !important;
+    }}
+    
+    /* ========== استایل هدرها ========== */
+    .stHeader {{
+        background-color: {bg_color} !important;
+    }}
     </style>
-    """, unsafe_allow_html=True)
+""", unsafe_allow_html=True)
+
+# ==============================================================================
+# --- دکمه تغییر تم در سمت راست بالا ---
+# ==============================================================================
+
+# نمایش دکمه تغییر تم با آیکون مناسب
+theme_icon = "🌙" if st.session_state.theme == 'light' else "☀️"
+theme_tooltip = "Switch to Dark Mode" if st.session_state.theme == 'light' else "Switch to Light Mode"
+
+st.markdown(f"""
+    <div class="theme-button-container">
+        <button class="theme-button" onclick="location.href='?theme=toggle'" title="{theme_tooltip}">
+            {theme_icon}
+        </button>
+    </div>
+""", unsafe_allow_html=True)
+
+# بررسی تغییر تم از طریق پارامتر URL
+import urllib.parse
+query_params = st.query_params
+if 'theme' in query_params and query_params['theme'] == 'toggle':
+    toggle_theme()
+    # پاک کردن پارامتر URL
+    st.query_params.clear()
+    st.rerun()
 
 # ==============================================================================
 # --- هسته محاسباتی با فرمول صحیح کابل ---
@@ -238,9 +358,6 @@ class PowerSystemCalculator:
                        conductivity: float = 56.0) -> dict:
         """
         محاسبه دقیق سطح مقطع کابل بر اساس استاندارد IEC 60364
-        
-        ✅ فرمول صحیح:
-        S = (P × L × 100) / (σ × V² × ΔV%)
         """
         # ۱. محاسبه جریان نامی (فرمول صحیح سهفاز)
         current = (power_kw * 1000) / (cls.SQRT3 * voltage * cos_phi)
@@ -298,7 +415,6 @@ class PowerSystemCalculator:
                                 conductivity: float) -> float:
         """
         محاسبه دقیق افت ولتاژ بر حسب درصد
-        ✅ فرمول صحیح: ΔV% = (P × L × 100) / (σ × V² × S)
         """
         drop = (power_kw * 1000 * length_m * 100) / (
             conductivity * (voltage ** 2) * size
@@ -388,11 +504,11 @@ class PowerSystemCalculator:
         }
 
 # ==============================================================================
-# --- رابط کاربری (UI) با اسم بزرگتر ---
+# --- رابط کاربری (UI) ---
 # ==============================================================================
 
-# ✅ عنوان با علامت برق در وسط و فونت بزرگتر
-st.markdown("""
+# ✅ عنوان با علامت برق در وسط
+st.markdown(f"""
     <h1 style='
         text-align: center; 
         font-size: 34px; 
@@ -400,7 +516,7 @@ st.markdown("""
         margin: 0; 
         padding: 10px 0;
         letter-spacing: 0px;
-        color: #1a1a1a;
+        color: {text_color};
     '>
     ElectroCalc <span style='color: #f9a825; display: inline-block; margin: 0 4px;'>⚡</span> M&F
     </h1>
