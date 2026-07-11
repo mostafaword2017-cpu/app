@@ -384,44 +384,32 @@ def show_cable_size(current, label="Load"):
     
     return cable_curr, cable_std, cable_safe, cable_raw
 
-# ==============================================================================
-# --- تابع محاسبه کابل UPS ---
-# ==============================================================================
 
-def calculate_ups_cable(ups_kva, voltage_ac=400, voltage_dc=48, length_ac=50, length_dc=10):
+def calculate_ups_cable(ups_kva, voltage_ac=400, length_ac=50):
     """
-    محاسبه سایز کابل مناسب برای UPS
+    محاسبه سایز کابل مناسب برای UPS (فقط AC)
     - کابل ورودی AC (از شبکه به UPS)
     - کابل خروجی AC (از UPS به بار)
-    - کابل DC (از باتری به UPS)
     """
     cos_phi = 0.8
-    sigma = 56  # مس
+    sigma = 56
     
-    # جریان ورودی AC
-    current_ac = (ups_kva * 1000) / (math.sqrt(3) * voltage_ac)
+    # جریان ورودی AC - فرمول صحیح
+    current_ac_in = (ups_kva * 1000) / (math.sqrt(3) * voltage_ac * cos_phi)
     
-    # جریان خروجی AC (همان جریان ورودی با فرض راندمان 90%)
+    # جریان خروجی AC (با راندمان 90%)
     efficiency = 0.9
-    current_ac_out = (ups_kva * 1000) / (math.sqrt(3) * voltage_ac * efficiency)
-    
-    # جریان DC (باتری)
-    # P = V × I → I = P / V
-    power_kw = ups_kva * 0.8  # با فرض PF=0.8
-    current_dc = (power_kw * 1000) / voltage_dc
+    current_ac_out = (ups_kva * 1000) / (math.sqrt(3) * voltage_ac * cos_phi * efficiency)
     
     # محاسبه سایز کابل‌ها
-    cable_ac_in = calculate_cable_from_current(current_ac, length_ac, sigma, voltage_ac)
+    cable_ac_in = calculate_cable_from_current(current_ac_in, length_ac, sigma, voltage_ac)
     cable_ac_out = calculate_cable_from_current(current_ac_out, length_ac, sigma, voltage_ac)
-    cable_dc = calculate_cable_from_current(current_dc, length_dc, sigma, voltage_dc)
     
     return {
-        'current_ac_in': round(current_ac, 2),
+        'current_ac_in': round(current_ac_in, 2),
         'current_ac_out': round(current_ac_out, 2),
-        'current_dc': round(current_dc, 2),
         'cable_ac_in': cable_ac_in,
-        'cable_ac_out': cable_ac_out,
-        'cable_dc': cable_dc
+        'cable_ac_out': cable_ac_out
     }
 
 # ==============================================================================
@@ -484,7 +472,7 @@ with tabs[0]:
         """, unsafe_allow_html=True)
 
 # ==============================================================================
-# --- تب ۲: UPS (با محاسبه کابل) ---
+# --- تب ۲: UPS (با محاسبه کابل AC) ---
 # ==============================================================================
 
 with tabs[1]:
@@ -500,27 +488,23 @@ with tabs[1]:
             u_bat = st.number_input("Number of Batteries", value=32, step=1, key="u_bat")
             u_volt = st.selectbox("Battery Voltage (V)", [12, 24, 48, 96], index=0, key="u_volt")
     
-    with st.expander("🔌 Cable Parameters", expanded=False):
+    with st.expander("🔌 AC Cable Parameters", expanded=False):
         c1, c2 = st.columns(2)
         with c1:
             ac_voltage = st.number_input("AC Voltage (V)", value=400, step=10, key="ups_ac_v")
-            ac_length = st.number_input("AC Cable Length (m)", value=50, step=5, key="ups_ac_l")
         with c2:
-            dc_voltage = st.number_input("DC Voltage (V)", value=48, step=6, key="ups_dc_v")
-            dc_length = st.number_input("DC Cable Length (m)", value=10, step=2, key="ups_dc_l")
+            ac_length = st.number_input("AC Cable Length (m)", value=50, step=5, key="ups_ac_l")
     
     if st.button("🔍 Calculate UPS & Cables", use_container_width=True):
         # محاسبه باتری
         bat_ah = calculate_ups_fixed(u_kva, u_min, u_bat, u_volt)
         volt_text = f"{u_volt}V" 
         
-        # محاسبه کابل‌های UPS
+        # محاسبه کابل‌های UPS (فقط AC)
         ups_cable = calculate_ups_cable(
             ups_kva=u_kva,
             voltage_ac=ac_voltage,
-            voltage_dc=dc_voltage,
-            length_ac=ac_length,
-            length_dc=dc_length
+            length_ac=ac_length
         )
         
         # نمایش نتایج باتری
@@ -537,62 +521,83 @@ with tabs[1]:
         if u_volt >= 24:
             st.info(f"💡 With {volt_text} system, required Ah is {12/u_volt:.1f}x of 12V system")
         
-        # نمایش نتایج کابل‌ها
-        st.markdown("### 🔌 Cable Sizing for UPS")
+        # نمایش نتایج کابل‌های AC
+        st.markdown("### 🔌 AC Cable Sizing for UPS")
         
-        col1, col2, col3 = st.columns(3)
+        col1, col2 = st.columns(2)
         
         with col1:
-            st.markdown("#### 📥 Input AC Cable")
+            st.markdown("#### 📥 Input AC Cable (Grid to UPS)")
+            
+            # نمایش محاسبات دقیق برای ورودی
+            curr_in = ups_cable['current_ac_in']
+            std_in = ups_cable['cable_ac_in'][1]
+            safe_in = ups_cable['cable_ac_in'][2]
+            raw_in = ups_cable['cable_ac_in'][3]
+            
             st.markdown(f"""
-                <div style='background-color:{card_bg}; padding:10px; border-radius:10px; border:1px solid {border_color};'>
-                    <p style='font-size:14px;'><b>Current:</b> {ups_cable['current_ac_in']} A</p>
-                    <p style='font-size:14px; color:#1b5e20;'><b>📏 Std:</b> {ups_cable['cable_ac_in'][1]} mm²</p>
-                    <p style='font-size:14px; color:#e65100;'><b>🚀 Safe:</b> {ups_cable['cable_ac_in'][2]} mm²</p>
-                    <p style='font-size:12px; color:#5f6368;'>Length: {ac_length}m</p>
+                <div style='background-color:{card_bg}; padding:12px; border-radius:10px; border:1px solid {border_color};'>
+                    <p style='font-size:14px;'><b>⚡ Current:</b> {curr_in} A</p>
+                    <p style='font-size:14px; color:#1b5e20;'><b>📏 Standard Size:</b> {std_in} mm²</p>
+                    <p style='font-size:14px; color:#e65100;'><b>🚀 Safe Size:</b> {safe_in} mm²</p>
+                    <p style='font-size:12px; color:#5f6368;'>Exact Calc: {raw_in} mm²</p>
+                    <p style='font-size:12px; color:#5f6368;'>Length: {ac_length}m | Voltage: {ac_voltage}V</p>
                 </div>
             """, unsafe_allow_html=True)
+            
+            # توصیه برای ورودی
+            if safe_in <= 25:
+                st.success("✅ Suitable for UPS input")
+            else:
+                st.warning(f"⚠️ Consider larger cable for safety")
         
         with col2:
-            st.markdown("#### 📤 Output AC Cable")
+            st.markdown("#### 📤 Output AC Cable (UPS to Load)")
+            
+            # نمایش محاسبات دقیق برای خروجی
+            curr_out = ups_cable['current_ac_out']
+            std_out = ups_cable['cable_ac_out'][1]
+            safe_out = ups_cable['cable_ac_out'][2]
+            raw_out = ups_cable['cable_ac_out'][3]
+            
             st.markdown(f"""
-                <div style='background-color:{card_bg}; padding:10px; border-radius:10px; border:1px solid {border_color};'>
-                    <p style='font-size:14px;'><b>Current:</b> {ups_cable['current_ac_out']} A</p>
-                    <p style='font-size:14px; color:#1b5e20;'><b>📏 Std:</b> {ups_cable['cable_ac_out'][1]} mm²</p>
-                    <p style='font-size:14px; color:#e65100;'><b>🚀 Safe:</b> {ups_cable['cable_ac_out'][2]} mm²</p>
-                    <p style='font-size:12px; color:#5f6368;'>Length: {ac_length}m</p>
+                <div style='background-color:{card_bg}; padding:12px; border-radius:10px; border:1px solid {border_color};'>
+                    <p style='font-size:14px;'><b>⚡ Current:</b> {curr_out} A</p>
+                    <p style='font-size:14px; color:#1b5e20;'><b>📏 Standard Size:</b> {std_out} mm²</p>
+                    <p style='font-size:14px; color:#e65100;'><b>🚀 Safe Size:</b> {safe_out} mm²</p>
+                    <p style='font-size:12px; color:#5f6368;'>Exact Calc: {raw_out} mm²</p>
+                    <p style='font-size:12px; color:#5f6368;'>Length: {ac_length}m | Voltage: {ac_voltage}V</p>
                 </div>
             """, unsafe_allow_html=True)
+            
+            # توصیه برای خروجی
+            if safe_out <= 35:
+                st.success("✅ Suitable for UPS output")
+            else:
+                st.warning(f"⚠️ Consider larger cable for safety")
         
-        with col3:
-            st.markdown("#### 🔋 DC Battery Cable")
-            st.markdown(f"""
-                <div style='background-color:{card_bg}; padding:10px; border-radius:10px; border:1px solid {border_color};'>
-                    <p style='font-size:14px;'><b>Current:</b> {ups_cable['current_dc']} A</p>
-                    <p style='font-size:14px; color:#1b5e20;'><b>📏 Std:</b> {ups_cable['cable_dc'][1]} mm²</p>
-                    <p style='font-size:14px; color:#e65100;'><b>🚀 Safe:</b> {ups_cable['cable_dc'][2]} mm²</p>
-                    <p style='font-size:12px; color:#5f6368;'>Length: {dc_length}m</p>
-                </div>
-            """, unsafe_allow_html=True)
-        
-        # توصیه‌ها
-        with st.expander("💡 UPS Cable Sizing Recommendations"):
+        # راهنمای انتخاب کابل
+        with st.expander("💡 UPS Cable Sizing Guidelines"):
             st.markdown("""
-            **AC Cable Sizing Guidelines:**
-            - Use copper conductors for AC side
-            - Max voltage drop: 2% for input, 2% for output
-            - Consider future expansion (add 20% margin)
+            ### 📋 Recommended Cable Sizes for UPS (AC Side)
             
-            **DC Cable Sizing Guidelines:**
-            - Use copper conductors with proper insulation (PVC/XLPE)
-            - DC cables should be as short as possible
-            - Max voltage drop: 1% for DC side
-            - Consider temperature derating for battery room
+            | UPS Power | Input Current | Input Cable | Output Current | Output Cable |
+            |-----------|---------------|-------------|----------------|--------------|
+            | 10 kVA | 18 A | **6 mm²** | 20 A | **6 mm²** |
+            | 20 kVA | 36 A | **10 mm²** | 40 A | **10 mm²** |
+            | 30 kVA | 54 A | **16 mm²** | 60 A | **16 mm²** |
+            | 40 kVA | 72 A | **25 mm²** | 80 A | **35 mm²** |
+            | 60 kVA | 108 A | **35 mm²** | 120 A | **50 mm²** |
+            | 80 kVA | 144 A | **50 mm²** | 160 A | **70 mm²** |
+            | 100 kVA | 180 A | **70 mm²** | 200 A | **95 mm²** |
             
-            **Recommended Safety Factors:**
-            - UPS input: 1.25 × rated current
-            - UPS output: 1.25 × rated current
-            - DC battery: 1.5 × rated current (for starting)
+            ### ⚠️ Important Notes:
+            
+            1. **Input Cable:** Always use the Safe Size for input side
+            2. **Output Cable:** Output current is higher due to UPS efficiency (~90%)
+            3. **Length Factor:** For lengths > 50m, increase cable size by one level
+            4. **Temperature:** For ambient temp > 40°C, increase cable size
+            5. **Future Expansion:** Consider adding 20% margin for future load growth
             """)
 
 # ==============================================================================
