@@ -11,18 +11,12 @@ st.set_page_config(
 )
 
 # ==============================================================================
-# --- مدیریت تم (Theme) ---
+# --- مدیریت تم (Theme) با روش ساده ---
 # ==============================================================================
 
 # مقداردهی اولیه تم
 if 'theme' not in st.session_state:
     st.session_state.theme = 'light'
-
-def toggle_theme():
-    if st.session_state.theme == 'light':
-        st.session_state.theme = 'dark'
-    else:
-        st.session_state.theme = 'light'
 
 # تعیین رنگ‌ها بر اساس تم
 if st.session_state.theme == 'light':
@@ -37,6 +31,8 @@ if st.session_state.theme == 'light':
     result_bg = "#f1f3f4"
     sidebar_bg = "#f0f2f6"
     input_bg = "#ffffff"
+    theme_icon = "🌙"
+    theme_label = "Dark Mode"
 else:  # dark
     bg_color = "#1a1a1a"
     text_color = "#f0f0f0"
@@ -49,6 +45,8 @@ else:  # dark
     result_bg = "#2d2d2d"
     sidebar_bg = "#252525"
     input_bg = "#333333"
+    theme_icon = "☀️"
+    theme_label = "Light Mode"
 
 # ==============================================================================
 # --- استایل با پشتیبانی از تم ---
@@ -94,49 +92,6 @@ st.markdown(f"""
     
     header div[data-testid="stHeader"] a {{
         display: none !important;
-    }}
-
-    /* ========== دکمه سه‌نقطه (Theme Toggle) ========== */
-    .theme-toggle-container {{
-        position: fixed;
-        top: 15px;
-        right: 15px;
-        z-index: 9999;
-    }}
-    
-    .theme-toggle-btn {{
-        background-color: {tab_bg};
-        color: {text_color};
-        border: 2px solid {border_color};
-        border-radius: 50%;
-        width: 44px;
-        height: 44px;
-        font-size: 22px;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: all 0.3s ease;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-        padding: 0;
-        line-height: 1;
-    }}
-    
-    .theme-toggle-btn:hover {{
-        transform: scale(1.15);
-        box-shadow: 0 4px 16px rgba(0,0,0,0.3);
-        background-color: {tab_active};
-        color: white;
-    }}
-    
-    @media screen and (max-width: 640px) {{
-        .theme-toggle-btn {{
-            width: 36px;
-            height: 36px;
-            font-size: 18px;
-            top: 10px;
-            right: 10px;
-        }}
     }}
 
     /* ========== تایتل اصلی ========== */
@@ -311,28 +266,8 @@ st.markdown(f"""
 """, unsafe_allow_html=True)
 
 # ==============================================================================
-# --- دکمه سه‌نقطه تغییر تم ---
+# --- دکمه تغییر تم (در سایدبار) ---
 # ==============================================================================
-
-# آیکون مناسب برای تم
-theme_icon = "🌙" if st.session_state.theme == 'light' else "☀️"
-theme_tooltip = "Switch to Dark Mode" if st.session_state.theme == 'light' else "Switch to Light Mode"
-
-st.markdown(f"""
-    <div class="theme-toggle-container">
-        <button class="theme-toggle-btn" onclick="location.href='?theme=toggle'" title="{theme_tooltip}">
-            {theme_icon}
-        </button>
-    </div>
-""", unsafe_allow_html=True)
-
-# بررسی تغییر تم از طریق URL
-import urllib.parse
-query_params = st.query_params
-if 'theme' in query_params and query_params['theme'] == 'toggle':
-    toggle_theme()
-    st.query_params.clear()
-    st.rerun()
 
 # ==============================================================================
 # --- توابع محاسباتی ---
@@ -428,6 +363,35 @@ def suggest_breaker(current, type_load="Resistive"):
 
 # ✅ عنوان با سایز بزرگ
 st.title("ElectroCalc ⚡ M&F")
+
+# ==============================================================================
+# --- دکمه تغییر تم (در سایدبار) ---
+# ==============================================================================
+
+with st.sidebar:
+    st.header("⚙️ Settings")
+    
+    # دکمه تغییر تم با استفاده از st.button
+    if st.button(f"{theme_icon} {theme_label}", use_container_width=True):
+        if st.session_state.theme == 'light':
+            st.session_state.theme = 'dark'
+        else:
+            st.session_state.theme = 'light'
+        st.rerun()
+    
+    st.divider()
+    
+    st.header("📚 Standards")
+    st.markdown("""
+    **IEC 60364** - Cable Sizing  
+    **IEEE 485** - UPS Sizing  
+    **IEC 60034** - Motor Calculations  
+    **IEC 60947** - Breaker Selection  
+    """)
+    
+    st.divider()
+    st.caption("⚡ ElectroCalc M&F v2.0")
+    st.caption("📱 Optimized for Mobile")
 
 # تب‌ها
 tabs = st.tabs(["📏 Cable", "🔋 UPS", "⚙️ Motor", "🛡️ Protect"])
@@ -528,23 +492,3 @@ with tabs[3]:
                 <p style='color: #5f6368;'>Based on IEC 60947 standard</p>
             </div>
         """, unsafe_allow_html=True)
-
-# ==============================================================================
-# --- سایدبار ---
-# ==============================================================================
-
-with st.sidebar:
-    st.header("📚 Standards")
-    st.markdown("""
-    **IEC 60364** - Cable Sizing  
-    **IEEE 485** - UPS Sizing  
-    **IEC 60034** - Motor Calculations  
-    **IEC 60947** - Breaker Selection  
-    """)
-    st.divider()
-    
-    # نمایش تم فعلی
-    theme_status = "🌞 Light" if st.session_state.theme == 'light' else "🌙 Dark"
-    st.caption(f"Theme: {theme_status}")
-    st.caption("⚡ ElectroCalc M&F v2.0")
-    st.caption("📱 Optimized for Mobile")
