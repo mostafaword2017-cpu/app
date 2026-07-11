@@ -708,10 +708,10 @@ with tabs[2]:
             st.write(f"**Torque:** {result['torque']} Nm")
             st.write(f"**Efficiency:** {result['efficiency']}%")
             st.latex(r"I_{rated} = \frac{P_{kW} \times 1000}{\eta \times \sqrt{3} \times V \times \cos\phi}")
-# ==============================================================================
-# --- تب ۴: حفاظت (Protection) ---
-# ==============================================================================
 
+# ==============================================================================
+# --- تب ۴: حفاظت ---
+# ==============================================================================
 with tabs[3]:
     st.header("🛡️ Breaker Sizing")
     with st.expander("⚙️ Parameters", expanded=True):
