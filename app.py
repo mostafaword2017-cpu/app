@@ -26,15 +26,6 @@ st.markdown("""
     """, 
     unsafe_allow_html=True
 )
-    <style>
-    / Hide Streamlit header elements /
-    header div[data-testid="stHeader"] a, 
-    div[data-testid="stAppDeployButton"], 
-    #MainMenu {
-        display: none !important;
-    }
-
-    / Optimize Title for Mobile /
 css
     / استایل پیش‌فرض برای لپ‌تاپ و تبلت /
     .stApp h1 {
