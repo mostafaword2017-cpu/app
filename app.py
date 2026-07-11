@@ -11,14 +11,12 @@ st.set_page_config(
 )
 
 # ==============================================================================
-# --- مدیریت تم (Theme) با روش ساده ---
+# --- مدیریت تم (Theme) ---
 # ==============================================================================
 
-# مقداردهی اولیه تم
 if 'theme' not in st.session_state:
     st.session_state.theme = 'light'
 
-# تعیین رنگ‌ها بر اساس تم
 if st.session_state.theme == 'light':
     bg_color = "#ffffff"
     text_color = "#1a1a1a"
@@ -31,9 +29,7 @@ if st.session_state.theme == 'light':
     result_bg = "#f1f3f4"
     sidebar_bg = "#f0f2f6"
     input_bg = "#ffffff"
-    theme_icon = "🌙"
-    theme_label = "Dark Mode"
-else:  # dark
+else:
     bg_color = "#1a1a1a"
     text_color = "#f0f0f0"
     card_bg = "#2d2d2d"
@@ -45,8 +41,6 @@ else:  # dark
     result_bg = "#2d2d2d"
     sidebar_bg = "#252525"
     input_bg = "#333333"
-    theme_icon = "☀️"
-    theme_label = "Light Mode"
 
 # ==============================================================================
 # --- استایل با پشتیبانی از تم ---
@@ -54,7 +48,6 @@ else:  # dark
 
 st.markdown(f"""
     <style>
-    /* ========== تنظیمات کلی تم ========== */
     .stApp {{
         background-color: {bg_color} !important;
     }}
@@ -63,38 +56,22 @@ st.markdown(f"""
         color: {text_color} !important;
     }}
 
-    /* ========== حذف کامل هدر Streamlit ========== */
-    .stAppHeader {{
+    .stAppHeader, header[data-testid="stHeader"] {{
         display: none !important;
     }}
     
-    header[data-testid="stHeader"] {{
+    .stDeployButton, .stAppDeployButton, div[data-testid="stAppDeployButton"] {{
         display: none !important;
     }}
     
-    .stDeployButton,
-    .stAppDeployButton,
-    div[data-testid="stAppDeployButton"] {{
-        display: none !important;
-    }}
-    
-    .stAppHeader img,
-    header img,
-    .stImage,
-    .css-1v3fvcr,
-    .css-1v3fvcr a {{
+    .stAppHeader img, header img, .stImage {{
         display: none !important;
     }}
     
     #MainMenu {{
         display: none !important;
     }}
-    
-    header div[data-testid="stHeader"] a {{
-        display: none !important;
-    }}
 
-    /* ========== تایتل اصلی ========== */
     .stApp h1 {{
         font-size: 49.5px !important;
         text-align: center !important;
@@ -112,7 +89,6 @@ st.markdown(f"""
         }}
     }}
 
-    /* ========== لیبل‌ها و متون ========== */
     label, .stMarkdown p {{
         font-size: 14px !important;
         color: {text_color} !important;
@@ -124,7 +100,6 @@ st.markdown(f"""
         }}
     }}
 
-    /* ========== تب‌ها ========== */
     .stTabs div[role="tablist"] {{ 
         gap: 5px !important; 
         flex-wrap: nowrap !important; 
@@ -163,7 +138,6 @@ st.markdown(f"""
         }}
     }}
 
-    /* ========== دکمه‌ها ========== */
     .stButton > button {{
         width: 100% !important;
         height: 45px !important;
@@ -189,7 +163,6 @@ st.markdown(f"""
         }}
     }}
 
-    /* ========== جعبه نتایج ========== */
     .result-box {{
         text-align: center;
         padding: 15px;
@@ -213,12 +186,10 @@ st.markdown(f"""
         }}
     }}
 
-    /* ========== سایدبار ========== */
     .css-1d391kg, .css-12oz5g7 {{
         background-color: {sidebar_bg} !important;
     }}
 
-    /* ========== ورودی‌ها ========== */
     .stNumberInput input, .stSelectbox select {{
         background-color: {input_bg} !important;
         color: {text_color} !important;
@@ -230,18 +201,15 @@ st.markdown(f"""
         border-color: {tab_active} !important;
     }}
 
-    /* ========== هدر تب‌ها ========== */
     .stHeader {{
         font-size: 18px !important;
         color: {text_color} !important;
     }}
 
-    /* ========== کانتینر ورودی ========== */
     .stNumberInput, .stSelectbox {{
         margin-bottom: 8px !important;
     }}
 
-    /* ========== لاتکس ========== */
     .katex-display {{
         text-align: center !important;
         margin: 10px 0 !important;
@@ -255,7 +223,6 @@ st.markdown(f"""
         }}
     }}
 
-    /* ========== کانتینر ========== */
     .stContainer {{
         background-color: {card_bg} !important;
         border-radius: 12px !important;
@@ -264,10 +231,6 @@ st.markdown(f"""
     }}
     </style>
 """, unsafe_allow_html=True)
-
-# ==============================================================================
-# --- دکمه تغییر تم (در سایدبار) ---
-# ==============================================================================
 
 # ==============================================================================
 # --- توابع محاسباتی ---
@@ -323,7 +286,11 @@ def calculate_cable_fixed(p_kw, length, sigma, voltage=380, max_drop_percent=2):
     return round(current, 1), standard_size, suggested_size, round(final_calc, 2)
 
 
-def calculate_ups_fixed(load_kva, backup_min, num_batteries):
+def calculate_ups_fixed(load_kva, backup_min, num_batteries, battery_voltage=12):
+    """
+    محاسبه ظرفیت باتری UPS با در نظر گرفتن ولتاژ باتری
+    battery_voltage: 12 یا 24 ولت
+    """
     base_data = {10: 7, 20: 12, 30: 18, 40: 23, 50: 28, 60: 32}
     minutes_list = sorted(base_data.keys())
     
@@ -339,7 +306,12 @@ def calculate_ups_fixed(load_kva, backup_min, num_batteries):
                 base_ah = a1 + ((a2 - a1) * (backup_min - m1) / (m2 - m1))
                 break
     
-    return round((base_ah * (load_kva / 10) * 32) / num_batteries, 1)
+    # ضریب ولتاژ: برای 24 ولت، ولتاژ دو برابر است، جریان نصف میشود
+    # فرمول: Ah = (Base_Ah × kVA/10 × 32) / (N_Battery × (V_Battery/12))
+    voltage_factor = battery_voltage / 12
+    result = (base_ah * (load_kva / 10) * 32) / (num_batteries * voltage_factor)
+    
+    return round(result, 1)
 
 
 def calculate_motor_from_kva(p_kva, eff=0.85, cos_phi=0.8, voltage=380):
@@ -361,17 +333,19 @@ def suggest_breaker(current, type_load="Resistive"):
 # --- رابط کاربری ---
 # ==============================================================================
 
-# ✅ عنوان با سایز بزرگ
 st.title("ElectroCalc ⚡ M&F")
 
 # ==============================================================================
-# --- دکمه تغییر تم (در سایدبار) ---
+# --- سایدبار با دکمه تغییر تم ---
 # ==============================================================================
 
 with st.sidebar:
     st.header("⚙️ Settings")
     
-    # دکمه تغییر تم با استفاده از st.button
+    # دکمه تغییر تم
+    theme_icon = "🌙" if st.session_state.theme == 'light' else "☀️"
+    theme_label = "Dark Mode" if st.session_state.theme == 'light' else "Light Mode"
+    
     if st.button(f"{theme_icon} {theme_label}", use_container_width=True):
         if st.session_state.theme == 'light':
             st.session_state.theme = 'dark'
@@ -424,7 +398,7 @@ with tabs[0]:
         """, unsafe_allow_html=True)
 
 # ==============================================================================
-# --- تب ۲: UPS ---
+# --- تب ۲: UPS (با گزینه ولتاژ باتری) ---
 # ==============================================================================
 
 with tabs[1]:
@@ -436,16 +410,28 @@ with tabs[1]:
             u_min = st.number_input("Time (min)", value=15, step=5, key="u_min")
         with c2:
             u_bat = st.number_input("Number of Batteries", value=32, step=1, key="u_bat")
+            u_volt = st.selectbox("Battery Voltage", [12, 24], index=0, key="u_volt")
     
     if st.button("🔍 Calculate UPS", use_container_width=True):
-        res = calculate_ups_fixed(u_kva, u_min, u_bat)
-        st.latex(r"Ah = \frac{Ah_{Base} \times \frac{kVA}{10} \times 32}{N_{Battery}}")
+        res = calculate_ups_fixed(u_kva, u_min, u_bat, u_volt)
+        
+        # نمایش ولتاژ انتخاب شده
+        volt_text = "12V" if u_volt == 12 else "24V"
+        
+        st.latex(r"Ah = \frac{Ah_{Base} \times \frac{kVA}{10} \times 32}{N_{Battery} \times \frac{V_{Battery}}{12}}")
         st.markdown(f"""
             <div class='result-box'>
                 <div class='result-text'>📦 Battery Capacity: {res} Ah</div>
                 <div class='result-text' style='color: #0d47a1;'>🔋 Required: {u_bat} Batteries</div>
+                <div class='result-text' style='color: #e65100;'>⚡ System Voltage: {volt_text}</div>
             </div>
         """, unsafe_allow_html=True)
+        
+        # نمایش توضیح در مورد تأثیر ولتاژ
+        if u_volt == 24:
+            st.info("💡 With 24V system, required Ah is HALF of 12V system for the same power")
+        else:
+            st.info("💡 12V system - standard configuration")
 
 # ==============================================================================
 # --- تب ۳: موتور ---
