@@ -8,24 +8,14 @@ st.set_page_config(page_title="ElectroCalc M&F", page_icon="⚡️", layout="cen
 # 2. Optimized Styles for Mobile & English Tabs
 st.markdown("""
     <style>
-    / وسط چین کردن تیترها و اسم نرم افزار /
-    h1, h2, h3 {
-        text-align: center !important;
+    / Hide Streamlit header elements /
+    header div[data-testid="stHeader"] a, 
+    div[data-testid="stAppDeployButton"], 
+    #MainMenu {
+        display: none !important;
     }
 
-    / وسط چین کردن دکمه‌های تب‌ها /
-    .stTabs {
-        display: flex !important;
-        justify-content: center !important;
-    }
-    div[data-testid="stTabs"] {
-        display: flex !important;
-        justify-content: center !important;
-    }
-    </style>
-    """, 
-    unsafe_allow_html=True
-)
+    / Optimize Title for Mobile /
 css
     / استایل پیش‌فرض برای لپ‌تاپ و تبلت /
     .stApp h1 {
@@ -198,7 +188,7 @@ def suggest_breaker(current, type_load="Resistive"):
 # ==============================================================================
 # --- User Interface (UI) ---
 # ==============================================================================
-st.title("⚡️ ElectroCalc M&F")
+st.title("ElectroCalc⚡️M&F")
 # English names for tabs to ensure a clean look on mobile
 tabs = st.tabs(["📏 Cable", "🔋 UPS", "⚙️ Motor", "🛡️ Protect"])
 # --- Tab 1: Cable ---
