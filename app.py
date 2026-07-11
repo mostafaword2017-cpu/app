@@ -3,7 +3,7 @@ import streamlit as st
 import math
 
 # 1. Page Configuration
-st.set_page_config(page_title="ElectroCalc M&F", page_icon="⚡️", layout="centered")
+st.set_page_config(layout="centered")
 
 # 2. Optimized Styles for Mobile & English Tabs
 st.markdown(
