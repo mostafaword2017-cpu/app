@@ -26,12 +26,12 @@ st.markdown("""
 
     /* ========== بهینه‌سازی تایتل اصلی ========== */
     .stApp h1 {
-        font-size: 24px !important;  /* دو درجه بزرگتر (از 22 به 24) */
+        font-size: 26px !important;  /* دو درجه بزرگتر (از 22 به 26) */
         text-align: center !important;
         white-space: nowrap !important;
         letter-spacing: 0px !important;
         font-weight: 700 !important;
-        padding: 8px 0 !important;
+        padding: 10px 0 !important;
         margin: 0 auto !important;
         display: block !important;
         width: 100% !important;
@@ -41,30 +41,45 @@ st.markdown("""
     /* تایتل در موبایل */
     @media screen and (max-width: 480px) {
         .stApp h1 {
-            font-size: 17px !important;  /* دو درجه بزرگتر (از 14 به 17) */
+            font-size: 20px !important;  /* دو درجه بزرگتر (از 17 به 20) */
             letter-spacing: -0.3px !important;
         }
     }
 
-    /* ========== بهینه‌سازی هدر تب‌ها ========== */
+    /* ========== بهینه‌سازی هدر تب‌ها (وسط‌چین) ========== */
+    .stTabs div[role="tablist"] { 
+        gap: 5px !important; 
+        flex-wrap: nowrap !important; 
+        overflow-x: auto !important;
+        padding: 2px 0 !important;
+        justify-content: center !important;  /* وسط‌چین کردن تب‌ها */
+        display: flex !important;
+    }
+    
     .stTabs [role="tab"] {
-        font-size: 12px !important;
-        padding: 6px 10px !important;
-        border-radius: 6px 6px 0px 0px !important;
+        font-size: 13px !important;
+        padding: 8px 14px !important;
+        border-radius: 8px 8px 0px 0px !important;
         background-color: #f0f2f6 !important;
         white-space: nowrap !important;
-        min-width: 65px !important;
+        min-width: 70px !important;
         text-align: center !important;
+        flex: 0 0 auto !important;
     }
     
     @media screen and (max-width: 480px) {
+        .stTabs div[role="tablist"] {
+            gap: 3px !important;
+            justify-content: center !important;
+        }
         .stTabs [role="tab"] {
             font-size: 10px !important;
-            padding: 4px 6px !important;
+            padding: 5px 8px !important;
             min-width: 50px !important;
         }
     }
 
+    /* تب فعال */
     .stTabs [aria-selected="true"] {
         background-color: #4CAF50 !important; 
         color: white !important;
@@ -172,6 +187,8 @@ st.markdown("""
         flex-wrap: nowrap !important; 
         overflow-x: auto !important;
         padding: 2px 0 !important;
+        justify-content: center !important;
+        display: flex !important;
     }
     
     .main {
@@ -182,7 +199,7 @@ st.markdown("""
     .stApp h1 .lightning {
         color: #f9a825 !important;
         display: inline-block !important;
-        margin: 0 2px !important;
+        margin: 0 4px !important;
     }
     </style>
     """, unsafe_allow_html=True)
@@ -371,17 +388,17 @@ class PowerSystemCalculator:
         }
 
 # ==============================================================================
-# --- رابط کاربری (UI) با علامت برق در وسط و فونت بزرگتر ---
+# --- رابط کاربری (UI) با اسم بزرگتر و تبهای وسطچین ---
 # ==============================================================================
 
 # ✅ عنوان با علامت برق در وسط و فونت بزرگتر
 st.markdown("""
     <h1 style='
         text-align: center; 
-        font-size: 22px; 
+        font-size: 26px; 
         font-weight: 700; 
         margin: 0; 
-        padding: 8px 0;
+        padding: 10px 0;
         letter-spacing: 0px;
         color: #1a1a1a;
     '>
@@ -389,7 +406,7 @@ st.markdown("""
     </h1>
 """, unsafe_allow_html=True)
 
-# تب‌ها
+# تب‌ها با وسط‌چین
 tabs = st.tabs(["📏 Cable", "🔋 UPS", "⚙️ Motor", "🛡️ Protect"])
 
 # --- تب ۱: کابل ---
