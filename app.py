@@ -47,7 +47,7 @@ else:
     theme_label = "Light Mode"
 
 # ==============================================================================
-# --- استایل با فاصله کم بین اسم و تب‌ها ---
+# --- استایل با اسم در بالای صفحه ---
 # ==============================================================================
 
 st.markdown(f"""
@@ -76,23 +76,24 @@ st.markdown(f"""
         display: none !important;
     }}
 
-    /* ========== عنوان با فاصله کم از تب‌ها ========== */
+    /* ========== بردن اسم به بالای صفحه ========== */
     .stApp h1 {{
         font-size: 49.5px !important;
         text-align: center !important;
         white-space: nowrap !important;
         font-weight: 700 !important;
         color: {text_color} !important;
-        padding: 5px 0 0px 0 !important;
-        margin-bottom: -8px !important;
-        margin-top: 0 !important;
+        padding: 0px 0 0px 0 !important;
+        margin-top: -25px !important;
+        margin-bottom: -12px !important;
     }}
 
     @media screen and (max-width: 640px) {{
         .stApp h1 {{
             font-size: 36px !important;
             letter-spacing: -0.5px !important;
-            margin-bottom: -5px !important;
+            margin-top: -15px !important;
+            margin-bottom: -8px !important;
         }}
     }}
 
