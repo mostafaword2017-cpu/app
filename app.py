@@ -26,8 +26,6 @@ st.markdown("""
     """, 
     unsafe_allow_html=True
 )
-
-
     <style>
     / Hide Streamlit header elements /
     header div[data-testid="stHeader"] a, 
