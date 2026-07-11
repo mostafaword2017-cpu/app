@@ -47,7 +47,7 @@ else:
     theme_label = "Light Mode"
 
 # ==============================================================================
-# --- استایل کامل با مخفی کردن همه المان‌ها ---
+# --- استایل ---
 # ==============================================================================
 
 st.markdown(f"""
@@ -68,25 +68,12 @@ st.markdown(f"""
         display: none !important;
     }}
     
-    .stAppHeader img, header img, .stImage {{
-        display: none !important;
-    }}
-    
     #MainMenu {{
         display: none !important;
     }}
 
-    footer, .stAppFooter, .viewerBadge_container__1QSob {{
+    footer, .stAppFooter {{
         display: none !important;
-    }}
-    
-    .stAppViewContainer > div:last-child {{
-        display: none !important;
-    }}
-
-    .main > div {{
-        padding-top: 0 !important;
-        padding-bottom: 0 !important;
     }}
 
     .stApp h1 {{
@@ -203,7 +190,6 @@ st.markdown(f"""
         }}
     }}
 
-    /* ========== باکس کابل ========== */
     .cable-box {{
         text-align: center;
         padding: 12px;
@@ -328,14 +314,9 @@ def calculate_cable_fixed(p_kw, length, sigma, voltage=380, max_drop_percent=2):
 
 
 def calculate_cable_from_current(current, length=100, sigma=56, voltage=380, max_drop_percent=2):
-    """
-    محاسبه سایز کابل بر اساس جریان عبوری
-    """
-    # تبدیل جریان به توان (با فرض cos_phi=0.8)
     cos_phi = 0.8
     p_watts = current * math.sqrt(3) * voltage * cos_phi
     p_kw = p_watts / 1000
-    
     return calculate_cable_fixed(p_kw, length, sigma, voltage, max_drop_percent)
 
 
@@ -375,14 +356,8 @@ def suggest_breaker(current, type_load="Resistive"):
     suggested = min([x for x in standard_breakers if x >= required_current] or [max(standard_breakers)])
     return suggested
 
-# ==============================================================================
-# --- تابع نمایش سایز کابل ---
-# ==============================================================================
 
 def show_cable_size(current, label="Load"):
-    """
-    نمایش سایز کابل مناسب برای جریان داده شده
-    """
     cable_curr, cable_std, cable_safe, cable_raw = calculate_cable_from_current(current)
     
     st.markdown(f"""
@@ -411,10 +386,7 @@ def show_cable_size(current, label="Load"):
 
 st.title("ElectroCalc ⚡ M&F")
 
-# ==============================================================================
-# --- سایدبار با دکمه تغییر تم ---
-# ==============================================================================
-
+# سایدبار
 with st.sidebar:
     st.header("⚙️ Settings")
     
@@ -497,7 +469,7 @@ with tabs[1]:
             st.info("💡 With 24V system, required Ah is HALF of 12V system")
 
 # ==============================================================================
-# --- تب ۳: موتور (با محاسبه سایز کابل) ---
+# --- تب ۳: موتور ---
 # ==============================================================================
 
 with tabs[2]:
@@ -516,7 +488,6 @@ with tabs[2]:
         
         st.latex(r"I = \frac{P_{kW} \times 1000}{\eta \times \sqrt{3} \times V \times \cos\phi}")
         
-        # نتایج موتور
         st.markdown(f"""
             <div class='result-box'>
                 <div class='result-text'>⚡ Rated Current: {curr} A</div>
@@ -526,14 +497,9 @@ with tabs[2]:
             </div>
         """, unsafe_allow_html=True)
         
-        # محاسبه و نمایش سایز کابل برای جریان نامی
         st.subheader("🔌 Recommended Cable Size")
         show_cable_size(curr, "Motor Rated Current")
         
-        # محاسبه و نمایش سایز کابل برای جریان راه‌اندازی (با ضریب ایمنی)
-        st.caption("📌 Cable sizing based on rated current (starting current requires larger cable)")
-        
-        # نمایش توضیح
         with st.expander("ℹ️ About Cable Sizing for Motors"):
             st.markdown("""
             **Cable Sizing Guidelines for Motors:**
@@ -542,21 +508,14 @@ with tabs[2]:
             - **Starting Current:** 6× rated current (for direct-on-line starting)
             - **Recommendation:** For motors, increase cable size by 1-2 levels above standard
             - **Voltage Drop:** Max 2% for motor circuits
-            
-            **Standard Assumptions:**
-            - Copper conductor (σ=56)
-            - Ambient temperature: 30°C
-            - 3-Phase AC system
-            - PVC insulation
             """)
 
 # ==============================================================================
-# --- تب ۴: حفاظت (با محاسبه سایز کابل) ---
+# --- تب ۴: حفاظت ---
 # ==============================================================================
 
 with tabs[3]:
     st.header("🛡️ Breaker & Cable Sizing")
-    
     with st.container(border=True):
         c1, c2 = st.columns(2)
         with c1:
@@ -567,16 +526,12 @@ with tabs[3]:
             conductor_type = st.selectbox("Conductor", ["Copper", "Aluminum"], key="p_conductor")
     
     if st.button("🔍 Suggest Breaker & Cable", use_container_width=True):
-        # محاسبه کلید
         b_size = suggest_breaker(p_curr, p_type)
-        
-        # محاسبه سایز کابل بر اساس جریان و طول
         sigma = 56.0 if conductor_type == "Copper" else 35.0
         cable_curr, cable_std, cable_safe, cable_raw = calculate_cable_from_current(
             p_curr, length=cable_length, sigma=sigma
         )
         
-        # نمایش نتایج کلید
         st.markdown("### 🛡️ Breaker Selection")
         st.markdown(f"""
             <div class='result-box'>
@@ -587,7 +542,6 @@ with tabs[3]:
             </div>
         """, unsafe_allow_html=True)
         
-        # نمایش نتایج کابل
         st.markdown("### 🔌 Cable Sizing")
         st.markdown(f"""
             <div class='cable-box'>
@@ -600,10 +554,9 @@ with tabs[3]:
             </div>
         """, unsafe_allow_html=True)
         
-        # توصیه نهایی
         if p_type == "Motor":
             st.info("💡 For motor circuits, it's recommended to use the 'Safe Size' or one size larger due to starting current")
         elif p_type == "Inductive":
-            st.info("💡 Inductive loads (like transformers) may require larger cable due to inrush current")
+            st.info("💡 Inductive loads may require larger cable due to inrush current")
         else:
             st.success("✅ Cable size is suitable for this resistive load")
