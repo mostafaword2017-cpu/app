@@ -29,6 +29,8 @@ if st.session_state.theme == 'light':
     result_bg = "#f1f3f4"
     sidebar_bg = "#f0f2f6"
     input_bg = "#ffffff"
+    theme_icon = "🌙"
+    theme_label = "Dark Mode"
 else:
     bg_color = "#1a1a1a"
     text_color = "#f0f0f0"
@@ -41,9 +43,11 @@ else:
     result_bg = "#2d2d2d"
     sidebar_bg = "#252525"
     input_bg = "#333333"
+    theme_icon = "☀️"
+    theme_label = "Light Mode"
 
 # ==============================================================================
-# --- استایل با پشتیبانی از تم ---
+# --- استایل کامل با مخفی کردن همه المان‌ها ---
 # ==============================================================================
 
 st.markdown(f"""
@@ -70,6 +74,19 @@ st.markdown(f"""
     
     #MainMenu {{
         display: none !important;
+    }}
+
+    footer, .stAppFooter, .viewerBadge_container__1QSob {{
+        display: none !important;
+    }}
+    
+    .stAppViewContainer > div:last-child {{
+        display: none !important;
+    }}
+
+    .main > div {{
+        padding-top: 0 !important;
+        padding-bottom: 0 !important;
     }}
 
     .stApp h1 {{
@@ -186,6 +203,30 @@ st.markdown(f"""
         }}
     }}
 
+    /* ========== باکس کابل ========== */
+    .cable-box {{
+        text-align: center;
+        padding: 12px;
+        border-radius: 12px;
+        background-color: {card_bg} !important;
+        border: 2px solid #4CAF50;
+        margin: 10px 0;
+    }}
+    
+    .cable-text {{
+        font-size: 17px !important;
+        font-weight: 600 !important;
+        color: #1b5e20 !important;
+        margin-bottom: 3px;
+        word-wrap: break-word;
+    }}
+
+    @media screen and (max-width: 640px) {{
+        .cable-text {{
+            font-size: 13px !important;
+        }}
+    }}
+
     .css-1d391kg, .css-12oz5g7 {{
         background-color: {sidebar_bg} !important;
     }}
@@ -286,11 +327,19 @@ def calculate_cable_fixed(p_kw, length, sigma, voltage=380, max_drop_percent=2):
     return round(current, 1), standard_size, suggested_size, round(final_calc, 2)
 
 
+def calculate_cable_from_current(current, length=100, sigma=56, voltage=380, max_drop_percent=2):
+    """
+    محاسبه سایز کابل بر اساس جریان عبوری
+    """
+    # تبدیل جریان به توان (با فرض cos_phi=0.8)
+    cos_phi = 0.8
+    p_watts = current * math.sqrt(3) * voltage * cos_phi
+    p_kw = p_watts / 1000
+    
+    return calculate_cable_fixed(p_kw, length, sigma, voltage, max_drop_percent)
+
+
 def calculate_ups_fixed(load_kva, backup_min, num_batteries, battery_voltage=12):
-    """
-    محاسبه ظرفیت باتری UPS با در نظر گرفتن ولتاژ باتری
-    battery_voltage: 12 یا 24 ولت
-    """
     base_data = {10: 7, 20: 12, 30: 18, 40: 23, 50: 28, 60: 32}
     minutes_list = sorted(base_data.keys())
     
@@ -306,11 +355,8 @@ def calculate_ups_fixed(load_kva, backup_min, num_batteries, battery_voltage=12)
                 base_ah = a1 + ((a2 - a1) * (backup_min - m1) / (m2 - m1))
                 break
     
-    # ضریب ولتاژ: برای 24 ولت، ولتاژ دو برابر است، جریان نصف میشود
-    # فرمول: Ah = (Base_Ah × kVA/10 × 32) / (N_Battery × (V_Battery/12))
     voltage_factor = battery_voltage / 12
     result = (base_ah * (load_kva / 10) * 32) / (num_batteries * voltage_factor)
-    
     return round(result, 1)
 
 
@@ -330,6 +376,36 @@ def suggest_breaker(current, type_load="Resistive"):
     return suggested
 
 # ==============================================================================
+# --- تابع نمایش سایز کابل ---
+# ==============================================================================
+
+def show_cable_size(current, label="Load"):
+    """
+    نمایش سایز کابل مناسب برای جریان داده شده
+    """
+    cable_curr, cable_std, cable_safe, cable_raw = calculate_cable_from_current(current)
+    
+    st.markdown(f"""
+        <div class='cable-box'>
+            <div class='cable-text'>🔌 Cable Sizing for {label}</div>
+            <div class='cable-text' style='font-size: 15px; color: #1a73e8;'>
+                Current: {cable_curr} A
+            </div>
+            <div class='cable-text' style='font-size: 15px; color: #1b5e20;'>
+                📏 Standard Size: {cable_std} mm²
+            </div>
+            <div class='cable-text' style='font-size: 15px; color: #e65100;'>
+                🚀 Safe Size: {cable_safe} mm²
+            </div>
+            <p style='color: #5f6368; font-size: 13px; margin: 0;'>
+                Exact Calc: {cable_raw} mm²
+            </p>
+        </div>
+    """, unsafe_allow_html=True)
+    
+    return cable_curr, cable_std, cable_safe, cable_raw
+
+# ==============================================================================
 # --- رابط کاربری ---
 # ==============================================================================
 
@@ -342,10 +418,6 @@ st.title("ElectroCalc ⚡ M&F")
 with st.sidebar:
     st.header("⚙️ Settings")
     
-    # دکمه تغییر تم
-    theme_icon = "🌙" if st.session_state.theme == 'light' else "☀️"
-    theme_label = "Dark Mode" if st.session_state.theme == 'light' else "Light Mode"
-    
     if st.button(f"{theme_icon} {theme_label}", use_container_width=True):
         if st.session_state.theme == 'light':
             st.session_state.theme = 'dark'
@@ -354,7 +426,6 @@ with st.sidebar:
         st.rerun()
     
     st.divider()
-    
     st.header("📚 Standards")
     st.markdown("""
     **IEC 60364** - Cable Sizing  
@@ -362,7 +433,6 @@ with st.sidebar:
     **IEC 60034** - Motor Calculations  
     **IEC 60947** - Breaker Selection  
     """)
-    
     st.divider()
     st.caption("⚡ ElectroCalc M&F v2.0")
     st.caption("📱 Optimized for Mobile")
@@ -398,7 +468,7 @@ with tabs[0]:
         """, unsafe_allow_html=True)
 
 # ==============================================================================
-# --- تب ۲: UPS (با گزینه ولتاژ باتری) ---
+# --- تب ۲: UPS ---
 # ==============================================================================
 
 with tabs[1]:
@@ -414,10 +484,7 @@ with tabs[1]:
     
     if st.button("🔍 Calculate UPS", use_container_width=True):
         res = calculate_ups_fixed(u_kva, u_min, u_bat, u_volt)
-        
-        # نمایش ولتاژ انتخاب شده
         volt_text = "12V" if u_volt == 12 else "24V"
-        
         st.latex(r"Ah = \frac{Ah_{Base} \times \frac{kVA}{10} \times 32}{N_{Battery} \times \frac{V_{Battery}}{12}}")
         st.markdown(f"""
             <div class='result-box'>
@@ -426,15 +493,11 @@ with tabs[1]:
                 <div class='result-text' style='color: #e65100;'>⚡ System Voltage: {volt_text}</div>
             </div>
         """, unsafe_allow_html=True)
-        
-        # نمایش توضیح در مورد تأثیر ولتاژ
         if u_volt == 24:
-            st.info("💡 With 24V system, required Ah is HALF of 12V system for the same power")
-        else:
-            st.info("💡 12V system - standard configuration")
+            st.info("💡 With 24V system, required Ah is HALF of 12V system")
 
 # ==============================================================================
-# --- تب ۳: موتور ---
+# --- تب ۳: موتور (با محاسبه سایز کابل) ---
 # ==============================================================================
 
 with tabs[2]:
@@ -450,7 +513,10 @@ with tabs[2]:
     
     if st.button("🔍 Calculate Motor", use_container_width=True):
         curr, p_in, s_curr, p_kw_out = calculate_motor_from_kva(m_kva, m_eff, m_cos, m_vol)
+        
         st.latex(r"I = \frac{P_{kW} \times 1000}{\eta \times \sqrt{3} \times V \times \cos\phi}")
+        
+        # نتایج موتور
         st.markdown(f"""
             <div class='result-box'>
                 <div class='result-text'>⚡ Rated Current: {curr} A</div>
@@ -459,22 +525,85 @@ with tabs[2]:
                 <div class='result-text' style='color: #1b5e20;'>🎯 Output Power: {p_kw_out} kW</div>
             </div>
         """, unsafe_allow_html=True)
+        
+        # محاسبه و نمایش سایز کابل برای جریان نامی
+        st.subheader("🔌 Recommended Cable Size")
+        show_cable_size(curr, "Motor Rated Current")
+        
+        # محاسبه و نمایش سایز کابل برای جریان راه‌اندازی (با ضریب ایمنی)
+        st.caption("📌 Cable sizing based on rated current (starting current requires larger cable)")
+        
+        # نمایش توضیح
+        with st.expander("ℹ️ About Cable Sizing for Motors"):
+            st.markdown("""
+            **Cable Sizing Guidelines for Motors:**
+            
+            - **Rated Current:** Use for normal operation
+            - **Starting Current:** 6× rated current (for direct-on-line starting)
+            - **Recommendation:** For motors, increase cable size by 1-2 levels above standard
+            - **Voltage Drop:** Max 2% for motor circuits
+            
+            **Standard Assumptions:**
+            - Copper conductor (σ=56)
+            - Ambient temperature: 30°C
+            - 3-Phase AC system
+            - PVC insulation
+            """)
 
 # ==============================================================================
-# --- تب ۴: حفاظت ---
+# --- تب ۴: حفاظت (با محاسبه سایز کابل) ---
 # ==============================================================================
 
 with tabs[3]:
-    st.header("🛡️ Breaker Sizing")
-    with st.container(border=True):
-        p_curr = st.number_input("Load Current (A)", value=100.0, step=1.0, key="p_curr")
-        p_type = st.selectbox("Load Type", ["Resistive", "Inductive"], key="p_type")
+    st.header("🛡️ Breaker & Cable Sizing")
     
-    if st.button("🔍 Suggest Breaker", use_container_width=True):
+    with st.container(border=True):
+        c1, c2 = st.columns(2)
+        with c1:
+            p_curr = st.number_input("Load Current (A)", value=100.0, step=1.0, key="p_curr")
+            p_type = st.selectbox("Load Type", ["Resistive", "Inductive", "Motor"], key="p_type")
+        with c2:
+            cable_length = st.number_input("Cable Length (m)", value=50.0, step=5.0, key="p_cable_len")
+            conductor_type = st.selectbox("Conductor", ["Copper", "Aluminum"], key="p_conductor")
+    
+    if st.button("🔍 Suggest Breaker & Cable", use_container_width=True):
+        # محاسبه کلید
         b_size = suggest_breaker(p_curr, p_type)
+        
+        # محاسبه سایز کابل بر اساس جریان و طول
+        sigma = 56.0 if conductor_type == "Copper" else 35.0
+        cable_curr, cable_std, cable_safe, cable_raw = calculate_cable_from_current(
+            p_curr, length=cable_length, sigma=sigma
+        )
+        
+        # نمایش نتایج کلید
+        st.markdown("### 🛡️ Breaker Selection")
         st.markdown(f"""
             <div class='result-box'>
                 <div class='result-text'>🛡️ Suggested Breaker: {b_size} A</div>
+                <div class='result-text' style='color: #0d47a1;'>⚡ Load Type: {p_type}</div>
+                <div class='result-text' style='color: #5f6368; font-size: 15px;'>Load Current: {p_curr} A</div>
                 <p style='color: #5f6368;'>Based on IEC 60947 standard</p>
             </div>
         """, unsafe_allow_html=True)
+        
+        # نمایش نتایج کابل
+        st.markdown("### 🔌 Cable Sizing")
+        st.markdown(f"""
+            <div class='cable-box'>
+                <div class='cable-text'>📏 Standard Size: {cable_std} mm²</div>
+                <div class='cable-text' style='color: #e65100;'>🚀 Safe Size: {cable_safe} mm²</div>
+                <div class='cable-text' style='color: #1a73e8; font-size: 15px;'>⚡ Current: {cable_curr} A</div>
+                <p style='color: #5f6368; font-size: 13px; margin: 0;'>
+                    Length: {cable_length}m | {conductor_type} | Exact: {cable_raw} mm²
+                </p>
+            </div>
+        """, unsafe_allow_html=True)
+        
+        # توصیه نهایی
+        if p_type == "Motor":
+            st.info("💡 For motor circuits, it's recommended to use the 'Safe Size' or one size larger due to starting current")
+        elif p_type == "Inductive":
+            st.info("💡 Inductive loads (like transformers) may require larger cable due to inrush current")
+        else:
+            st.success("✅ Cable size is suitable for this resistive load")
