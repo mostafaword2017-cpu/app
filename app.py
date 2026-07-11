@@ -17,48 +17,82 @@ st.markdown("""
 
     / Optimize Title for Mobile /
 css
-import streamlit as st
-
-st.markdown(
-    """
-    <style>
-    /* ۱. حذف هدر و فوتر */
-    header { display: none !important; }
-    footer { display: none !important; }
-    #MainMenu { display: none !important; }
-
-    /* ۲. وسط چین کردن عنوان برنامه (اگر از st.title یا st.header استفاده کردی) */
-    h1, h2, h3 {
+    / استایل پیش‌فرض برای لپ‌تاپ و تبلت /
+    .stApp h1 {
+        font-size: 16px !important; 
         text-align: center !important;
+        white-space: nowrap !important;
     }
 
-    /* ۳. وسط چین کردن تب‌ها (Tabs) */
-    /* این بخش تمام محتویات تب‌ها و خود دکمه‌های تب را هدف می‌گیرد */
-    .stTabs {
-        display: flex !important;
-        justify-content: center !important;
+    / استایل مخصوص گوشی‌های موبایل (صفحات زیر 640 پیکسل) /
+    @media screen and (max-width: 640px) {
+        .stApp h1 {
+            font-size: 10px !important; / اندازه فونت در موبایل خیلی کوچک شد تا نشکند /
+            letter-spacing: -1px !important;
+        }
+    }
+    / Label and Markdown fonts /
+    label, .stMarkdown p {
+        font-size: 14px !important;
+    }
+    @media screen and (max-width: 640px) {
+        label, .stMarkdown p {
+            font-size: 12px !important;
+        }
     }
 
-    /* هدف قرار دادن دکمه‌های تب برای وسط چین شدن */
-    div[data-testid="stHorizontalNav"] {
-        display: flex !important;
-        justify-content: center !important;
+    / TABS STYLE - Forced to be English & Compact /
+    .stTabs div[role="tablist"] { 
+        gap: 5px !important; 
+        flex-wrap: nowrap !important; 
+        overflow-x: auto !important;
     }
-    
-    /* برای ورژن‌های جدید استریم لیت که تب‌ها در یک کانتینر خاص هستند */
-    div[data-testid="stTabs"] {
-        display: flex !important;
-        justify-content: center !important;
+    .stTabs [role="tab"] {
+        font-size: 13px !important;
+        padding: 8px 10px !important;
+        border-radius: 8px 8px 0px 0px !important;
+        background-color: #f0f2f6 !important;
+        white-space: nowrap !important;
+    }
+    .stTabs [aria-selected="true"] {
+        background-color: #4CAF50 !important; 
+        color: white !important;
     }
 
-    /* حذف فضای خالی بالای صفحه */
-    .stApp {
-        margin-top: -50px;
+    / Buttons Styling /
+    .stButton > button {
+        width: 100% !important;
+        height: 50px !important;
+        font-size: 18px !important;
+        font-weight: bold !important;
+        border-radius: 12px !important;
+        background-color: #007BFF !important;
+        color: white !important;
+    }
+
+    / Result Boxes /
+    .result-box {
+        text-align: center;
+        padding: 15px;
+        border-radius: 15px;
+        background-color: #f1f3f4;
+        border: 2px solid #3c4043;
+        margin: 15px 0;
+    }
+    .result-text {
+        font-size: 18px !important;
+        font-weight: bold !important;
+        color: #1a73e8;
+        margin-bottom: 5px;
+        word-wrap: break-word;
+    }
+    @media screen and (max-width: 640px) {
+        .result-text {
+            font-size: 15px !important;
+        }
     }
     </style>
-    """, 
-    unsafe_allow_html=True
-)
+    """, unsafe_allow_html=True)
 
 # ==============================================================================
 # --- Backend Calculation Functions ---
