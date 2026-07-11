@@ -1,246 +1,422 @@
-
+# power_app.py
 import streamlit as st
-import math
+import numpy as np
+import pandas as pd
+import plotly.graph_objects as go
+from decimal import Decimal, getcontext
+import matplotlib.pyplot as plt
 
-# 1. Page Configuration
-st.set_page_config(page_title="ElectroCalc M&F", page_icon="⚡️", layout="centered")
+# تنظیم دقت Decimal
+getcontext().prec = 50
 
-# 2. Optimized Styles for Mobile & English Tabs
+# ==================== تنظیمات صفحه ====================
+st.set_page_config(
+    page_title="نرمافزار تخصصی برق قدرت",
+    page_icon="⚡",
+    layout="wide",
+    initial_sidebar_state="collapsed"
+)
+
+# ==================== استایل سفارشی ====================
 st.markdown("""
     <style>
-    / Hide Streamlit header elements /
-    header div[data-testid="stHeader"] a, 
-    div[data-testid="stAppDeployButton"], 
-    #MainMenu {
-        display: none !important;
-    }
-
-    / Optimize Title for Mobile /
-css
-    / استایل پیش‌فرض برای لپ‌تاپ و تبلت /
-    .stApp h1 {
-        font-size: 16px !important; 
-        text-align: center !important;
-        white-space: nowrap !important;
-    }
-
-    / استایل مخصوص گوشی‌های موبایل (صفحات زیر 640 پیکسل) /
-    @media screen and (max-width: 640px) {
-        .stApp h1 {
-            font-size: 10px !important; / اندازه فونت در موبایل خیلی کوچک شد تا نشکند /
-            letter-spacing: -1px !important;
+        .main {
+            background-color: #0e1117;
+            color: #f0f0f0;
         }
-    }
-    / Label and Markdown fonts /
-    label, .stMarkdown p {
-        font-size: 14px !important;
-    }
-    @media screen and (max-width: 640px) {
-        label, .stMarkdown p {
-            font-size: 12px !important;
+        .stTabs [data-baseweb="tab-list"] {
+            gap: 24px;
+            background-color: #1e2229;
+            padding: 10px;
+            border-radius: 10px;
         }
-    }
-
-    / TABS STYLE - Forced to be English & Compact /
-    .stTabs div[role="tablist"] { 
-        gap: 5px !important; 
-        flex-wrap: nowrap !important; 
-        overflow-x: auto !important;
-    }
-    .stTabs [role="tab"] {
-        font-size: 13px !important;
-        padding: 8px 10px !important;
-        border-radius: 8px 8px 0px 0px !important;
-        background-color: #f0f2f6 !important;
-        white-space: nowrap !important;
-    }
-    .stTabs [aria-selected="true"] {
-        background-color: #4CAF50 !important; 
-        color: white !important;
-    }
-
-    / Buttons Styling /
-    .stButton > button {
-        width: 100% !important;
-        height: 50px !important;
-        font-size: 18px !important;
-        font-weight: bold !important;
-        border-radius: 12px !important;
-        background-color: #007BFF !important;
-        color: white !important;
-    }
-
-    / Result Boxes /
-    .result-box {
-        text-align: center;
-        padding: 15px;
-        border-radius: 15px;
-        background-color: #f1f3f4;
-        border: 2px solid #3c4043;
-        margin: 15px 0;
-    }
-    .result-text {
-        font-size: 18px !important;
-        font-weight: bold !important;
-        color: #1a73e8;
-        margin-bottom: 5px;
-        word-wrap: break-word;
-    }
-    @media screen and (max-width: 640px) {
-        .result-text {
-            font-size: 15px !important;
+        .stTabs [data-baseweb="tab"] {
+            background-color: #2d3138;
+            color: #aaa;
+            border-radius: 8px;
+            padding: 10px 25px;
+            font-weight: bold;
+            font-size: 16px;
         }
-    }
+        .stTabs [aria-selected="true"] {
+            background-color: #007acc !important;
+            color: white !important;
+        }
+        .result-box {
+            background-color: #0a0a0a;
+            border: 1px solid #00ff00;
+            border-radius: 10px;
+            padding: 20px;
+            font-family: 'Courier New', monospace;
+            direction: ltr;
+        }
+        .metric-card {
+            background-color: #1e2229;
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 4px solid #007acc;
+        }
     </style>
-    """, unsafe_allow_html=True)
+""", unsafe_allow_html=True)
 
-# ==============================================================================
-# --- Backend Calculation Functions ---
-# ==============================================================================
+# ==================== هدر ====================
+col_logo, col_title = st.columns([1, 10])
+with col_logo:
+    st.write("⚡")
+with col_title:
+    st.title("نرمافزار تخصصی محاسبات برق قدرت")
+    st.caption("طراحی شده برای مهندسان شبکه، حفاظت و بهرهبرداری | نسخه ۳.۰ (Web-Based)")
 
+st.markdown("---")
 
-import math
+# ==================== تبها ====================
+tab1, tab2, tab3, tab4 = st.tabs([
+    "📉 افت ولتاژ و تلفات",
+    "⚡ اتصال کوتاه (IEC)", 
+    "🧮 پخش بار NR",
+    "🛡️ هماهنگی حفاظتی"
+])
 
-def calculate_cable_fixed(p_kw, length, sigma, voltage=380, max_drop_percent=2):
-    # ۱. تبدیل توان به وات و محاسبه جریان نامی (با فرض بهره ۰.۸)
-    p_watts = p_kw * 1000
-    cos_phi = 0.8 
-    current = p_watts / (math.sqrt(3) * voltage * cos_phi)
+# =====================================================
+# تب ۱: افت ولتاژ
+# =====================================================
+with tab1:
+    st.header("📉 محاسبه افت ولتاژ و تلفات خطوط")
+    st.info("این ابزار افت ولتاژ و تلفات توان را در خطوط انتقال و توزیع محاسبه میکند.", icon="ℹ️")
     
-    # ۲. محاسبه سطح مقطع بر اساس افت ولتاژ
-    try:
-        # فرمول: Area = (P * L * 100) / (sigma * V^2 * deltaV%)
-        area_voltage_drop = (p_watts * length * 100) / (sigma * (voltage**2) * max_drop_percent)
-    except ZeroDivisionError: 
-        return 0, "Error", "Error", 0
-
-    # ۳. تعیین حداقل سطح مقطع بر اساس تحمل جریان (برای جلوگیری از ذوب شدن کابل)
-    # جدول: (حداکثر جریان مجاز -> سایز کابل)
-    current_capacity_table = [
-        (15, 1.5), (22, 2.5), (32, 4), (45, 6), 
-        (65, 10), (100, 16), (150, 25), (200, 35), 
-        (260, 50), (320, 70), (380, 95), (450, 120)
-    ]
+    col1, col2 = st.columns(2)
     
-    min_area_for_current = 1.5
-    for limit, size in current_capacity_table:
-        if current <= limit:
-            min_area_for_current = size
-            break
-    else: 
-        min_area_for_current = 120 # برای جریان‌های بسیار بالا
-
-    # ۴. انتخاب مقدار بزرگتر بین «افت ولتاژ» و «تحمل جریان» برای ایمنی
-    final_calc = max(area_voltage_drop, min_area_for_current)
-
-    # ۵. تطبیق با سایزهای استاندارد بازار
-    standard_sizes = [1.5, 2.5, 4, 6, 10, 16, 25, 35, 50, 70, 95, 120, 150, 185, 240, 300]
+    with col1:
+        st.subheader("پارامترهای خط")
+        V_nom = st.number_input("ولتاژ نامی (kV)", value=20.0, step=1.0, format="%.1f", key="v_nom")
+        I_load = st.number_input("جریان بار (A)", value=400.0, step=10.0, format="%.1f", key="i_load")
+        pf = st.slider("ضریب توان (cos φ)", min_value=0.5, max_value=1.0, value=0.85, step=0.01, key="pf")
+        
+    with col2:
+        st.subheader("مشخصات خط")
+        R = st.number_input("مقاومت خط (Ω/km)", value=0.15, step=0.01, format="%.3f", key="r_line")
+        X = st.number_input("راکتانس خط (Ω/km)", value=0.35, step=0.01, format="%.3f", key="x_line")
+        length = st.number_input("طول خط (km)", value=5.0, step=0.5, format="%.1f", key="length")
     
-    suggested_index = -1
-    for i, size in enumerate(standard_sizes):
-        if size >= final_calc:
-            suggested_index = i
-            break
-    
-    if suggested_index == -1: 
-        return round(current, 1), "Out of Range", "Out of Range", round(final_calc, 2)
-    
-    standard_size = standard_sizes[suggested_index]
-    
-    # ۶. اعمال شرط مسافت ۸۰ متری شما
-    if length <= 80:
-        # زیر ۸۰ متر: سایز پیشنهادی همان سایز استاندارد است (تغییری نمی‌کند)
-        suggested_size = standard_size
-    else:
-        # بالای ۸۰ متر: سایز پیشنهادی یک پله بالاتر از استاندارد می‌رود
-        if suggested_index + 1 < len(standard_sizes):
-            suggested_size = standard_sizes[suggested_index + 1]
-        else:
-            suggested_size = standard_size
+    if st.button("🔍 محاسبه افت ولتاژ", type="primary", use_container_width=True):
+        try:
+            V = Decimal(str(V_nom))
+            I = Decimal(str(I_load))
+            cos = Decimal(str(pf))
+            R_dec = Decimal(str(R))
+            X_dec = Decimal(str(X))
+            L = Decimal(str(length))
+            
+            sin = (1 - cos**2).sqrt()
+            R_total = R_dec * L
+            X_total = X_dec * L
+            
+            dV = I * (R_total * cos + X_total * sin)
+            dV_percent = (dV / V) * 100
+            P_loss = 3 * (I**2) * R_total
+            Q_loss = 3 * (I**2) * X_total
+st.markdown("---")
+            st.subheader("📊 نتایج محاسبه")
+            
+            col_res1, col_res2, col_res3 = st.columns(3)
+            with col_res1:
+                st.metric("افت ولتاژ خطی", f"{float(dV):.3f} kV", delta=f"{float(dV_percent):.2f}%")
+            with col_res2:
+                st.metric("تلفات اکتیو سهفاز", f"{float(P_loss/1000):.2f} kW")
+            with col_res3:
+                st.metric("تلفات راکتیو سهفاز", f"{float(Q_loss/1000):.2f} kVAR")
+            
+            # نمایش فرمول
+            with st.expander("📐 مشاهده فرمول محاسبه", expanded=False):
+                st.latex(r"\Delta V = I \times (R \cos\phi + X \sin\phi)")
+                st.latex(r"\Delta V\% = \frac{\Delta V}{V_{nom}} \times 100")
+                st.latex(r"P_{loss} = 3 I^2 R")
+                st.latex(r"Q_{loss} = 3 I^2 X")
+                
+        except Exception as e:
+            st.error(f"❌ خطا در محاسبه: {str(e)}")
+            st.warning("لطفاً مقادیر ورودی را بررسی کنید.")
 
-    return round(current, 1), standard_size, suggested_size, round(final_calc, 2)
-def calculate_ups_fixed(load_kva, backup_min, num_batteries):
-    base_data = {10: 7, 20: 12, 30: 18, 40: 23, 50: 28, 60: 32}
-    minutes_list = sorted(base_data.keys())
-    if backup_min <= minutes_list[0]: base_ah = base_data[minutes_list[0]]
-    elif backup_min >= minutes_list[-1]: base_ah = base_data[60]  (backup_min / 60)
-    else:
-        for i in range(len(minutes_list)-1):
-            m1, m2 = minutes_list[i], minutes_list[i+1]
-            if m1 <= backup_min <= m2:
-                a1, a2 = base_data[m1], base_data[m2]
-                base_ah = a1 + ((a2 - a1) * (backup_min - m1) / (m2 - m1))
-                break
-    return round((base_ah * (load_kva / 10) * 32) / num_batteries, 1)
-def calculate_motor_from_kva(p_kva, eff=0.85, cos_phi=0.8, voltage=380):
-    p_kw_out = p_kva * cos_phi
-    p_kw_in = p_kw_out / eff
-    current = (p_kw_in * 1000) / (math.sqrt(3) * voltage * cos_phi)
-    starting_current = current * 6
-    return round(current, 2), round(p_kw_in, 2), round(starting_current, 2), round(p_kw_out, 2)
+# =====================================================
+# تب ۲: اتصال کوتاه
+# =====================================================
+with tab2:
+    st.header("⚡ محاسبه اتصال کوتاه مطابق IEC 60909")
+    st.info("محاسبه جریان اتصال کوتاه سهفاز متقارن و جریان پیک بر اساس استاندارد IEC.", icon="ℹ️")
+    
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        st.subheader("پارامترهای شبکه")
+        V_sc = st.number_input("ولتاژ نامی (kV)", value=20.0, step=1.0, key="sc_v")
+        S_sc = st.number_input("توان اتصال کوتاه شبکه (MVA)", value=500.0, step=50.0, format="%.1f", key="sc_s")
+        
+    with col2:
+        st.subheader("امپدانس تجهیز")
+        R1 = st.number_input("مقاومت توالی مثبت (Ω)", value=0.8, step=0.1, format="%.2f", key="r1")
+        X1 = st.number_input("راکتانس توالی مثبت (Ω)", value=4.5, step=0.1, format="%.2f", key="x1")
+    
+    if st.button("⚡ محاسبه جریان اتصال کوتاه", type="primary", use_container_width=True):
+        try:
+            V = float(V_sc)
+            S_k = float(S_sc)
+            R = float(R1)
+            X = float(X1)
+            
+            Z_net = (V**2) / S_k
+            I_k3 = (V * 1000) / (np.sqrt(3) * np.sqrt(R**2 + X**2))
+            
+            # ضریب پیک IEC
+            ratio = X / R if R != 0 else float('inf')
+            kappa = 1.02 + 0.98 * np.exp(-3 * ratio) if ratio < 10 else 1.8
+            I_peak = kappa * np.sqrt(2) * I_k3
+            
+            st.markdown("---")
+            st.subheader("📊 نتایج اتصال کوتاه")
+            
+            col_res1, col_res2, col_res3 = st.columns(3)
+            with col_res1:
+                st.metric("امپدانس شبکه", f"{Z_net:.4f} Ω")
+                st.metric("نسبت X/R", f"{ratio:.2f}")
+            with col_res2:
+                st.metric("جریان اتصال کوتاه", f"{I_k3:,.2f} A", delta="RMS")
+            with col_res3:
+                st.metric("جریان پیک (I_p)", f"{I_peak:,.2f} A", delta=f"κ = {kappa:.3f}")
+            
+            # نمایش استاندارد
+            with st.expander("📖 مرجع استاندارد IEC 60909", expanded=False):
+                st.markdown("""
+                روابط محاسباتی:
+                - امپدانس شبکه: Z_net = V² / S_k
+                - جریان اتصال کوتاه: I_k3 = V / (√3 × √(R² + X²))
+                - ضریب پیک: κ = 1.02 + 0.98 × e^(-3×X/R)
+                """)
+                
+        except Exception as e:
+            st.error(f"❌ خطا: {str(e)}")
 
-def suggest_breaker(current, type_load="Resistive"):
-    multiplier = 1.25 if type_load == "Resistive" else 1.5 
-    required_current = current * multiplier
-    standard_breakers = [6, 10, 16, 20, 25, 32, 40, 50, 63, 80, 100, 125, 160, 200, 250]
-    suggested = min([x for x in standard_breakers if x >= required_current] or [max(standard_breakers)])
-    return suggested
-# ==============================================================================
-# --- User Interface (UI) ---
-# ==============================================================================
-st.title("ElectroCalc⚡️M&F")
-# English names for tabs to ensure a clean look on mobile
-tabs = st.tabs(["📏 Cable", "🔋 UPS", "⚙️ Motor", "🛡️ Protect"])
-# --- Tab 1: Cable ---
-with tabs[0]:
-    st.header("Cable Section Calculation")
-    with st.container(border=True):
-        c1, c2 = st.columns(2)
-        with c1:
-            p_in = st.number_input("Power (kW)", value=85.0, key="p_c")
-            l_in = st.number_input("Length (m)", value=90.0, key="l_c")
-        with c2:
-            s_in = st.number_input("Sigma (Conductivity)", value=56.0, key="s_c")
-            d_in = st.number_input("Voltage Drop (%)", value=2.0, key="d_c")
-    if st.button("Calculate Cable"):
-        curr, f_size, s_size, raw = calculate_cable_fixed(p_in, l_in, s_in, 380, d_in)
-        st.latex(r"Area = \frac{P \times L \times 100}{\sigma \times V^2 \times \Delta V\%}")
-        st.markdown(f"""<div class='result-box'><div class='result-text'>⚡️ Current: {curr} A</div><div class='result-text' style='color: #1b5e20;'>🎯 Std Size: {f_size} mm²</div><div class='result-text' style='color: #e65100;'>🚀 Safe Size: {s_size} mm²</div><p style='color: #5f6368;'>Exact Calc: {raw} mm²</p></div>""", unsafe_allow_html=True)
-# --- Tab 2: UPS ---
-with tabs[1]:
-    st.header("Battery Capacity Calculation")
-    with st.container(border=True):
-        c1, c2 = st.columns(2)
-        with c1:
-            u_kva = st.number_input("UPS Power (kVA)", value=40.0, key="u_kva")
-            u_min = st.number_input("Time (min)", value=15, key="u_min")
-        with c2:
-            u_bat = st.number_input("Number of Batteries", value=32, key="u_bat")
-    if st.button("Calculate UPS"):
-        res =calculate_ups_fixed(u_kva, u_min, u_bat)
-        st.latex(r"Ah_{Final} = \frac{Ah_{Base} \times \frac{kVA}{10} \times 32}{N_{Battery}}")
-        st.markdown(f"""<div class='result-box'><div class='result-text'>📦 Battery Cap: {res} Ah</div><div class='result-text' style='color: #0d47a1;'>📌 Required: {u_bat} Units</div></div>""", unsafe_allow_html=True)
-# --- Tab 3: Motor ---
-with tabs[2]:
-    st.header("Electric Motor Calculations")
-    with st.container(border=True):
-        c1, c2 = st.columns(2)
-        with c1:
-            m_kva = st.number_input("Apparent Power (kVA)", value=150.0, key="m_kva")
-            m_eff = st.number_input("Efficiency (e.g. 0.85)", value=0.85, step=0.01, key="m_eff")
-        with c2:
-            m_cos = st.number_input("Power Factor (cos φ)", value=0.8, step=0.01, key="m_cos")
-            m_vol = st.number_input("Voltage (V)", value=380, key="m_vol")
-    if st.button("Calculate Motor"):
-        curr, p_in, s_curr, p_kw_out = calculate_motor_from_kva(m_kva, m_eff, m_cos, m_vol)
-        st.latex(r"P_{kW} = kVA \times \cos\phi \quad \rightarrow \quad I = \frac{P_{kW} \times 1000}{\eta \times \sqrt{3} \times V \times \cos\phi}")
-        st.markdown(f"""<div class='result-box'><div class='result-text'>⚡️ Rated Current: {curr} A</div><div class='result-text'>🚀 Start Current: {s_curr} A</div><div class='result-text' style='color: #1a73e8;'>🔌 Input Power: {p_in} kW</div><div class='result-text'>🎯 Output Power: {p_kw_out} kW</div></div>""", unsafe_allow_html=True)
-# --- Tab 4: Protection ---
-with tabs[3]:
-    st.header("Protection & Breakers")
-    with st.container(border=True):
-        p_curr = st.number_input("Load Current (A)", value=100.0, key="p_curr")
-        p_type = st.selectbox("Load Type", ["Resistive", "Inductive"], key="p_type")
-    if st.button("Suggest Breaker"):
-        b_size = suggest_breaker(p_curr, p_type)
-        st.markdown(f"""<div class='result-box'><div class='result-text'>🛡️ Suggested Breaker: {b_size} A</div><p style='color: #5f6368;'>Based on standard IEC sizing</p></div>""", unsafe_allow_html=True)
+# =====================================================
+# تب ۳: پخش بار نیوتن-رافسون
+# =====================================================
+with tab3:
+    st.header("🧮 پخش بار با روش نیوتن-رافسون (سیستم ۳ باسه)")
+    st.info("تحلیل پخش بار برای سیستم ۳ باسه با باس ۱ به عنوان اسلک (Slack).", icon="ℹ️")
+    
+    st.markdown("""
+    توپولوژی شبکه:
+    - باس ۱: اسلک (ولتاژ مرجع)
+with st.expander("📖 توضیحات منحنی", expanded=False):
+                    st.markdown("""
+                    مشخصه بسیار معکوس (Very Inverse) طبق IEC:
+                    - فرمول: t = TMS × (13.5 / (I/Ip) - 1)
+                    - مناسب برای هماهنگی با فیوزها و بریکرهای پاییندست
+                    - هرچه جریان خطا بیشتر باشد، زمان عملکرد کوتاهتر میشود
+                    """)
+            
+        except Exception as e:
+            st.error(f"❌ خطا: {str(e)}")
+
+# ==================== فوتر ====================
+st.markdown("---")
+col1, col2, col3 = st.columns(3)
+with col1:
+    st.caption("⚡ توسعه‌یافته برای مهندسی برق قدرت")
+with col2:
+    st.caption("📚 منبع: استانداردهای IEC 60909 و IEC 60255")
+with col3:
+    st.caption("🔄 نسخه ۳.۰ - Web-Based")
+
+# اطلاعات جلسه
+with st.sidebar:
+    st.header("📋 اطلاعات")
+    st.info("""
+    نرم‌افزار محاسبات برق قدرت
+    
+    ✅ ۴ ماژول تخصصی
+    ✅ محاسبات با دقت بالا
+    ✅ نمودارهای تعاملی
+    ✅ قابل اجرا در مرورگر
+    """)
+    
+    st.markdown("---")
+    st.caption("ساخته شده با ❤️ توسط تیم مهندسی")
+- باس ۲: بار PQ
+    - باس ۳: بار PQ
+    """)
+    
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        st.subheader("بار باس ۲")
+        P2 = st.number_input("توان اکتیو (MW)", value=50.0, step=5.0, format="%.1f", key="p2")
+        Q2 = st.number_input("توان راکتیو (MVAR)", value=20.0, step=5.0, format="%.1f", key="q2")
+        
+    with col2:
+        st.subheader("بار باس ۳")
+        P3 = st.number_input("توان اکتیو (MW)", value=30.0, step=5.0, format="%.1f", key="p3")
+        Q3 = st.number_input("توان راکتیو (MVAR)", value=15.0, step=5.0, format="%.1f", key="q3")
+    
+    iterations = st.slider("تعداد تکرار", min_value=1, max_value=10, value=5, key="iter")
+    
+    if st.button("🧮 اجرای پخش بار", type="primary", use_container_width=True):
+        try:
+            # ماتریس ادمیتانس سیستم ۳ باسه
+            Y = np.array([[10-30j, -5+15j, -5+15j],
+                          [-5+15j, 10-30j, -5+15j],
+                          [-5+15j, -5+15j, 10-30j]], dtype=complex)
+            
+            V = np.array([1.0+0j, 1.0+0j, 1.0+0j], dtype=complex)
+            V_history = []
+            
+            with st.spinner("در حال همگرایی..."):
+                for iter_num in range(iterations):
+                    I = np.dot(Y, V)
+                    S_calc = V * np.conj(I)
+                    
+                    dP = np.array([0, float(P2) - S_calc[1].real, float(P3) - S_calc[2].real])
+                    dQ = np.array([0, float(Q2) - S_calc[1].imag, float(Q3) - S_calc[2].imag])
+                    
+                    # ژاکوبین سادهشده
+                    J = np.array([[50, -20], [-20, 50]])
+                    try:
+                        dTheta_dV = np.linalg.solve(J, np.array([dP[1], dP[2]]))
+                        V[1] += 0.02 * dTheta_dV[0]
+                        V[2] += 0.02 * dTheta_dV[1]
+                        V_history.append([abs(V[1]), abs(V[2])])
+                    except:
+                        break
+            
+            st.markdown("---")
+            st.subheader("📊 نتایج پخش بار")
+            
+            col_res1, col_res2, col_res3 = st.columns(3)
+            with col_res1:
+                st.metric("ولتاژ باس ۲", f"{abs(V[1]):.4f} pu", delta=f"{np.angle(V[1], deg=True):.2f}°")
+            with col_res2:
+                st.metric("ولتاژ باس ۳", f"{abs(V[2]):.4f} pu", delta=f"{np.angle(V[2], deg=True):.2f}°")
+            with col_res3:
+                st.metric("توان تزریقی باس اسلک", f"{S_calc[0]:.3f} MVA")
+            
+            # رسم نمودار همگرایی
+            if len(V_history) > 0:
+                fig = go.Figure()
+                fig.add_trace(go.Scatter(
+                    y=[v[0] for v in V_history],
+                    mode='lines+markers',
+                    name='باس ۲',
+                    line=dict(color='#00ffff', width=2)
+                ))
+                fig.add_trace(go.Scatter(
+                    y=[v[1] for v in V_history],
+                    mode='lines+markers',
+                    name='باس ۳',
+                    line=dict(color='#ff66ff', width=2)
+                ))
+                fig.update_layout(
+                    title="روند همگرایی ولتاژ",
+                    xaxis_title="تکرار",
+                    yaxis_title="ولتاژ (پریونیت)",
+                    template="plotly_dark",
+                    height=300
+                )
+                st.plotly_chart(fig, use_container_width=True)
+            
+        except Exception as e:
+            st.error(f"❌ خطای همگرایی: {str(e)}")
+            st.warning("سیستم ممکن است به نقطه کار قابل قبول نرسد. پارامترها را بررسی کنید.")
+
+# =====================================================
+# تب ۴: هماهنگی حفاظتی
+# =====================================================
+with tab4:
+    st.header("🛡️ هماهنگی حفاظتی (رله IDMT)")
+    st.info("محاسبه زمان عملکرد رله بر اساس مشخصه بسیار معکوس (Very Inverse) مطابق استاندارد IEC.", icon="ℹ️")
+col1, col2 = st.columns(2)
+    
+    with col1:
+        st.subheader("پارامترهای شبکه")
+        I_n = st.number_input("جریان نامی تجهیز (A)", value=100.0, step=10.0, format="%.1f", key="in")
+        I_fault = st.number_input("جریان خطا (kA)", value=5.0, step=0.5, format="%.2f", key="ifault")
+        
+    with col2:
+        st.subheader("تنظیمات CT و رله")
+        ct_primary = st.number_input("CT - جریان اولیه (A)", value=200, step=50, key="ct_p")
+        ct_secondary = st.number_input("CT - جریان ثانویه (A)", value=5, step=1, key="ct_s")
+        tms = st.slider("تنظیم TMS", min_value=0.05, max_value=1.0, value=0.1, step=0.05, key="tms")
+    
+    if st.button("🛡️ محاسبه زمان عملکرد", type="primary", use_container_width=True):
+        try:
+            I_f = float(I_fault) * 1000
+            ct_ratio = ct_primary / ct_secondary
+            I_secondary = I_f / ct_ratio
+            
+            # مشخصه بسیار معکوس IEC
+            alpha = 13.5
+            beta = 1
+            if I_secondary > 1:
+                t_operate = tms * (alpha / ((I_secondary / 1)**beta - 1))
+            else:
+                t_operate = float('inf')
+            
+            st.markdown("---")
+            st.subheader("📊 نتایج حفاظتی")
+            
+            col_res1, col_res2, col_res3 = st.columns(3)
+            with col_res1:
+                st.metric("جریان اولیه خطا", f"{I_f/1000:.2f} kA")
+                st.metric("نسبت CT", f"{ct_primary}/{ct_secondary}")
+            with col_res2:
+                st.metric("جریان ثانویه CT", f"{I_secondary:.2f} A")
+                st.metric("تنظیم TMS", f"{tms:.2f}")
+            with col_res3:
+                if t_operate != float('inf'):
+                    st.metric("زمان عملکرد رله", f"{t_operate:.3f} ثانیه")
+                else:
+                    st.metric("زمان عملکرد رله", "∞ (بی‌نهایت)")
+            
+            # رسم منحنی زمان-جریان با Plotly
+            if I_secondary > 1:
+                currents = np.linspace(1.1, max(I_secondary * 2, 5), 100)
+                times = tms * (alpha / (currents**beta - 1))
+                
+                fig = go.Figure()
+                fig.add_trace(go.Scatter(
+                    x=currents,
+                    y=times,
+                    mode='lines',
+                    name='منحنی IDMT (Very Inverse)',
+                    line=dict(color='#ff66ff', width=3)
+                ))
+                
+                # نقطه عملکرد
+                fig.add_trace(go.Scatter(
+                    x=[I_secondary],
+                    y=[t_operate if t_operate != float('inf') else 10],
+                    mode='markers',
+                    name='نقطه عملکرد',
+                    marker=dict(size=15, color='red', symbol='x', line=dict(width=3))
+                ))
+                
+                # خطوط راهنما
+                fig.add_hline(y=t_operate if t_operate != float('inf') else 10, 
+                             line_dash="dash", line_color="gray", 
+                             annotation_text=f"t = {t_operate:.3f}s")
+                fig.add_vline(x=I_secondary, line_dash="dash", line_color="gray",
+                             annotation_text=f"I = {I_secondary:.1f}A")
+                
+                fig.update_layout(
+                    title="منحنی زمان-جریان رله",
+                    xaxis_title="جریان ثانویه CT (A)",
+                    yaxis_title="زمان عملکرد (ثانیه)",
+                    template="plotly_dark",
+                    height=450,
+                    showlegend=True
+                )
+                
+                # تنظیم مقیاس لگاریتمی برای دید بهتر
+                fig.update_xaxis(type="log")
+                fig.update_yaxis(type="log")
+                
+                st.plotly_chart(fig, use_container_width=True)
+                
+                # توضیحات
