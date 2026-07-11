@@ -98,27 +98,66 @@ css
 # --- Backend Calculation Functions ---
 # ==============================================================================
 
+
+import math
+
 def calculate_cable_fixed(p_kw, length, sigma, voltage=380, max_drop_percent=2):
-    p_watts = p_kw * 1000  *  cos_phi = 0.8
+    # ۱. تبدیل توان به وات و محاسبه جریان نامی (با فرض بهره ۰.۸)
+    p_watts = p_kw * 1000
+    cos_phi = 0.8 
     current = p_watts / (math.sqrt(3) * voltage * cos_phi)
-    # ۱. محاسبه سطح مقطع بر اساس افت ولتاژ (برای بررسی مسافت‌های دور)    
-    try:        area_voltage_drop = (p_watts * length * 100) / (sigma * (voltage**2) * max_drop_percent)  *  except ZeroDivisionError: return 0, "Error", "Error", 0
-    # ۲. تعیین حداقل سطح مقطع بر اساس تحمل جریان (جدول ایمنی)    
-    current_capacity_table = [        (15, 1.5), (22, 2.5), (32, 4), (45, 6),         (65, 10), (100, 16), (150, 25), (200, 35),         (260, 50), (320, 70), (380, 95), (450, 120)    ]    min_area_for_current = 1.5    for limit, size in current_capacity_table:        if current <= limit:            min_area_for_current = size            break    else: min_area_for_current = 120
-    # ۳. انتخاب سایز استاندارد (بهترین سایز بین جریان و افت ولتاژ)    
-    standard_sizes = [1.5, 2.5, 4, 6, 10, 16, 25, 35, 50, 70, 95, 120, 150, 185, 240, 300]    final_calc = max(area_voltage_drop, min_area_for_current)
-    suggested_index = -1    for i, size in enumerate(standard_sizes):        
-    if size >= final_calc:            suggested_index = i
-        break
-    if suggested_index == -1: return round(current, 1), "Out of Range", "Out of Range", round(final_calc, 2)
+    
+    # ۲. محاسبه سطح مقطع بر اساس افت ولتاژ
+    try:
+        # فرمول: Area = (P * L * 100) / (sigma * V^2 * deltaV%)
+        area_voltage_drop = (p_watts * length * 100) / (sigma * (voltage**2) * max_drop_percent)
+    except ZeroDivisionError: 
+        return 0, "Error", "Error", 0
+
+    # ۳. تعیین حداقل سطح مقطع بر اساس تحمل جریان (برای جلوگیری از ذوب شدن کابل)
+    # جدول: (حداکثر جریان مجاز -> سایز کابل)
+    current_capacity_table = [
+        (15, 1.5), (22, 2.5), (32, 4), (45, 6), 
+        (65, 10), (100, 16), (150, 25), (200, 35), 
+        (260, 50), (320, 70), (380, 95), (450, 120)
+    ]
+    
+    min_area_for_current = 1.5
+    for limit, size in current_capacity_table:
+        if current <= limit:
+            min_area_for_current = size
+            break
+    else: 
+        min_area_for_current = 120 # برای جریان‌های بسیار بالا
+
+    # ۴. انتخاب مقدار بزرگتر بین «افت ولتاژ» و «تحمل جریان» برای ایمنی
+    final_calc = max(area_voltage_drop, min_area_for_current)
+
+    # ۵. تطبیق با سایزهای استاندارد بازار
+    standard_sizes = [1.5, 2.5, 4, 6, 10, 16, 25, 35, 50, 70, 95, 120, 150, 185, 240, 300]
+    
+    suggested_index = -1
+    for i, size in enumerate(standard_sizes):
+        if size >= final_calc:
+            suggested_index = i
+            break
+    
+    if suggested_index == -1: 
+        return round(current, 1), "Out of Range", "Out of Range", round(final_calc, 2)
+    
     standard_size = standard_sizes[suggested_index]
-    # --- اعمال شرط ۸۰ متری شما ---    if length <= 80:
-    # اگر زیر ۸۰ متر بود: سایز پیشنهادی را همان سایز استاندارد قرار بده (تغییری نکند)
-    suggested_size = standard_size    
-else:        # اگر بالای ۸۰ متر بود: سایز پیشنهادی یک پله بالاتر از استاندارد باشد       
-    if suggested_index + 1 < len(standard_sizes):           suggested_size = standard_sizes[suggested_index + 1]
-        else:            suggested_size = standard_size
-            # ----------------------------
+    
+    # ۶. اعمال شرط مسافت ۸۰ متری شما
+    if length <= 80:
+        # زیر ۸۰ متر: سایز پیشنهادی همان سایز استاندارد است (تغییری نمی‌کند)
+        suggested_size = standard_size
+    else:
+        # بالای ۸۰ متر: سایز پیشنهادی یک پله بالاتر از استاندارد می‌رود
+        if suggested_index + 1 < len(standard_sizes):
+            suggested_size = standard_sizes[suggested_index + 1]
+        else:
+            suggested_size = standard_size
+
     return round(current, 1), standard_size, suggested_size, round(final_calc, 2)
 def calculate_ups_fixed(load_kva, backup_min, num_batteries):
     base_data = {10: 7, 20: 12, 30: 18, 40: 23, 50: 28, 60: 32}
