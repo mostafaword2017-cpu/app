@@ -26,7 +26,7 @@ st.markdown("""
 
     /* ========== بهینه‌سازی تایتل اصلی ========== */
     .stApp h1 {
-        font-size: 30px !important;  /* دو درجه بزرگتر (از 26 به 30) */
+        font-size: 34px !important;  /* دو درجه بزرگتر (از 30 به 34) */
         text-align: center !important;
         white-space: nowrap !important;
         letter-spacing: 0px !important;
@@ -41,7 +41,7 @@ st.markdown("""
     /* تایتل در موبایل */
     @media screen and (max-width: 480px) {
         .stApp h1 {
-            font-size: 23px !important;  /* دو درجه بزرگتر (از 20 به 23) */
+            font-size: 26px !important;  /* دو درجه بزرگتر (از 23 به 26) */
             letter-spacing: -0.3px !important;
         }
     }
@@ -57,7 +57,7 @@ st.markdown("""
     }
     
     .stTabs [role="tab"] {
-        font-size: 16px !important;  /* دو درجه بزرگتر (از 13 به 16) */
+        font-size: 16px !important;
         padding: 10px 18px !important;
         border-radius: 8px 8px 0px 0px !important;
         background-color: #f0f2f6 !important;
@@ -73,7 +73,7 @@ st.markdown("""
             justify-content: center !important;
         }
         .stTabs [role="tab"] {
-            font-size: 13px !important;  /* دو درجه بزرگتر (از 10 به 13) */
+            font-size: 13px !important;
             padding: 6px 10px !important;
             min-width: 55px !important;
         }
@@ -388,14 +388,14 @@ class PowerSystemCalculator:
         }
 
 # ==============================================================================
-# --- رابط کاربری (UI) با اسم بزرگتر و تبهای وسطچین ---
+# --- رابط کاربری (UI) با اسم بزرگتر ---
 # ==============================================================================
 
 # ✅ عنوان با علامت برق در وسط و فونت بزرگتر
 st.markdown("""
     <h1 style='
         text-align: center; 
-        font-size: 30px; 
+        font-size: 34px; 
         font-weight: 700; 
         margin: 0; 
         padding: 10px 0;
@@ -448,7 +448,6 @@ with tabs[0]:
             st.latex(r"""
             S = \frac{P \times L \times 100}{\sigma \times V^2 \times \Delta V\%}
             """)
-            # ✅ متن فارسی حذف شد
 
 # --- تب ۲: UPS ---
 with tabs[1]:
