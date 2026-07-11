@@ -7,7 +7,7 @@ from typing import Tuple, Optional
 # --- تنظیمات صفحه ---
 # ==============================================================================
 st.set_page_config(
-    page_title="ElectroCalc⚡M&F ", 
+    page_title="ElectroCalc ⚡ M&F", 
     page_icon="⚡️", 
     layout="centered"
 )
@@ -26,7 +26,7 @@ st.markdown("""
 
     /* ========== بهینه‌سازی تایتل اصلی ========== */
     .stApp h1 {
-        font-size: 18px !important;
+        font-size: 22px !important;  /* دو درجه بزرگتر (از 18 به 22) */
         text-align: center !important;
         white-space: nowrap !important;
         letter-spacing: 0px !important;
@@ -41,7 +41,7 @@ st.markdown("""
     /* تایتل در موبایل */
     @media screen and (max-width: 480px) {
         .stApp h1 {
-            font-size: 14px !important;
+            font-size: 17px !important;  /* دو درجه بزرگتر (از 14 به 17) */
             letter-spacing: -0.3px !important;
         }
     }
@@ -177,6 +177,13 @@ st.markdown("""
     .main {
         overflow-x: hidden !important;
     }
+    
+    /* ========== علامت برق در تایتل ========== */
+    .stApp h1 .lightning {
+        color: #f9a825 !important;
+        display: inline-block !important;
+        margin: 0 2px !important;
+    }
     </style>
     """, unsafe_allow_html=True)
 
@@ -217,15 +224,11 @@ class PowerSystemCalculator:
         
         ✅ فرمول صحیح:
         S = (P × L × 100) / (σ × V² × ΔV%)
-        
-        ❌ اشتباه رایج (قبلی):
-        S = (P × L × 100) / (σ × V² × ΔV% × cos²φ)  <-- غلط!
         """
         # ۱. محاسبه جریان نامی (فرمول صحیح سهفاز)
         current = (power_kw * 1000) / (cls.SQRT3 * voltage * cos_phi)
         
         # ۲. محاسبه سطح مقطع بر اساس افت ولتاژ
-        # ✅ فرمول صحیح: کسینوس فی در مخرج نیست
         area_voltage_drop = (power_kw * 1000 * length_m * 100) / (
             conductivity * (voltage ** 2) * max_drop_percent
         )
@@ -368,11 +371,23 @@ class PowerSystemCalculator:
         }
 
 # ==============================================================================
-# --- رابط کاربری (UI) با اسم جدید ---
+# --- رابط کاربری (UI) با علامت برق در وسط و فونت بزرگتر ---
 # ==============================================================================
 
-# ✅ عنوان با علامت برق فقط در سمت راست
-st.title("ElectroCalc M&F ⚡")
+# ✅ عنوان با علامت برق در وسط و فونت بزرگتر
+st.markdown("""
+    <h1 style='
+        text-align: center; 
+        font-size: 22px; 
+        font-weight: 700; 
+        margin: 0; 
+        padding: 8px 0;
+        letter-spacing: 0px;
+        color: #1a1a1a;
+    '>
+    ElectroCalc <span style='color: #f9a825; display: inline-block; margin: 0 4px;'>⚡</span> M&F
+    </h1>
+""", unsafe_allow_html=True)
 
 # تب‌ها
 tabs = st.tabs(["📏 Cable", "🔋 UPS", "⚙️ Motor", "🛡️ Protect"])
@@ -413,7 +428,6 @@ with tabs[0]:
             st.write(f"**Required Area:** {result['required_area']} mm²")
             st.write(f"**Voltage Drop:** {result['voltage_drop']}%")
             st.write(f"**Status:** {'✅ PASS' if result['is_ok'] else '❌ FAIL'}")
-            # ✅ فرمول صحیح نمایش داده میشود
             st.latex(r"""
             S = \frac{P \times L \times 100}{\sigma \times V^2 \times \Delta V\%}
             """)
