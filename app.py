@@ -1,7 +1,10 @@
 import streamlit as st
 import math
 import numpy as np
-from typing import Tuple, Optional
+import networkx as nx
+import plotly.graph_objects as go
+import pandas as pd
+from typing import Tuple, Optional, Dict, List
 
 # ==============================================================================
 # --- تنظیمات صفحه ---
@@ -9,27 +12,21 @@ from typing import Tuple, Optional
 st.set_page_config(
     page_title="ElectroCalc ⚡ M&F", 
     page_icon="⚡️", 
-    layout="centered"
+    layout="wide"  # تغییر به wide برای نمایش بهتر یکخطی
 )
 
 # ==============================================================================
 # --- مدیریت تم (Theme) ---
 # ==============================================================================
 
-# مقداردهی اولیه تم در session_state
 if 'theme' not in st.session_state:
     st.session_state.theme = 'light'
 
-# تابع تغییر تم
 def toggle_theme():
     if st.session_state.theme == 'light':
         st.session_state.theme = 'dark'
     else:
         st.session_state.theme = 'light'
-
-# ==============================================================================
-# --- استایل با پشتیبانی از تم ---
-# ==============================================================================
 
 # تعیین رنگ‌ها بر اساس تم فعلی
 if st.session_state.theme == 'light':
@@ -44,6 +41,7 @@ if st.session_state.theme == 'light':
     metric_bg = "#f8f9fa"
     input_bg = "#ffffff"
     expander_bg = "#f8f9fa"
+    plot_bg = "rgba(255,255,255,0)"
 else:  # dark
     bg_color = "#1a1a1a"
     text_color = "#f0f0f0"
@@ -56,10 +54,14 @@ else:  # dark
     metric_bg = "#2d2d2d"
     input_bg = "#333333"
     expander_bg = "#2d2d2d"
+    plot_bg = "rgba(30,30,30,0)"
+
+# ==============================================================================
+# --- استایل ---
+# ==============================================================================
 
 st.markdown(f"""
     <style>
-    /* ========== تنظیمات کلی تم ========== */
     .stApp {{
         background-color: {bg_color} !important;
     }}
@@ -68,14 +70,12 @@ st.markdown(f"""
         color: {text_color} !important;
     }}
     
-    /* حذف المان‌های اضافی Streamlit */
     header div[data-testid="stHeader"] a, 
     div[data-testid="stAppDeployButton"], 
     #MainMenu {{
         display: none !important;
     }}
     
-    /* ========== دکمه تغییر تم در سمت راست بالا ========== */
     .theme-button-container {{
         position: fixed;
         top: 10px;
@@ -104,7 +104,6 @@ st.markdown(f"""
         box-shadow: 0 4px 12px rgba(0,0,0,0.3);
     }}
     
-    /* ========== بهینه‌سازی تایتل اصلی ========== */
     .stApp h1 {{
         font-size: 34px !important;
         text-align: center !important;
@@ -130,7 +129,6 @@ st.markdown(f"""
         }}
     }}
 
-    /* ========== بهینه‌سازی هدر تب‌ها ========== */
     .stTabs div[role="tablist"] {{ 
         gap: 5px !important; 
         flex-wrap: nowrap !important; 
@@ -172,7 +170,6 @@ st.markdown(f"""
         font-weight: 600 !important;
     }}
 
-    /* ========== لیبل‌ها ========== */
     label, .stMarkdown p, .stText, .stNumberInput label {{
         font-size: 13px !important;
         margin-bottom: 2px !important;
@@ -185,7 +182,6 @@ st.markdown(f"""
         }}
     }}
 
-    /* ========== دکمه‌ها ========== */
     .stButton > button {{
         width: 100% !important;
         height: 42px !important;
@@ -205,7 +201,6 @@ st.markdown(f"""
         }}
     }}
 
-    /* ========== متریک‌ها ========== */
     div[data-testid="metric-container"] {{
         padding: 8px !important;
         background-color: {metric_bg} !important;
@@ -233,7 +228,6 @@ st.markdown(f"""
         }}
     }}
 
-    /* ========== ورودی‌ها ========== */
     .stNumberInput input, .stSelectbox select {{
         font-size: 13px !important;
         padding: 4px 8px !important;
@@ -250,7 +244,6 @@ st.markdown(f"""
         }}
     }}
 
-    /* ========== اکسپندر ========== */
     .streamlit-expanderHeader {{
         font-size: 13px !important;
         font-weight: 600 !important;
@@ -268,7 +261,6 @@ st.markdown(f"""
         }}
     }}
 
-    /* ========== لاتکس ========== */
     .katex, .katex-display {{
         font-size: 14px !important;
         color: {text_color} !important;
@@ -280,30 +272,32 @@ st.markdown(f"""
         }}
     }}
 
-    /* ========== علامت برق در تایتل ========== */
     .stApp h1 .lightning {{
         color: #f9a825 !important;
         display: inline-block !important;
         margin: 0 4px !important;
     }}
     
-    /* ========== اسکرول ========== */
     .main {{
         overflow-x: hidden !important;
     }}
     
-    /* ========== استایل هدرها ========== */
     .stHeader {{
         background-color: {bg_color} !important;
+    }}
+    
+    .plot-container {{
+        background-color: {plot_bg} !important;
+        border-radius: 10px !important;
+        padding: 10px !important;
     }}
     </style>
 """, unsafe_allow_html=True)
 
 # ==============================================================================
-# --- دکمه تغییر تم در سمت راست بالا ---
+# --- دکمه تغییر تم ---
 # ==============================================================================
 
-# نمایش دکمه تغییر تم با آیکون مناسب
 theme_icon = "🌙" if st.session_state.theme == 'light' else "☀️"
 theme_tooltip = "Switch to Dark Mode" if st.session_state.theme == 'light' else "Switch to Light Mode"
 
@@ -315,39 +309,30 @@ st.markdown(f"""
     </div>
 """, unsafe_allow_html=True)
 
-# بررسی تغییر تم از طریق پارامتر URL
 import urllib.parse
 query_params = st.query_params
 if 'theme' in query_params and query_params['theme'] == 'toggle':
     toggle_theme()
-    # پاک کردن پارامتر URL
     st.query_params.clear()
     st.rerun()
 
 # ==============================================================================
-# --- هسته محاسباتی با فرمول صحیح کابل ---
+# --- کلاس‌های محاسباتی ---
 # ==============================================================================
 
 class PowerSystemCalculator:
-    """
-    کلاس اصلی محاسبات برق قدرت با دقت صنعتی
-    تمام محاسبات با فرمولهای استاندارد IEEE و IEC
-    """
+    """کلاس اصلی محاسبات برق قدرت"""
     
-    # ثابتهای جهانی
     SQRT3 = math.sqrt(3)
     
-    # جدول استاندارد سطح مقطع کابل (mm²)
     STANDARD_CABLE_SIZES = [1.5, 2.5, 4, 6, 10, 16, 25, 35, 50, 70, 95, 120, 150, 185, 240, 300]
     
-    # جریان مجاز برای کابل مسی (دمای ۳۰°C، نصب در هوا)
     CABLE_CURRENT_CAPACITY = {
         1.5: 18, 2.5: 24, 4: 32, 6: 41, 10: 57, 16: 76,
         25: 101, 35: 125, 50: 151, 70: 192, 95: 232,
         120: 269, 150: 300, 185: 341, 240: 400, 300: 460
     }
     
-    # استاندارد کلیدهای محافظ (IEC)
     STANDARD_BREAKERS = [6, 10, 16, 20, 25, 32, 40, 50, 63, 80, 100, 125, 160, 200, 250, 315, 400, 500, 630]
     
     @classmethod
@@ -356,18 +341,10 @@ class PowerSystemCalculator:
                        cos_phi: float = 0.8,
                        max_drop_percent: float = 2.0,
                        conductivity: float = 56.0) -> dict:
-        """
-        محاسبه دقیق سطح مقطع کابل بر اساس استاندارد IEC 60364
-        """
-        # ۱. محاسبه جریان نامی (فرمول صحیح سهفاز)
         current = (power_kw * 1000) / (cls.SQRT3 * voltage * cos_phi)
-        
-        # ۲. محاسبه سطح مقطع بر اساس افت ولتاژ
         area_voltage_drop = (power_kw * 1000 * length_m * 100) / (
             conductivity * (voltage ** 2) * max_drop_percent
         )
-        
-        # ۳. محاسبه بر اساس جریان مجاز (حرارتی)
         min_area_for_current = 1.5
         for size, max_current in cls.CABLE_CURRENT_CAPACITY.items():
             if current <= max_current:
@@ -375,23 +352,14 @@ class PowerSystemCalculator:
                 break
         else:
             min_area_for_current = max(cls.CABLE_CURRENT_CAPACITY.keys())
-        
-        # ۴. انتخاب بزرگترین سطح مقطع برای ایمنی
         required_area = max(area_voltage_drop, min_area_for_current)
-        
-        # ۵. تطبیق با سایزهای استاندارد
         standard_size = cls._round_to_standard(required_area)
-        
-        # ۶. بررسی شرط طول (افزایش یک سایز برای طولهای بلند)
         if length_m > 80:
             idx = cls.STANDARD_CABLE_SIZES.index(standard_size)
             safe_size = cls.STANDARD_CABLE_SIZES[min(idx + 1, len(cls.STANDARD_CABLE_SIZES) - 1)]
         else:
             safe_size = standard_size
-        
-        # ۷. محاسبه افت ولتاژ واقعی با سایز انتخابی
         actual_drop = cls._calculate_voltage_drop(power_kw, length_m, standard_size, voltage, conductivity)
-        
         return {
             'current': round(current, 2),
             'standard_size': standard_size,
@@ -403,7 +371,6 @@ class PowerSystemCalculator:
     
     @classmethod
     def _round_to_standard(cls, area: float) -> float:
-        """گرد کردن به نزدیکترین سایز استاندارد بالاتر"""
         for size in cls.STANDARD_CABLE_SIZES:
             if size >= area:
                 return size
@@ -413,9 +380,6 @@ class PowerSystemCalculator:
     def _calculate_voltage_drop(cls, power_kw: float, length_m: float, 
                                 size: float, voltage: float, 
                                 conductivity: float) -> float:
-        """
-        محاسبه دقیق افت ولتاژ بر حسب درصد
-        """
         drop = (power_kw * 1000 * length_m * 100) / (
             conductivity * (voltage ** 2) * size
         )
@@ -426,15 +390,11 @@ class PowerSystemCalculator:
                      num_batteries: int, battery_voltage: float = 12.0,
                      inverter_efficiency: float = 0.9,
                      depth_of_discharge: float = 0.8) -> dict:
-        """
-        محاسبه دقیق ظرفیت باتری UPS بر اساس استاندارد IEEE 485
-        """
         load_kw = load_kva * 0.8
         total_dc_voltage = num_batteries * battery_voltage
         dc_current = (load_kw * 1000) / (total_dc_voltage * inverter_efficiency)
         ah_required = (dc_current * backup_min) / (60 * depth_of_discharge)
         standard_ah = cls._round_battery_ah(ah_required)
-        
         return {
             'ah_required': round(ah_required, 1),
             'ah_standard': standard_ah,
@@ -445,7 +405,6 @@ class PowerSystemCalculator:
     
     @classmethod
     def _round_battery_ah(cls, ah: float) -> int:
-        """گرد کردن به سایز استاندارد باتری"""
         standard_ahs = [7, 12, 18, 26, 40, 55, 65, 80, 100, 120, 150, 200, 250]
         for std_ah in standard_ahs:
             if std_ah >= ah:
@@ -456,15 +415,11 @@ class PowerSystemCalculator:
     def calculate_motor(cls, power_kva: float, efficiency: float = 0.85,
                        cos_phi: float = 0.8, voltage: float = 380,
                        starting_factor: float = 6.5) -> dict:
-        """
-        محاسبه پارامترهای موتور الکتریکی
-        """
         power_out_kw = power_kva * cos_phi
         power_in_kw = power_out_kw / efficiency
         rated_current = (power_in_kw * 1000) / (cls.SQRT3 * voltage * cos_phi)
         starting_current = rated_current * starting_factor
         torque_nm = (power_out_kw * 9550) / 1500
-        
         return {
             'rated_current': round(rated_current, 2),
             'starting_current': round(starting_current, 2),
@@ -477,9 +432,6 @@ class PowerSystemCalculator:
     @classmethod
     def suggest_breaker(cls, current: float, load_type: str = "Resistive",
                        motor_starting: bool = False) -> dict:
-        """
-        انتخاب کلید محافظ بر اساس استاندارد IEC 60947
-        """
         if load_type == "Motor":
             multiplier = 1.6
             if motor_starting:
@@ -489,13 +441,11 @@ class PowerSystemCalculator:
         elif load_type == "Inductive":
             multiplier = 1.4
             required = current * multiplier
-        else:  # Resistive
+        else:
             multiplier = 1.2
             required = current * multiplier
-        
         suggested = min([b for b in cls.STANDARD_BREAKERS if b >= required], 
                        default=max(cls.STANDARD_BREAKERS))
-        
         return {
             'suggested_breaker': suggested,
             'required_current': round(required, 2),
@@ -503,11 +453,255 @@ class PowerSystemCalculator:
             'load_type': load_type
         }
 
+
 # ==============================================================================
-# --- رابط کاربری (UI) ---
+# --- کلاس اتصال کوتاه (Short Circuit) ---
 # ==============================================================================
 
-# ✅ عنوان با علامت برق در وسط
+class ShortCircuitCalculator:
+    """
+    محاسبه جریان اتصال کوتاه بر اساس استاندارد IEC 60909
+    """
+    
+    @staticmethod
+    def calculate_short_circuit_current(
+        voltage_ll: float,
+        source_r: float,
+        source_x: float,
+        cable_r: float,
+        cable_x: float,
+        cable_length: float = 100.0,
+        motor_contribution: float = 0.0,
+        xr_ratio: float = 10.0
+    ) -> dict:
+        """محاسبه جریان اتصال کوتاه سهفاز متقارن"""
+        
+        # امپدانس کل
+        z_source = complex(source_r, source_x)
+        z_cable = complex(cable_r * cable_length / 1000, cable_x * cable_length / 1000)
+        z_total = z_source + z_cable
+        
+        z_magnitude = abs(z_total)
+        if z_magnitude == 0:
+            return {'error': 'امپدانس کل صفر است!'}
+        
+        # جریان RMS
+        ik_rms = voltage_ll / (math.sqrt(3) * z_magnitude)
+        ik_rms_ka = ik_rms / 1000
+        
+        # اضافه کردن سهم موتور
+        ik_total_ka = ik_rms_ka + motor_contribution
+        
+        # جریان پیک
+        pi = math.pi
+        if xr_ratio > 0:
+            peak_factor = 1 + math.exp(-3 * pi / xr_ratio)
+        else:
+            peak_factor = 2
+        ip_ka = math.sqrt(2) * ik_total_ka * peak_factor
+        
+        # توان اتصال کوتاه
+        sk_mva = (math.sqrt(3) * voltage_ll * ik_total_ka * 1000) / 1_000_000
+        
+        # جریان حرارتی معادل
+        m_factor = 1.0 + math.exp(-4 * pi / xr_ratio)
+        n_factor = 1.0
+        ith_ka = ik_total_ka * math.sqrt(m_factor + n_factor)
+        
+        return {
+            'ik_rms': round(ik_rms, 2),
+            'ik_rms_ka': round(ik_rms_ka, 3),
+            'ik_total_ka': round(ik_total_ka, 3),
+            'ip_ka': round(ip_ka, 3),
+            'sk_mva': round(sk_mva, 2),
+            'ith_ka': round(ith_ka, 3),
+            'z_magnitude': round(z_magnitude, 4),
+            'xr_ratio': xr_ratio,
+            'motor_contribution': motor_contribution
+        }
+    
+    @staticmethod
+    def calculate_cable_thermal_sizing(
+        ith_ka: float,
+        t_clear: float,
+        k_factor: float = 143.0
+    ) -> dict:
+        """محاسبه سطح مقطع کابل بر اساس جریان اتصال کوتاه"""
+        required_area = (ith_ka * 1000 * math.sqrt(t_clear)) / k_factor
+        
+        standard_sizes = [1.5, 2.5, 4, 6, 10, 16, 25, 35, 50, 70, 95, 120, 150, 185, 240, 300]
+        selected_size = 1.5
+        for size in standard_sizes:
+            if size >= required_area:
+                selected_size = size
+                break
+        
+        return {
+            'required_area': round(required_area, 2),
+            'selected_size': selected_size,
+            'is_ok': required_area <= selected_size,
+            'time_clearance': t_clear,
+            'k_factor': k_factor
+        }
+
+
+# ==============================================================================
+# --- کلاس یکخطی (Single-Line Diagram) ---
+# ==============================================================================
+
+class SingleLineDiagram:
+    """نمایش شبکه به صورت یکخطی با NetworkX و Plotly"""
+    
+    def __init__(self):
+        self.graph = nx.Graph()
+        self.bus_data = {}
+        self.line_data = {}
+        self.color_scheme = {
+            'Slack': '#FF6B6B',
+            'PV': '#4ECDC4',
+            'PQ': '#45B7D1'
+        }
+    
+    def add_bus(self, bus_id: str, voltage: float, label: str = None, 
+                bus_type: str = "PQ", position: tuple = None):
+        if position is None:
+            pos = self._calculate_default_position(len(self.bus_data))
+        else:
+            pos = position
+        self.graph.add_node(bus_id, voltage=voltage, label=label or bus_id,
+                           bus_type=bus_type, pos=pos)
+        self.bus_data[bus_id] = {
+            'voltage': voltage, 'label': label or bus_id,
+            'bus_type': bus_type, 'position': pos
+        }
+    
+    def add_line(self, from_bus: str, to_bus: str, impedance: complex,
+                current: float = 0, length: float = 0, rating: float = 0):
+        self.graph.add_edge(from_bus, to_bus, impedance=impedance,
+                           current=current, length=length, rating=rating)
+        self.line_data[f"{from_bus}-{to_bus}"] = {
+            'from': from_bus, 'to': to_bus,
+            'impedance': impedance, 'current': current,
+            'length': length, 'rating': rating
+        }
+    
+    def _calculate_default_position(self, index: int) -> tuple:
+        n = max(index + 2, 6)
+        angle = (2 * math.pi * index) / n
+        x = 0.5 + 0.4 * math.cos(angle)
+        y = 0.5 + 0.4 * math.sin(angle)
+        return (x, y)
+    
+    def get_positions(self):
+        return nx.get_node_attributes(self.graph, 'pos')
+    
+    def plot_diagram(self, show_values: bool = True, show_impedance: bool = False,
+                    width: int = 800, height: int = 600):
+        pos = self.get_positions()
+        nodes = list(self.graph.nodes())
+        edges = list(self.graph.edges())
+        
+        edge_x, edge_y, edge_texts = [], [], []
+        for edge in edges:
+            x0, y0 = pos[edge[0]]
+            x1, y1 = pos[edge[1]]
+            edge_x.extend([x0, x1, None])
+            edge_y.extend([y0, y1, None])
+            line_info = self.line_data.get(f"{edge[0]}-{edge[1]}", {})
+            if show_impedance:
+                z = line_info.get('impedance', 0j)
+                text = f"Z={z.real:.2f}+j{z.imag:.2f}Ω"
+            else:
+                current = line_info.get('current', 0)
+                text = f"I={current:.1f}A" if show_values else ""
+            edge_texts.append(text)
+        
+        node_x, node_y, node_texts, node_colors, node_sizes = [], [], [], [], []
+        for node in nodes:
+            x, y = pos[node]
+            node_x.append(x)
+            node_y.append(y)
+            bus = self.bus_data.get(node, {})
+            voltage = bus.get('voltage', 0)
+            bus_type = bus.get('bus_type', 'PQ')
+            color = self.color_scheme.get(bus_type, '#45B7D1')
+            size = 30 if bus_type == 'Slack' else 25 if bus_type == 'PV' else 20
+            node_colors.append(color)
+            node_sizes.append(size)
+            text = f"<b>{bus.get('label', node)}</b><br>V={voltage:.2f} kV<br>Type: {bus_type}"
+            node_texts.append(text)
+        
+        fig = go.Figure()
+        
+        # خطوط
+        fig.add_trace(go.Scatter(
+            x=edge_x, y=edge_y, mode='lines',
+            line=dict(width=2, color='#888'), hoverinfo='text',
+            text=edge_texts, name='Lines'
+        ))
+        
+        # باس‌ها
+        fig.add_trace(go.Scatter(
+            x=node_x, y=node_y, mode='markers+text',
+            marker=dict(size=node_sizes, color=node_colors,
+                       line=dict(width=2, color='DarkSlateGray')),
+            text=[f"<b>{node}</b>" for node in nodes],
+            textposition="top center", hovertext=node_texts,
+            hoverinfo='text', name='Buses'
+        ))
+        
+        fig.update_layout(
+            title={'text': "📊 Single-Line Diagram", 'x': 0.5, 'xanchor': 'center'},
+            showlegend=False, hovermode='closest',
+            width=width, height=height,
+            xaxis=dict(showgrid=False, zeroline=False, showticklabels=False, range=[-0.1, 1.1]),
+            yaxis=dict(showgrid=False, zeroline=False, showticklabels=False, range=[-0.1, 1.1]),
+            plot_bgcolor='rgba(0,0,0,0)', paper_bgcolor='rgba(0,0,0,0)',
+            margin=dict(l=20, r=20, t=40, b=20)
+        )
+        
+        return fig
+
+
+def create_sample_network():
+    """ایجاد یک شبکه نمونه برای نمایش"""
+    sld = SingleLineDiagram()
+    
+    buses = {
+        'Bus1': {'voltage': 132, 'type': 'Slack'},
+        'Bus2': {'voltage': 132, 'type': 'PV'},
+        'Bus3': {'voltage': 132, 'type': 'PV'},
+        'Bus4': {'voltage': 33, 'type': 'PQ'},
+        'Bus5': {'voltage': 33, 'type': 'PQ'},
+        'Bus6': {'voltage': 11, 'type': 'PQ'},
+        'Bus7': {'voltage': 11, 'type': 'PQ'},
+    }
+    
+    for bus_id, data in buses.items():
+        sld.add_bus(bus_id, data['voltage'], bus_id, data['type'])
+    
+    lines = [
+        ('Bus1', 'Bus2', 0.1, 150, 50),
+        ('Bus2', 'Bus3', 0.15, 120, 40),
+        ('Bus2', 'Bus4', 0.2, 80, 30),
+        ('Bus3', 'Bus5', 0.25, 70, 25),
+        ('Bus4', 'Bus5', 0.12, 90, 35),
+        ('Bus5', 'Bus6', 0.18, 60, 20),
+        ('Bus4', 'Bus6', 0.22, 50, 15),
+        ('Bus6', 'Bus7', 0.15, 45, 12),
+    ]
+    
+    for f, t, z, curr, rating in lines:
+        sld.add_line(f, t, complex(z, z*0.2), curr, rating*2, rating)
+    
+    return sld
+
+
+# ==============================================================================
+# --- رابط کاربری ---
+# ==============================================================================
+
+# عنوان
 st.markdown(f"""
     <h1 style='
         text-align: center; 
@@ -522,10 +716,13 @@ st.markdown(f"""
     </h1>
 """, unsafe_allow_html=True)
 
-# تب‌ها با وسط‌چین
-tabs = st.tabs(["📏 Cable", "🔋 UPS", "⚙️ Motor", "🛡️ Protect"])
+# تب‌ها
+tabs = st.tabs(["📏 Cable", "🔋 UPS", "⚙️ Motor", "🛡️ Protect", "⚡ Short Circuit"])
 
-# --- تب ۱: کابل ---
+# ==============================================================================
+# --- تب ۱: کابل (بدون تغییر) ---
+# ==============================================================================
+
 with tabs[0]:
     st.header("📐 Cable Sizing")
     
@@ -535,7 +732,6 @@ with tabs[0]:
             power = st.number_input("Power (kW)", value=85.0, step=1.0, key="cable_power")
             length = st.number_input("Length (m)", value=90.0, step=5.0, key="cable_length")
             voltage = st.selectbox("Voltage (V)", [380, 400, 415, 480], index=0, key="cable_voltage")
-            
         with col2:
             cos_phi = st.slider("cos φ", 0.7, 1.0, 0.8, 0.01, key="cable_cosphi")
             drop_limit = st.slider("Max Drop %", 1.0, 5.0, 2.0, 0.5, key="cable_drop")
@@ -549,13 +745,9 @@ with tabs[0]:
         
         st.markdown("---")
         col1, col2, col3 = st.columns(3)
-        
-        with col1:
-            st.metric("Current", f"{result['current']} A")
-        with col2:
-            st.metric("Std Size", f"{result['standard_size']} mm²")
-        with col3:
-            st.metric("Safe Size", f"{result['safe_size']} mm²")
+        with col1: st.metric("Current", f"{result['current']} A")
+        with col2: st.metric("Std Size", f"{result['standard_size']} mm²")
+        with col3: st.metric("Safe Size", f"{result['safe_size']} mm²")
         
         with st.expander("📊 Details"):
             st.write(f"**Required Area:** {result['required_area']} mm²")
@@ -565,7 +757,10 @@ with tabs[0]:
             S = \frac{P \times L \times 100}{\sigma \times V^2 \times \Delta V\%}
             """)
 
-# --- تب ۲: UPS ---
+# ==============================================================================
+# --- تب ۲: UPS (بدون تغییر) ---
+# ==============================================================================
+
 with tabs[1]:
     st.header("🔋 Battery Sizing")
     
@@ -584,12 +779,9 @@ with tabs[1]:
         )
         
         col1, col2, col3 = st.columns(3)
-        with col1:
-            st.metric("Capacity", f"{result['ah_standard']} Ah")
-        with col2:
-            st.metric("DC Volt", f"{result['dc_voltage']} V")
-        with col3:
-            st.metric("DC Curr", f"{result['dc_current']} A")
+        with col1: st.metric("Capacity", f"{result['ah_standard']} Ah")
+        with col2: st.metric("DC Volt", f"{result['dc_voltage']} V")
+        with col3: st.metric("DC Curr", f"{result['dc_current']} A")
         
         with st.expander("📊 Details"):
             st.write(f"**Required Ah:** {result['ah_required']} Ah")
@@ -598,7 +790,10 @@ with tabs[1]:
             Ah = \frac{P_{kW} \times 1000 \times T_{min}}{V_{DC} \times \eta \times 60 \times DOD}
             """)
 
-# --- تب ۳: موتور ---
+# ==============================================================================
+# --- تب ۳: موتور (بدون تغییر) ---
+# ==============================================================================
+
 with tabs[2]:
     st.header("⚙️ Motor Calc")
     
@@ -608,72 +803,4 @@ with tabs[2]:
             motor_kva = st.number_input("Power (kVA)", value=150.0, step=5.0, key="motor_kva")
             efficiency = st.slider("Eff %", 70, 98, 85, 1, key="motor_eff") / 100
         with col2:
-            motor_cos = st.slider("cos φ", 0.7, 0.95, 0.8, 0.01, key="motor_cos")
-            start_factor = st.slider("Start Factor", 4.0, 10.0, 6.5, 0.5, key="motor_start")
-    
-    if st.button("🔍 Calculate", use_container_width=True, key="motor_btn"):
-        result = PowerSystemCalculator.calculate_motor(
-            motor_kva, efficiency, motor_cos, 380, start_factor
-        )
-        
-        col1, col2 = st.columns(2)
-        with col1:
-            st.metric("Rated Curr", f"{result['rated_current']} A")
-            st.metric("Start Curr", f"{result['starting_current']} A")
-        with col2:
-            st.metric("Input P", f"{result['power_in']} kW")
-            st.metric("Output P", f"{result['power_out']} kW")
-        
-        with st.expander("📊 Details"):
-            st.write(f"**Torque:** {result['torque']} Nm")
-            st.write(f"**Efficiency:** {result['efficiency']}%")
-            st.latex(r"""
-            I_{rated} = \frac{P_{kW} \times 1000}{\eta \times \sqrt{3} \times V \times \cos\phi}
-            """)
-
-# --- تب ۴: حفاظت ---
-with tabs[3]:
-    st.header("🛡️ Breaker Sizing")
-    
-    with st.expander("⚙️ Parameters", expanded=True):
-        col1, col2 = st.columns(2)
-        with col1:
-            load_current = st.number_input("Load (A)", value=100.0, step=1.0, key="protect_curr")
-            load_type = st.selectbox("Load Type", ["Resistive", "Inductive", "Motor"], key="protect_type")
-        with col2:
-            consider_starting = st.checkbox("Starting?", value=False, key="protect_start")
-    
-    if st.button("🔍 Calculate", use_container_width=True, key="protect_btn"):
-        result = PowerSystemCalculator.suggest_breaker(
-            load_current, load_type, consider_starting
-        )
-        
-        st.metric("🛡️ Breaker", f"{result['suggested_breaker']} A")
-        
-        with st.expander("📊 Details"):
-            st.write(f"**Required:** {result['required_current']} A")
-            st.write(f"**Safety Factor:** {result['multiplier']}")
-            st.write(f"**Load Type:** {result['load_type']}")
-            st.latex(r"""
-            I_{breaker} = I_{load} \times K_{safety}
-            """)
-
-# --- سایدبار ---
-with st.sidebar:
-    st.header("📚 Standards")
-    st.markdown("""
-    **IEC 60364** - Cable  
-    **IEEE 485** - UPS  
-    **IEC 60034** - Motor  
-    **IEC 60947** - Breaker
-    
-    ---
-    **Assumptions:**  
-    • 3-Phase AC  
-    • Copper (σ=56)  
-    • Temp: 30°C  
-    • PF: 0.8 (default)
-    """)
-    
-    st.divider()
-    st.caption("v2.0 ⚡")
+            motor_cos = st.slider("cos φ",
