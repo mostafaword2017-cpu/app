@@ -11,18 +11,18 @@ st.set_page_config(
 )
 
 # ==============================================================================
-# --- استایل با تنظیم فاصله مناسب از بالا ---
+# --- استایل با تب‌های پررنگ و متن سفید روی سبز ---
 # ==============================================================================
 
 st.markdown("""
     <style>
-    /* ========== تنظیم فاصله مناسب از بالای صفحه (نصف حالت قبل) ========== */
+    /* ========== تنظیم فاصله مناسب از بالای صفحه ========== */
     .main > div {
         padding-top: 0px !important;
     }
     
     .stApp {
-        margin-top: -25px !important;  /* نصف مقدار قبلی (-50 به -25) */
+        margin-top: -25px !important;
     }
     
     .block-container {
@@ -115,6 +115,7 @@ st.markdown("""
         box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
     }
     
+    /* ========== تب انتخاب شده - سبز با متن سفید ========== */
     .stTabs [aria-selected="true"] {
         background-color: #2E7D32 !important;
         color: #FFFFFF !important;
@@ -125,12 +126,14 @@ st.markdown("""
         transform: translateY(-4px) !important;
         box-shadow: 0 6px 20px rgba(46, 125, 50, 0.4) !important;
         font-size: 21px !important;
+        text-shadow: 0 1px 2px rgba(0,0,0,0.2) !important;
     }
     
     .stTabs [aria-selected="true"]:hover {
         background-color: #1B5E20 !important;
         transform: translateY(-4px) !important;
         box-shadow: 0 6px 24px rgba(46, 125, 50, 0.5) !important;
+        color: #FFFFFF !important;
     }
     
     /* ========== موبایل ========== */
@@ -165,6 +168,7 @@ st.markdown("""
             font-size: 16px !important;
             transform: translateY(-3px) !important;
             box-shadow: 0 4px 14px rgba(46, 125, 50, 0.35) !important;
+            color: #FFFFFF !important;
         }
     }
 
@@ -176,6 +180,7 @@ st.markdown("""
         }
         .stTabs [aria-selected="true"] {
             font-size: 14px !important;
+            color: #FFFFFF !important;
         }
     }
     
