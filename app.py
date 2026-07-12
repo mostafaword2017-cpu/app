@@ -93,57 +93,66 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ==============================================================================
-# --- نمایش اسم نرم‌افزار ---
+# --- نمایش اسم نرم‌افزار (2 درجه کوچکتر = از 44px به 34px) ---
 # ==============================================================================
 
 st.markdown("""
     <div style='text-align: center; padding: 5px 0 10px 0;'>
-        <h1 style='font-size: 44px; font-weight: 700; margin: 0; color: #1a1a1a;'>
+        <h1 style='font-size: 34px; font-weight: 700; margin: 0; color: #1a1a1a;'>
             ElectroCalc <span style='color: #f9a825;'>⚡</span> M&F
         </h1>
     </div>
 """, unsafe_allow_html=True)
 
 # ==============================================================================
-# --- توابع کمکی برای کابل و کلید ---
+# --- توابع کمکی ---
 # ==============================================================================
 
 def get_cable_size(current_a, voltage=380, cos_phi=0.8, max_drop=2, length=50):
-    """محاسبه سایز کابل مناسب بر اساس جریان"""
+    """محاسبه سایز کابل مناسب بر اساس جریان با ضریب اطمینان"""
     standard_sizes = [1.5, 2.5, 4, 6, 10, 16, 25, 35, 50, 70, 95, 120, 150, 185, 240, 300]
-    current_capacity = {1.5:18, 2.5:24, 4:32, 6:41, 10:57, 16:76, 25:101, 35:125, 50:151, 70:192, 95:232, 120:269, 150:300, 185:341, 240:400, 300:460}
     
-    # بر اساس جریان
-    min_size = 1.5
-    for size, max_current in current_capacity.items():
-        if current_a <= max_current:
-            min_size = size
-            break
-    else:
-        min_size = 300
+    current_capacity = {
+        1.5: 18, 2.5: 24, 4: 32, 6: 41, 10: 57, 16: 76,
+        25: 101, 35: 125, 50: 151, 70: 192, 95: 232,
+        120: 269, 150: 300, 185: 341, 240: 400, 300: 460
+    }
     
-    # بر اساس افت ولتاژ
-    try:
-        area_drop = (current_a * length * 1.732 * cos_phi * 100) / (56 * voltage * max_drop)
-    except:
-        area_drop = 0
+    # ضریب اطمینان ۱.۲۵
+    safety_factor = 1.25
+    required_current = current_a * safety_factor
     
-    required_area = max(min_size, area_drop)
-    
-    # گرد کردن به سایز استاندارد
+    # انتخاب سایز بر اساس جریان
     selected = 1.5
-    for size in standard_sizes:
-        if size >= required_area:
+    for size, capacity in current_capacity.items():
+        if capacity >= required_current:
             selected = size
             break
     else:
         selected = 300
     
+    # بررسی افت ولتاژ (برای طول‌های بلند)
+    try:
+        area_drop = (current_a * length * 1.732 * cos_phi * 100) / (56 * voltage * max_drop)
+        if area_drop > selected:
+            for size in standard_sizes:
+                if size >= area_drop:
+                    selected = size
+                    break
+    except:
+        pass
+    
     return selected
 
 def get_breaker_size(current_a, load_type="Resistive"):
     """محاسبه سایز کلید محافظ مناسب"""
-    multiplier = 1.25 if load_type == "Resistive" else 1.5
+    if load_type == "Motor":
+        multiplier = 1.6
+    elif load_type == "Inductive":
+        multiplier = 1.4
+    else:  # Resistive
+        multiplier = 1.25
+    
     required = current_a * multiplier
     standard_breakers = [6, 10, 16, 20, 25, 32, 40, 50, 63, 80, 100, 125, 160, 200, 250, 315, 400, 500, 630]
     
@@ -276,17 +285,17 @@ with tabs[0]:
         """, unsafe_allow_html=True)
 
 # ==============================================================================
-# --- تب ۲: UPS (با کابل و کلید ورودی/خروجی) ---
+# --- تب ۲: UPS ---
 # ==============================================================================
 
 with tabs[1]:
-    st.header("🔋 Battery Sizing")
+    st.header("🔋 UPS Sizing with Cable & Breaker")
     with st.container(border=True):
         c1, c2 = st.columns(2)
         with c1:
             u_kva = st.number_input("UPS Power (kVA)", value=40.0, step=1.0, key="u_kva")
-            u_min = st.number_input("Time (min)", value=15, step=5, key="u_min")
-            ups_voltage = st.selectbox("System Voltage (V)", [380, 400, 415], index=0, key="ups_voltage")
+            u_min = st.number_input("Backup Time (min)", value=15, step=5, key="u_min")
+            ups_voltage = st.selectbox("Input Voltage (V)", [380, 400, 415], index=0, key="ups_voltage")
         with c2:
             u_bat = st.number_input("Number of Batteries", value=32, step=1, key="u_bat")
             u_volt = st.selectbox("Battery Voltage", [12, 24], index=0, key="u_volt")
@@ -296,149 +305,98 @@ with tabs[1]:
         res = calculate_ups_fixed(u_kva, u_min, u_bat, u_volt)
         volt_text = "12V" if u_volt == 12 else "24V"
         
-        # محاسبه جریان ورودی و خروجی UPS
-        cos_phi_ups = 0.8
-        input_current = (u_kva * 1000) / (math.sqrt(3) * ups_voltage * cos_phi_ups)
-        output_current = (u_kva * 1000) / (math.sqrt(3) * 220 * cos_phi_ups)  # ولتاژ خروجی 220V
+        # محاسبه جریان UPS (فرمول تجربی: I = kVA × 1.44)
+        ups_current = u_kva * 1.44
         
-        # سایز کابل ورودی و خروجی
-        input_cable = get_cable_size(input_current, ups_voltage, cos_phi_ups, 2, cable_length_ups)
-        output_cable = get_cable_size(output_current, 220, cos_phi_ups, 2, cable_length_ups)
+        # سایز کابل
+        ups_cable = get_cable_size(ups_current, ups_voltage, 0.8, 2, cable_length_ups)
         
-        # کلید ورودی و خروجی
-        input_breaker = get_breaker_size(input_current, "Inductive")
-        output_breaker = get_breaker_size(output_current, "Resistive")
+        # کلید محافظ
+        ups_breaker = get_breaker_size(ups_current, "Inductive")
         
         st.latex(r"Ah = \frac{Ah_{Base} \times \frac{kVA}{10} \times 32}{N_{Battery} \times \frac{V_{Battery}}{12}}")
         
-        # نتایج اصلی UPS
         st.markdown(f"""
             <div class='result-box'>
                 <div class='result-text'>📦 Battery Capacity: {res} Ah</div>
-                <div class='result-text' style='color: #0d47a1;'>🔋 Required: {u_bat} Batteries</div>
+                <div class='result-text' style='color: #0d47a1;'>🔋 Required Batteries: {u_bat} Units</div>
                 <div class='result-text' style='color: #e65100;'>⚡ System Voltage: {volt_text}</div>
+                <div class='result-text' style='color: #1b5e20;'>📏 Recommended Cable: {ups_cable} mm²</div>
+                <div class='result-text' style='color: #d32f2f;'>🛡️ Recommended Breaker: {ups_breaker} A</div>
             </div>
         """, unsafe_allow_html=True)
         
         if u_volt == 24:
             st.info("💡 With 24V system, required Ah is HALF of 12V system")
         
-        # نتایج کابل و کلید
-        st.subheader("🔌 Input / Output Sizing")
-        
-        col1, col2 = st.columns(2)
-        with col1:
-            st.markdown(f"""
-                <div style='background-color: #e8f0fe; padding: 12px; border-radius: 10px; margin: 5px 0;'>
-                    <b>⬅️ INPUT SIDE</b><br>
-                    Current: <b>{input_current:.2f} A</b><br>
-                    Cable: <b>{input_cable} mm²</b><br>
-                    Breaker: <b>{input_breaker} A</b>
-                </div>
-            """, unsafe_allow_html=True)
-        
-        with col2:
-            st.markdown(f"""
-                <div style='background-color: #fce8e6; padding: 12px; border-radius: 10px; margin: 5px 0;'>
-                    <b>➡️ OUTPUT SIDE</b><br>
-                    Current: <b>{output_current:.2f} A</b><br>
-                    Cable: <b>{output_cable} mm²</b><br>
-                    Breaker: <b>{output_breaker} A</b>
-                </div>
-            """, unsafe_allow_html=True)
+        st.info(f"💡 For {u_kva} kVA UPS → Current = {u_kva} × 1.44 = **{ups_current:.2f} A** → Cable: **{ups_cable} mm²** → Breaker: **{ups_breaker} A**")
 
 # ==============================================================================
-# --- تب ۳: موتور (با کابل و کلید ورودی/خروجی) ---
+# --- تب ۳: موتور / ژنراتور ---
 # ==============================================================================
 
 with tabs[2]:
-    st.header("⚙️ Motor Calculations (Generator)")
+    st.header("⚙️ Motor / Generator Sizing with Cable & Breaker")
     with st.container(border=True):
         c1, c2 = st.columns(2)
         with c1:
-            m_kva = st.number_input("Power (kVA)", value=150.0, step=5.0, key="m_kva")
-            m_eff = st.number_input("Efficiency", value=0.85, step=0.01, key="m_eff")
+            m_kva = st.number_input("Generator Power (kVA)", value=150.0, step=5.0, key="m_kva")
+            m_eff = st.number_input("Efficiency (η)", value=0.85, step=0.01, key="m_eff")
             motor_voltage = st.selectbox("System Voltage (V)", [380, 400, 415, 480], index=0, key="motor_voltage")
         with c2:
             m_cos = st.number_input("Power Factor (cos φ)", value=0.8, step=0.01, key="m_cos")
-            m_vol = st.number_input("Voltage (V)", value=380, step=10, key="m_vol")
-            cable_length_motor = st.number_input("Cable Length (m)", value=100, step=10, key="cable_length_motor")
+            cable_length_motor = st.number_input("Cable Length (m)", value=50, step=10, key="cable_length_motor")
     
-    if st.button("🔍 Calculate Motor", use_container_width=True):
-        curr, p_in, s_curr, p_kw_out = calculate_motor_from_kva(m_kva, m_eff, m_cos, m_vol)
+    if st.button("🔍 Calculate Generator", use_container_width=True):
+        # فرمول تجربی: I = kVA × 1.44
+        gen_current = m_kva * 1.44
         
-        # محاسبه جریان ورودی (برای ژنراتور)
-        input_current_motor = (p_in * 1000) / (math.sqrt(3) * motor_voltage * m_cos)
+        # جریان راه‌اندازی (۶ برابر)
+        starting_current = gen_current * 6
         
-        # سایز کابل ورودی و خروجی
-        input_cable_motor = get_cable_size(input_current_motor, motor_voltage, m_cos, 2, cable_length_motor)
-        output_cable_motor = get_cable_size(curr, m_vol, m_cos, 2, cable_length_motor)
+        # سایز کابل
+        gen_cable = get_cable_size(gen_current, motor_voltage, m_cos, 2, cable_length_motor)
         
-        # کلید ورودی و خروجی
-        input_breaker_motor = get_breaker_size(input_current_motor, "Motor")
-        output_breaker_motor = get_breaker_size(curr, "Motor")
+        # کلید محافظ
+        gen_breaker = get_breaker_size(gen_current, "Motor")
+        starting_breaker = get_breaker_size(starting_current, "Motor")
         
-        # کلید با در نظر گرفتن جریان راه‌اندازی
-        starting_breaker = get_breaker_size(s_curr, "Motor")
+        st.latex(r"I_{gen} = kVA \times 1.44 \quad \text{(Empirical Formula)}")
         
-        st.latex(r"I = \frac{P_{kW} \times 1000}{\eta \times \sqrt{3} \times V \times \cos\phi}")
-        
-        # نتایج اصلی موتور
         st.markdown(f"""
             <div class='result-box'>
-                <div class='result-text'>⚡ Rated Current: {curr} A</div>
-                <div class='result-text' style='color: #e65100;'>🚀 Start Current: {s_curr} A</div>
-                <div class='result-text' style='color: #1a73e8;'>🔌 Input Power: {p_in} kW</div>
-                <div class='result-text' style='color: #1b5e20;'>🎯 Output Power: {p_kw_out} kW</div>
+                <div class='result-text'>⚡ Generator Current: {gen_current:.2f} A</div>
+                <div class='result-text' style='color: #e65100;'>🚀 Starting Current: {starting_current:.2f} A</div>
+                <div class='result-text' style='color: #1b5e20;'>📏 Recommended Cable: {gen_cable} mm²</div>
+                <div class='result-text' style='color: #d32f2f;'>🛡️ Breaker (Rated): {gen_breaker} A</div>
+                <div class='result-text' style='color: #e65100;'>⚡ Breaker (Starting): {starting_breaker} A</div>
             </div>
         """, unsafe_allow_html=True)
         
-        # نتایج کابل و کلید
-        st.subheader("🔌 Input / Output Sizing")
-        
-        col1, col2 = st.columns(2)
-        with col1:
-            st.markdown(f"""
-                <div style='background-color: #e8f0fe; padding: 12px; border-radius: 10px; margin: 5px 0;'>
-                    <b>⬅️ INPUT SIDE (Generator Supply)</b><br>
-                    Current: <b>{input_current_motor:.2f} A</b><br>
-                    Cable: <b>{input_cable_motor} mm²</b><br>
-                    Breaker: <b>{input_breaker_motor} A</b>
-                </div>
-            """, unsafe_allow_html=True)
-        
-        with col2:
-            st.markdown(f"""
-                <div style='background-color: #fce8e6; padding: 12px; border-radius: 10px; margin: 5px 0;'>
-                    <b>➡️ OUTPUT SIDE (Load)</b><br>
-                    Rated Current: <b>{curr} A</b><br>
-                    Cable: <b>{output_cable_motor} mm²</b><br>
-                    Breaker (Rated): <b>{output_breaker_motor} A</b><br>
-                    Breaker (Starting): <b>{starting_breaker} A</b>
-                </div>
-            """, unsafe_allow_html=True)
-        
-        st.info(f"💡 For motor starting, breaker should handle {s_curr} A starting current → Suggested: {starting_breaker} A")
+        st.info(f"💡 For {m_kva} kVA Generator → Current = {m_kva} × 1.44 = **{gen_current:.2f} A** → Cable: **{gen_cable} mm²** → Breaker: **{gen_breaker} A**")
 
 # ==============================================================================
 # --- تب ۴: حفاظت ---
 # ==============================================================================
 
 with tabs[3]:
-    st.header("🛡️ Breaker Sizing")
+    st.header("🛡️ Protection & Breaker Sizing")
     with st.container(border=True):
         p_curr = st.number_input("Load Current (A)", value=100.0, step=1.0, key="p_curr")
         p_type = st.selectbox("Load Type", ["Resistive", "Inductive", "Motor"], key="p_type")
         cable_len = st.number_input("Cable Length (m)", value=50, step=5, key="cable_len_breaker")
+        system_voltage = st.selectbox("System Voltage (V)", [380, 400, 415], index=0, key="sys_voltage")
     
-    if st.button("🔍 Suggest Breaker", use_container_width=True):
-        b_size = suggest_breaker(p_curr, p_type)
-        cable_size = get_cable_size(p_curr, 380, 0.8, 2, cable_len)
+    if st.button("🔍 Calculate Protection", use_container_width=True):
+        b_size = get_breaker_size(p_curr, p_type)
+        cable_size = get_cable_size(p_curr, system_voltage, 0.8, 2, cable_len)
         
         st.markdown(f"""
             <div class='result-box'>
                 <div class='result-text'>🛡️ Suggested Breaker: {b_size} A</div>
                 <div class='result-text' style='color: #1b5e20;'>📏 Recommended Cable: {cable_size} mm²</div>
-                <p style='color: #5f6368;'>Based on IEC 60947 standard</p>
+                <div class='result-text' style='color: #5f6368;'>📊 Load Type: {p_type}</div>
             </div>
         """, unsafe_allow_html=True)
+        
+        st.info(f"💡 For {p_curr} A {p_type} load → Cable: **{cable_size} mm²** → Breaker: **{b_size} A**")
