@@ -11,38 +11,52 @@ st.set_page_config(
 )
 
 # ==============================================================================
-# --- استایل با اسم بزرگتر و فاصله از تب‌ها ---
+# --- استایل با تب‌های پررنگ و حذف فضای خالی بالا ---
 # ==============================================================================
 
 st.markdown("""
     <style>
-    /* ========== اسم نرم‌افزار (3 درجه بزرگتر + فاصله از تب‌ها) ========== */
+    /* ========== حذف فضای خالی بالای صفحه ========== */
+    .main > div {
+        padding-top: 0px !important;
+    }
+    
+    .stApp {
+        margin-top: -50px !important;
+    }
+    
+    .block-container {
+        padding-top: 5px !important;
+        padding-bottom: 20px !important;
+    }
+
+    /* ========== اسم نرم‌افزار ========== */
     .app-title {
         text-align: center;
-        padding: 15px 0 25px 0 !important;  /* افزایش padding پایین برای فاصله از تب‌ها */
+        padding: 5px 0 15px 0 !important;
         margin: 0 !important;
-        font-size: 60px !important;  /* 3 درجه بزرگتر (از 46 به 60) */
+        font-size: 60px !important;
         font-weight: 800 !important;
         color: #1a1a1a;
         white-space: nowrap;
         overflow: visible;
         letter-spacing: 1px !important;
         line-height: 1.2 !important;
-        border-bottom: 3px solid #e8e8e8 !important;  /* خط جداکننده */
-        margin-bottom: 15px !important;
+        border-bottom: 3px solid #e8e8e8 !important;
+        margin-bottom: 10px !important;
     }
     
     .app-title .lightning {
         color: #f9a825;
         display: inline-block;
         margin: 0 6px !important;
-        font-size: 68px !important;  /* علامت برق هم بزرگتر */
+        font-size: 68px !important;
     }
 
     @media screen and (max-width: 640px) {
         .app-title {
             font-size: 38px !important;
-            padding: 10px 0 20px 0 !important;
+            padding: 5px 0 12px 0 !important;
             white-space: normal !important;
             word-break: break-word !important;
             line-height: 1.3 !important;
@@ -55,96 +69,105 @@ st.markdown("""
     @media screen and (max-width: 400px) {
         .app-title {
             font-size: 30px !important;
-            padding: 8px 0 16px 0 !important;
+            padding: 3px 0 10px 0 !important;
         }
         .app-title .lightning {
             font-size: 34px !important;
         }
     }
 
-    /* ========== تب‌ها ========== */
+    /* ========== تب‌ها (پررنگ و برجسته) ========== */
     .stTabs div[role="tablist"] {
         gap: 8px !important;
         flex-wrap: nowrap !important;
         overflow-x: auto !important;
         justify-content: center !important;
         display: flex !important;
-        padding: 10px 0 5px 0 !important;  /* فضای بیشتر بالای تب‌ها */
-        border-bottom: 3px solid #e0e0e0 !important;
-        margin-top: 5px !important;
+        padding: 8px 0 5px 0 !important;
+        border-bottom: 3px solid #c0c0c0 !important;
+        margin-top: 2px !important;
     }
     
     .stTabs [role="tab"] {
         font-size: 20px !important;
-        padding: 12px 24px !important;
-        border-radius: 12px 12px 0px 0px !important;
-        background-color: #f5f5f5 !important;
-        color: #888888 !important;
+        padding: 14px 28px !important;
+        border-radius: 14px 14px 0px 0px !important;
+        background-color: #e8e8e8 !important;
+        color: #444444 !important;
         white-space: nowrap !important;
-        min-width: 90px !important;
+        min-width: 100px !important;
         text-align: center !important;
-        font-weight: 500 !important;
-        border: 2px solid #e0e0e0 !important;
+        font-weight: 600 !important;
+        border: 2px solid #b0b0b0 !important;
         border-bottom: none !important;
         transition: all 0.3s ease !important;
         cursor: pointer !important;
-        opacity: 0.7 !important;
+        opacity: 0.85 !important;
         margin-bottom: -2px !important;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
     }
     
     .stTabs [role="tab"]:hover {
-        background-color: #e8f5e9 !important;
-        color: #2e7d32 !important;
+        background-color: #c8e6c9 !important;
+        color: #1b5e20 !important;
         opacity: 1 !important;
         transform: translateY(-3px) !important;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
     }
     
     .stTabs [aria-selected="true"] {
-        background-color: #4CAF50 !important;
-        color: white !important;
+        background-color: #2E7D32 !important;
+        color: #FFFFFF !important;
         font-weight: 700 !important;
-        border-color: #4CAF50 !important;
-        border-bottom: 3px solid #4CAF50 !important;
+        border-color: #2E7D32 !important;
+        border-bottom: 3px solid #2E7D32 !important;
         opacity: 1 !important;
         transform: translateY(-4px) !important;
-        box-shadow: 0 4px 16px rgba(76, 175, 80, 0.35) !important;
+        box-shadow: 0 6px 20px rgba(46, 125, 50, 0.4) !important;
+        font-size: 21px !important;
     }
     
     .stTabs [aria-selected="true"]:hover {
-        background-color: #43a047 !important;
+        background-color: #1B5E20 !important;
         transform: translateY(-4px) !important;
+        box-shadow: 0 6px 24px rgba(46, 125, 50, 0.5) !important;
     }
     
     /* ========== موبایل ========== */
     @media screen and (max-width: 640px) {
         .stTabs div[role="tablist"] {
             gap: 4px !important;
-            padding: 8px 0 4px 0 !important;
+            padding: 6px 0 4px 0 !important;
             justify-content: flex-start !important;
             overflow-x: auto !important;
             -webkit-overflow-scrolling: touch !important;
         }
         
         .stTabs [role="tab"] {
-            font-size: 14px !important;
-            padding: 8px 14px !important;
-            min-width: 60px !important;
-            border-radius: 8px 8px 0px 0px !important;
+            font-size: 15px !important;
+            padding: 10px 16px !important;
+            min-width: 65px !important;
+            border-radius: 10px 10px 0px 0px !important;
             flex: 0 0 auto !important;
             display: inline-block !important;
+            font-weight: 600 !important;
         }
         
         .stTabs [aria-selected="true"] {
+            font-size: 16px !important;
             transform: translateY(-3px) !important;
-            box-shadow: 0 2px 10px rgba(76, 175, 80, 0.3) !important;
+            box-shadow: 0 4px 14px rgba(46, 125, 50, 0.35) !important;
         }
     }
 
     @media screen and (max-width: 400px) {
         .stTabs [role="tab"] {
-            font-size: 12px !important;
-            padding: 6px 10px !important;
-            min-width: 50px !important;
+            font-size: 13px !important;
+            padding: 8px 12px !important;
+            min-width: 55px !important;
+        }
+        .stTabs [aria-selected="true"] {
+            font-size: 14px !important;
         }
     }
     
@@ -228,7 +251,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ==============================================================================
-# --- نمایش اسم نرم‌افزار (با کلاس جدید) ---
+# --- نمایش اسم نرم‌افزار ---
 # ==============================================================================
 
 st.markdown("""
