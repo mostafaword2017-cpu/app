@@ -48,9 +48,9 @@ st.markdown("""
     
     @media screen and (max-width: 640px) {
         .stTabs [role="tab"] {
-            font-size: 16px !important;
-            padding: 8px 12px !important;
-            min-width: 60px !important;
+            font-size: 18px !important;
+            padding: 10px 16px !important;
+            min-width: 70px !important;
         }
     }
     
@@ -90,15 +90,14 @@ st.markdown("""
         margin-bottom: 5px;
     }
 
-    /* ========== اسم نرم‌افزار واکنش‌گرا ========== */
+    /* ========== اسم نرم‌افزار ========== */
     .app-title {
         text-align: center;
         padding: 5px 0 10px 0;
         margin: 0;
-        font-size: 34px;
+        font-size: 38px;
         font-weight: 700;
         color: #1a1a1a;
-        word-break: keep-all;
         white-space: nowrap;
         overflow: visible;
     }
@@ -108,10 +107,9 @@ st.markdown("""
         display: inline-block;
     }
 
-    /* موبایل */
     @media screen and (max-width: 480px) {
         .app-title {
-            font-size: 22px !important;
+            font-size: 26px !important;
             white-space: normal !important;
             word-break: break-word !important;
             line-height: 1.3 !important;
@@ -121,18 +119,14 @@ st.markdown("""
 
     @media screen and (max-width: 380px) {
         .app-title {
-            font-size: 18px !important;
-            white-space: normal !important;
-            word-break: break-word !important;
-            line-height: 1.3 !important;
-            padding: 5px 8px !important;
+            font-size: 22px !important;
         }
     }
     </style>
 """, unsafe_allow_html=True)
 
 # ==============================================================================
-# --- نمایش اسم نرم‌افزار (واکنش‌گرا) ---
+# --- نمایش اسم نرم‌افزار ---
 # ==============================================================================
 
 st.markdown("""
@@ -155,11 +149,9 @@ def get_cable_size(current_a, voltage=380, cos_phi=0.8, max_drop=2, length=50):
         120: 269, 150: 300, 185: 341, 240: 400, 300: 460
     }
     
-    # ضریب اطمینان ۱.۲۵
     safety_factor = 1.25
     required_current = current_a * safety_factor
     
-    # انتخاب سایز بر اساس جریان
     selected = 1.5
     for size, capacity in current_capacity.items():
         if capacity >= required_current:
@@ -168,7 +160,6 @@ def get_cable_size(current_a, voltage=380, cos_phi=0.8, max_drop=2, length=50):
     else:
         selected = 300
     
-    # بررسی افت ولتاژ (برای طول‌های بلند)
     try:
         area_drop = (current_a * length * 1.732 * cos_phi * 100) / (56 * voltage * max_drop)
         if area_drop > selected:
@@ -187,7 +178,7 @@ def get_breaker_size(current_a, load_type="Resistive"):
         multiplier = 1.6
     elif load_type == "Inductive":
         multiplier = 1.4
-    else:  # Resistive
+    else:
         multiplier = 1.25
     
     required = current_a * multiplier
@@ -272,22 +263,6 @@ def calculate_ups_fixed(load_kva, backup_min, num_batteries, battery_voltage=12)
     result = (base_ah * (load_kva / 10) * 32) / (num_batteries * voltage_factor)
     return round(result, 1)
 
-
-def calculate_motor_from_kva(p_kva, eff=0.85, cos_phi=0.8, voltage=380):
-    p_kw_out = p_kva * cos_phi
-    p_kw_in = p_kw_out / eff
-    current = (p_kw_in * 1000) / (math.sqrt(3) * voltage * cos_phi)
-    starting_current = current * 6
-    return round(current, 2), round(p_kw_in, 2), round(starting_current, 2), round(p_kw_out, 2)
-
-
-def suggest_breaker(current, type_load="Resistive"):
-    multiplier = 1.25 if type_load == "Resistive" else 1.5 
-    required_current = current * multiplier
-    standard_breakers = [6, 10, 16, 20, 25, 32, 40, 50, 63, 80, 100, 125, 160, 200, 250]
-    suggested = min([x for x in standard_breakers if x >= required_current] or [max(standard_breakers)])
-    return suggested
-
 # ==============================================================================
 # --- تب‌ها ---
 # ==============================================================================
@@ -322,7 +297,7 @@ with tabs[0]:
         """, unsafe_allow_html=True)
 
 # ==============================================================================
-# --- تب ۲: UPS ---
+# --- تب ۲: UPS (بدون ورودی سایز کابل) ---
 # ==============================================================================
 
 with tabs[1]:
@@ -336,14 +311,16 @@ with tabs[1]:
         with c2:
             u_bat = st.number_input("Number of Batteries", value=32, step=1, key="u_bat")
             u_volt = st.selectbox("Battery Voltage", [12, 24], index=0, key="u_volt")
-            cable_length_ups = st.number_input("Cable Length (m)", value=50, step=5, key="cable_length_ups")
     
     if st.button("🔍 Calculate UPS", use_container_width=True):
         res = calculate_ups_fixed(u_kva, u_min, u_bat, u_volt)
         volt_text = "12V" if u_volt == 12 else "24V"
         
+        # محاسبه جریان UPS با فرمول تجربی
         ups_current = u_kva * 1.44
-        ups_cable = get_cable_size(ups_current, ups_voltage, 0.8, 2, cable_length_ups)
+        
+        # محاسبه سایز کابل (با طول پیش‌فرض 50 متر)
+        ups_cable = get_cable_size(ups_current, ups_voltage, 0.8, 2, 50)
         ups_breaker = get_breaker_size(ups_current, "Inductive")
         
         st.latex(r"Ah = \frac{Ah_{Base} \times \frac{kVA}{10} \times 32}{N_{Battery} \times \frac{V_{Battery}}{12}}")
@@ -364,7 +341,7 @@ with tabs[1]:
         st.info(f"💡 For {u_kva} kVA UPS → Current = {u_kva} × 1.44 = **{ups_current:.2f} A** → Cable: **{ups_cable} mm²** → Breaker: **{ups_breaker} A**")
 
 # ==============================================================================
-# --- تب ۳: موتور / ژنراتور ---
+# --- تب ۳: موتور / ژنراتور (بدون ورودی سایز کابل) ---
 # ==============================================================================
 
 with tabs[2]:
@@ -377,12 +354,14 @@ with tabs[2]:
             motor_voltage = st.selectbox("System Voltage (V)", [380, 400, 415, 480], index=0, key="motor_voltage")
         with c2:
             m_cos = st.number_input("Power Factor (cos φ)", value=0.8, step=0.01, key="m_cos")
-            cable_length_motor = st.number_input("Cable Length (m)", value=50, step=10, key="cable_length_motor")
     
     if st.button("🔍 Calculate Generator", use_container_width=True):
+        # فرمول تجربی: I = kVA × 1.44
         gen_current = m_kva * 1.44
         starting_current = gen_current * 6
-        gen_cable = get_cable_size(gen_current, motor_voltage, m_cos, 2, cable_length_motor)
+        
+        # محاسبه سایز کابل (با طول پیش‌فرض 50 متر)
+        gen_cable = get_cable_size(gen_current, motor_voltage, m_cos, 2, 50)
         gen_breaker = get_breaker_size(gen_current, "Motor")
         starting_breaker = get_breaker_size(starting_current, "Motor")
         
@@ -409,12 +388,11 @@ with tabs[3]:
     with st.container(border=True):
         p_curr = st.number_input("Load Current (A)", value=100.0, step=1.0, key="p_curr")
         p_type = st.selectbox("Load Type", ["Resistive", "Inductive", "Motor"], key="p_type")
-        cable_len = st.number_input("Cable Length (m)", value=50, step=5, key="cable_len_breaker")
         system_voltage = st.selectbox("System Voltage (V)", [380, 400, 415], index=0, key="sys_voltage")
     
     if st.button("🔍 Calculate Protection", use_container_width=True):
         b_size = get_breaker_size(p_curr, p_type)
-        cable_size = get_cable_size(p_curr, system_voltage, 0.8, 2, cable_len)
+        cable_size = get_cable_size(p_curr, system_voltage, 0.8, 2, 50)
         
         st.markdown(f"""
             <div class='result-box'>
