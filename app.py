@@ -256,8 +256,17 @@ def get_breaker_size(current_a, load_type="Resistive"):
     return standard_breakers[-1]
 
 # ==============================================================================
-# --- تابع محاسبه توان سرمایشی ---
+# --- تابع محاسبه توان سرمایشی با پشتیبانی از فن‌ها ---
 # ==============================================================================
+
+def calculate_coil_area_from_fans(num_fans, fan_diameter_cm):
+    """
+    محاسبه سطح مقطع کل از تعداد و قطر فن‌ها
+    """
+    fan_radius_m = (fan_diameter_cm / 100) / 2  # تبدیل سانتی‌متر به متر
+    fan_area = math.pi * (fan_radius_m ** 2)
+    total_area = num_fans * fan_area
+    return total_area
 
 def calculate_cooling_capacity(air_velocity, coil_area, temp_in, temp_out, 
                                air_density=1.2, cp=1.005, target_capacity=30):
@@ -509,7 +518,7 @@ with tabs[3]:
         st.info(f"💡 For {p_curr} A {p_type} load → Cable: **{cable_size} mm²** → Breaker: **{b_size} A**")
 
 # ==============================================================================
-# --- تب ۵: تست سرمایش HVAC ---
+# --- تب ۵: تست سرمایش HVAC با محاسبه فن‌ها ---
 # ==============================================================================
 
 with tabs[4]:
@@ -541,13 +550,65 @@ with tabs[4]:
                 format="%.1f",
                 help="سرعت هوای عبوری از روی کویل (اندازه‌گیری با بادسنج)"
             )
-            coil_area = st.number_input(
-                "سطح مقطع کویل (متر مربع)", 
-                value=1.0, 
-                step=0.05, 
-                format="%.2f",
-                help="سطح مقطع کویل بر حسب متر مربع"
+            
+            # ========== انتخاب روش محاسبه سطح مقطع ==========
+            area_method = st.radio(
+                "روش محاسبه سطح مقطع:",
+                ["ورود دستی", "محاسبه از روی فن‌ها"],
+                help="انتخاب کنید که سطح مقطع را دستی وارد کنید یا از تعداد و قطر فن‌ها محاسبه شود"
             )
+            
+            if area_method == "ورود دستی":
+                coil_area = st.number_input(
+                    "سطح مقطع کویل (متر مربع)", 
+                    value=1.0, 
+                    step=0.05, 
+                    format="%.2f",
+                    help="سطح مقطع کویل بر حسب متر مربع"
+                )
+                fan_info = None
+            else:
+                st.markdown("**🔧 اطلاعات فن‌ها:**")
+                col_f1, col_f2 = st.columns(2)
+                with col_f1:
+                    num_fans = st.number_input(
+                        "تعداد فن‌ها", 
+                        value=6, 
+                        step=1, 
+                        min_value=1,
+                        help="تعداد فن‌های موجود در یونیت"
+                    )
+                with col_f2:
+                    fan_diameter = st.number_input(
+                        "قطر هر فن (سانتی‌متر)", 
+                        value=30.0, 
+                        step=1.0, 
+                        min_value=1.0,
+                        format="%.1f",
+                        help="قطر هر فن بر حسب سانتی‌متر"
+                    )
+                
+                # محاسبه سطح مقطع از روی فن‌ها
+                coil_area = calculate_coil_area_from_fans(num_fans, fan_diameter)
+                
+                # نمایش اطلاعات فن‌ها
+                fan_radius = (fan_diameter / 100) / 2
+                single_fan_area = math.pi * (fan_radius ** 2)
+                
+                st.info(f"""
+                    **📐 محاسبه سطح مقطع از روی فن‌ها:**
+                    - تعداد فن‌ها: {num_fans} عدد
+                    - قطر هر فن: {fan_diameter} سانتی‌متر
+                    - سطح مقطع هر فن: {single_fan_area:.4f} متر مربع
+                    - **سطح مقطع کل: {coil_area:.4f} متر مربع**
+                """)
+                
+                fan_info = {
+                    'num_fans': num_fans,
+                    'fan_diameter': fan_diameter,
+                    'single_fan_area': single_fan_area,
+                    'total_area': coil_area
+                }
         
         with c2:
             temp_in = st.number_input(
@@ -601,6 +662,16 @@ with tabs[4]:
         st.markdown("---")
         st.subheader("📊 نتایج تست")
         
+        # نمایش اطلاعات فن‌ها اگر وجود داشته باشد
+        if fan_info:
+            st.markdown(f"""
+            <div style='background-color: #f5f5f5; padding: 10px; border-radius: 8px; margin-bottom: 10px; direction: rtl; text-align: right;'>
+                <b>🔧 اطلاعات فن‌ها:</b>
+                {fan_info['num_fans']} فن با قطر {fan_info['fan_diameter']} سانتی‌متر 
+                → سطح مقطع کل: {fan_info['total_area']:.4f} متر مربع
+            </div>
+            """, unsafe_allow_html=True)
+        
         # نتایج اصلی
         col1, col2, col3 = st.columns(3)
         with col1:
@@ -634,7 +705,7 @@ with tabs[4]:
         # جزئیات محاسبات
         with st.expander("📝 جزئیات محاسبات"):
             st.markdown(f"""
-            <div style='padding: 10px;'>
+            <div style='padding: 10px; direction: rtl; text-align: right;'>
                 <b>مراحل محاسبه:</b><br><br>
                 ۱. <b>دبی حجمی هوا:</b> Q = سرعت باد × سطح مقطع = {air_velocity} × {coil_area} = <b>{result['volume_flow']} m³/s</b><br><br>
                 ۲. <b>دبی جرمی هوا:</b> ṁ = Q × ρ = {result['volume_flow']} × {air_density} = <b>{result['mass_flow']} kg/s</b><br><br>
@@ -650,14 +721,19 @@ with tabs[4]:
             if result['capacity'] < target_capacity:
                 needed_capacity = target_capacity - result['capacity']
                 
+                # پیشنهاد افزایش سرعت باد
                 needed_velocity = (target_capacity * air_velocity) / result['capacity']
                 if needed_velocity > air_velocity:
                     suggestions.append(f"🔹 افزایش سرعت باد به حدود **{needed_velocity:.2f} متر بر ثانیه** (از {air_velocity} متر بر ثانیه)")
                 
-                needed_area = (target_capacity * coil_area) / result['capacity']
-                if needed_area > coil_area:
-                    suggestions.append(f"🔹 افزایش سطح مقطع به حدود **{needed_area:.2f} متر مربع** (از {coil_area} متر مربع)")
+                # پیشنهاد افزایش سطح مقطع (تعداد فن‌ها)
+                if fan_info:
+                    needed_area = (target_capacity * coil_area) / result['capacity']
+                    if needed_area > coil_area:
+                        needed_fans = (needed_area / fan_info['single_fan_area'])
+                        suggestions.append(f"🔹 افزایش تعداد فن‌ها به حدود **{math.ceil(needed_fans)}** عدد (از {fan_info['num_fans']} عدد)")
                 
+                # پیشنهاد کاهش دمای خروجی
                 needed_delta = (target_capacity * result['delta_t']) / result['capacity']
                 if needed_delta > result['delta_t']:
                     needed_temp_out = temp_in - needed_delta
@@ -672,42 +748,9 @@ with tabs[4]:
                 st.markdown(s)
     
     # ================================================================
-    # 📘 باکس اطلاعات آبی (در پایین صفحه - بعد از همه چیز)
+    # 📘 باکس اطلاعات آبی (در پایین صفحه)
     # ================================================================
     
     st.markdown("""
     <div class='info-box'>
-        <b>📋 روش تست:</b> تست توان سرمایشی با استفاده از بادسنج (انیمومتر) - اندازه‌گیری غیرمستقیم<br><br>
-        <b>📐 فرمول:</b> P = ṁ × Cₚ × ΔT<br><br>
-        <b>🔧 پارامترهای پیش‌فرض:</b> چگالی هوا = ۱.۲ kg/m³ | Cₚ = ۱.۰۰۵ kJ/kg·K<br><br>
-        <b>🎯 توان هدف:</b> قابل تنظیم - هر توان سرمایشی را تست کنید<br><br>
-        <b>📊 تفسیر نتایج:</b><br>
-        • ✅ PASS (≥ ۹۵% توان هدف): سیستم به توان اسمی رسیده است<br>
-        • ⚠️ WARNING (۸۰% - ۹۵% توان هدف): سیستم به توان اسمی نرسیده، نیاز به بررسی دارد<br>
-        • ❌ FAIL (< ۸۰% توان هدف): سیستم دچار مشکل جدی است
-    </div>
-    """, unsafe_allow_html=True)
-    
-    # راهنمای تست
-    with st.expander("📖 راهنمای انجام تست"):
-        st.markdown("""
-        ### 🔍 مراحل انجام تست:
-        
-        1. **تنظیم توان هدف** - توان اسمی سیستم خود را وارد کنید
-        
-        2. **اندازه‌گیری سرعت باد** با بادسنج در نقاط مختلف کویل و گرفتن میانگین
-        
-        3. **اندازه‌گیری سطح مقطع** کویل (عرض × ارتفاع)
-        
-        4. **اندازه‌گیری دمای ورودی و خروجی** هوا با دماسنج دقیق
-        
-        5. **وارد کردن مقادیر** در فرم بالا و کلیک روی دکمه تست
-        
-        ---
-        
-        ### ⚠️ نکات مهم:
-        
-        - تست باید در **شرایط پایدار** (Steady-State) انجام شود
-        - اگر دمای کویل از نقطه شبنم پایین‌تر باشد، رطوبت تبدیل به آب شده و محاسبات دقیق‌تر نیاز به اندازه‌گیری رطوبت دارد
-        - برای دقت بیشتر، اندازه‌گیری را در **یک شبکه منظم (Grid)** روی سطح کویل انجام دهید
-        """)
+        <b>📋 روش تست:</b> تست توان سرمایشی با استفاده از بادسنج (انیمومتر) - اندازه
