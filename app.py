@@ -90,11 +90,12 @@ st.markdown("""
         margin-bottom: 5px;
     }
 
+    /* ========== اسم نرم‌افزار (2 درجه بزرگتر) ========== */
     .app-title {
         text-align: center;
         padding: 5px 0 10px 0;
         margin: 0;
-        font-size: 38px;
+        font-size: 46px;
         font-weight: 700;
         color: #1a1a1a;
         white-space: nowrap;
@@ -108,7 +109,7 @@ st.markdown("""
 
     @media screen and (max-width: 480px) {
         .app-title {
-            font-size: 26px !important;
+            font-size: 30px !important;
             white-space: normal !important;
             word-break: break-word !important;
             line-height: 1.3 !important;
@@ -118,7 +119,7 @@ st.markdown("""
 
     @media screen and (max-width: 380px) {
         .app-title {
-            font-size: 22px !important;
+            font-size: 26px !important;
         }
     }
     </style>
@@ -135,14 +136,11 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ==============================================================================
-# --- توابع کمکی (اصلاح شده) ---
+# --- توابع کمکی ---
 # ==============================================================================
 
 def get_cable_size(current_a, voltage=380, cos_phi=0.8, max_drop=2, length=50):
-    """
-    محاسبه سایز کابل مناسب بر اساس جریان با ضریب اطمینان
-    ✅ اصلاح: یک پله بالاتر از سایز محاسبه شده پیشنهاد میدهد
-    """
+    """محاسبه سایز کابل مناسب با یک پله بالاتر"""
     standard_sizes = [1.5, 2.5, 4, 6, 10, 16, 25, 35, 50, 70, 95, 120, 150, 185, 240, 300]
     
     current_capacity = {
@@ -151,11 +149,9 @@ def get_cable_size(current_a, voltage=380, cos_phi=0.8, max_drop=2, length=50):
         120: 269, 150: 300, 185: 341, 240: 400, 300: 460
     }
     
-    # ضریب اطمینان ۱.۲۵
     safety_factor = 1.25
     required_current = current_a * safety_factor
     
-    # پیدا کردن سایز مناسب
     selected_index = 0
     for i, (size, capacity) in enumerate(current_capacity.items()):
         if capacity >= required_current:
@@ -164,19 +160,18 @@ def get_cable_size(current_a, voltage=380, cos_phi=0.8, max_drop=2, length=50):
     else:
         selected_index = len(standard_sizes) - 1
     
-    # ✅ یک پله بالاتر (برای داشتن ضریب اطمینان بیشتر)
+    # یک پله بالاتر
     if selected_index < len(standard_sizes) - 1:
         selected_index += 1
     
     selected = standard_sizes[selected_index]
     
-    # بررسی افت ولتاژ (برای طول‌های بلند)
+    # بررسی افت ولتاژ
     try:
         area_drop = (current_a * length * 1.732 * cos_phi * 100) / (56 * voltage * max_drop)
         if area_drop > selected:
             for size in standard_sizes:
                 if size >= area_drop:
-                    # ✅ یک پله بالاتر
                     idx = standard_sizes.index(size)
                     if idx < len(standard_sizes) - 1:
                         selected = standard_sizes[idx + 1]
