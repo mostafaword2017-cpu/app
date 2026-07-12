@@ -11,13 +11,81 @@ st.set_page_config(
 )
 
 # ==============================================================================
-# --- نمایش اسم نرم‌افزار با روش ساده و مطمئن ---
+# --- استایل برای بزرگتر و وسط‌چین کردن تب‌ها ---
 # ==============================================================================
 
-# ✅ این روش ۱۰۰٪ کار میکنه
 st.markdown("""
-    <div style='text-align: center; padding: 10px 0;'>
-        <h1 style='font-size: 40px; font-weight: 700; margin: 0; color: #1a1a1a;'>
+    <style>
+    /* ========== تب‌ها را بزرگتر و وسط‌چین کن ========== */
+    .stTabs div[role="tablist"] {
+        gap: 10px !important;
+        flex-wrap: nowrap !important;
+        overflow-x: auto !important;
+        justify-content: center !important;
+        display: flex !important;
+        padding: 5px 0 !important;
+    }
+    
+    .stTabs [role="tab"] {
+        font-size: 22px !important;  /* بزرگتر */
+        padding: 14px 24px !important;
+        border-radius: 10px 10px 0px 0px !important;
+        background-color: #f0f2f6 !important;
+        color: #1a1a1a !important;
+        white-space: nowrap !important;
+        min-width: 100px !important;
+        text-align: center !important;
+        font-weight: 600 !important;
+        border: 2px solid #ddd !important;
+        border-bottom: none !important;
+    }
+    
+    .stTabs [aria-selected="true"] {
+        background-color: #4CAF50 !important;
+        color: white !important;
+        font-weight: 700 !important;
+        border-color: #4CAF50 !important;
+    }
+    
+    /* ========== موبایل ========== */
+    @media screen and (max-width: 640px) {
+        .stTabs [role="tab"] {
+            font-size: 18px !important;
+            padding: 10px 16px !important;
+            min-width: 70px !important;
+        }
+    }
+    
+    /* ========== مخفی کردن المان‌های اضافی ========== */
+    .stAppHeader, header[data-testid="stHeader"] {
+        display: none !important;
+    }
+    
+    .stDeployButton, .stAppDeployButton, div[data-testid="stAppDeployButton"] {
+        display: none !important;
+    }
+    
+    #MainMenu {
+        display: none !important;
+    }
+
+    footer {
+        display: none !important;
+    }
+    
+    .stAppFooter {
+        display: none !important;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
+# ==============================================================================
+# --- نمایش اسم نرم‌افزار ---
+# ==============================================================================
+
+st.markdown("""
+    <div style='text-align: center; padding: 5px 0 10px 0;'>
+        <h1 style='font-size: 44px; font-weight: 700; margin: 0; color: #1a1a1a;'>
             ElectroCalc <span style='color: #f9a825;'>⚡</span> M&F
         </h1>
     </div>
@@ -114,7 +182,7 @@ def suggest_breaker(current, type_load="Resistive"):
     return suggested
 
 # ==============================================================================
-# --- تب‌ها ---
+# --- تب‌ها (با سایز بزرگتر و وسط‌چین) ---
 # ==============================================================================
 
 tabs = st.tabs(["📏 Cable", "🔋 UPS", "⚙️ Motor", "🛡️ Protect"])
