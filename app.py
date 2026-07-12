@@ -26,13 +26,13 @@ st.markdown("""
     }
     
     .stTabs [role="tab"] {
-        font-size: 22px !important;
-        padding: 14px 24px !important;
+        font-size: 20px !important;
+        padding: 12px 20px !important;
         border-radius: 10px 10px 0px 0px !important;
         background-color: #f0f2f6 !important;
         color: #1a1a1a !important;
         white-space: nowrap !important;
-        min-width: 100px !important;
+        min-width: 80px !important;
         text-align: center !important;
         font-weight: 600 !important;
         border: 2px solid #ddd !important;
@@ -48,9 +48,9 @@ st.markdown("""
     
     @media screen and (max-width: 640px) {
         .stTabs [role="tab"] {
-            font-size: 18px !important;
-            padding: 10px 16px !important;
-            min-width: 70px !important;
+            font-size: 14px !important;
+            padding: 8px 12px !important;
+            min-width: 55px !important;
         }
     }
     
@@ -90,7 +90,6 @@ st.markdown("""
         margin-bottom: 5px;
     }
 
-    /* ========== اسم نرم‌افزار (2 درجه بزرگتر) ========== */
     .app-title {
         text-align: center;
         padding: 5px 0 10px 0;
@@ -121,6 +120,22 @@ st.markdown("""
         .app-title {
             font-size: 26px !important;
         }
+    }
+
+    /* استایل برای نتایج تست */
+    .test-pass {
+        background-color: #e8f5e9 !important;
+        border: 3px solid #4CAF50 !important;
+    }
+    
+    .test-fail {
+        background-color: #ffebee !important;
+        border: 3px solid #f44336 !important;
+    }
+    
+    .test-warning {
+        background-color: #fff3e0 !important;
+        border: 3px solid #ff9800 !important;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -160,13 +175,11 @@ def get_cable_size(current_a, voltage=380, cos_phi=0.8, max_drop=2, length=50):
     else:
         selected_index = len(standard_sizes) - 1
     
-    # یک پله بالاتر
     if selected_index < len(standard_sizes) - 1:
         selected_index += 1
     
     selected = standard_sizes[selected_index]
     
-    # بررسی افت ولتاژ
     try:
         area_drop = (current_a * length * 1.732 * cos_phi * 100) / (56 * voltage * max_drop)
         if area_drop > selected:
@@ -199,6 +212,72 @@ def get_breaker_size(current_a, load_type="Resistive"):
         if breaker >= required:
             return breaker
     return standard_breakers[-1]
+
+# ==============================================================================
+# --- تابع محاسبه توان سرمایشی ---
+# ==============================================================================
+
+def calculate_cooling_capacity(air_velocity, coil_area, temp_in, temp_out, 
+                               air_density=1.2, cp=1.005, target_capacity=30):
+    """
+    محاسبه توان سرمایشی بر اساس فرمول: P = ṁ × Cₚ × ΔT
+    
+    Parameters:
+    - air_velocity: سرعت باد (m/s)
+    - coil_area: سطح مقطع کویل (m²)
+    - temp_in: دمای هوای ورودی (°C)
+    - temp_out: دمای هوای خروجی (°C)
+    - air_density: چگالی هوا (kg/m³) - پیش‌فرض 1.2
+    - cp: ظرفیت گرمایی ویژه هوا (kJ/kg·K) - پیش‌فرض 1.005
+    - target_capacity: توان هدف (kW) - پیش‌فرض 30
+    
+    Returns:
+    - dict: شامل تمام پارامترها و نتیجه تست
+    """
+    # محاسبه دبی حجمی هوا
+    volume_flow = air_velocity * coil_area  # m³/s
+    
+    # محاسبه دبی جرمی هوا
+    mass_flow = volume_flow * air_density  # kg/s
+    
+    # محاسبه اختلاف دما
+    delta_t = temp_in - temp_out  # °C
+    
+    # محاسبه توان سرمایشی
+    capacity = mass_flow * cp * delta_t  # kW
+    
+    # محاسبه درصد توان نسبت به هدف
+    percentage = (capacity / target_capacity) * 100
+    
+    # تعیین وضعیت
+    if capacity >= target_capacity * 0.95:
+        status = "PASS"
+        status_text = "✅ سیستم به توان اسمی خود رسیده است"
+        status_color = "test-pass"
+    elif capacity >= target_capacity * 0.80:
+        status = "WARNING"
+        status_text = "⚠️ سیستم به توان اسمی نرسیده است (کمتر از 95%)"
+        status_color = "test-warning"
+    else:
+        status = "FAIL"
+        status_text = "❌ سیستم دچار مشکل است (کمتر از 80% توان اسمی)"
+        status_color = "test-fail"
+    
+    return {
+        'volume_flow': round(volume_flow, 3),
+        'mass_flow': round(mass_flow, 3),
+        'delta_t': round(delta_t, 1),
+        'capacity': round(capacity, 2),
+        'percentage': round(percentage, 1),
+        'status': status,
+        'status_text': status_text,
+        'status_color': status_color,
+        'air_velocity': air_velocity,
+        'coil_area': coil_area,
+        'temp_in': temp_in,
+        'temp_out': temp_out,
+        'target': target_capacity
+    }
 
 # ==============================================================================
 # --- توابع اصلی محاسباتی ---
@@ -275,10 +354,10 @@ def calculate_ups_fixed(load_kva, backup_min, num_batteries, battery_voltage=12)
     return round(result, 1)
 
 # ==============================================================================
-# --- تب‌ها ---
+# --- تب‌ها (5 تب) ---
 # ==============================================================================
 
-tabs = st.tabs(["📏 Cable", "🔋 UPS", "⚙️ Motor", "🛡️ Protect"])
+tabs = st.tabs(["📏 Cable", "🔋 UPS", "⚙️ Motor", "🛡️ Protect", "❄️ HVAC Test"])
 
 # ==============================================================================
 # --- تب ۱: کابل ---
@@ -408,3 +487,194 @@ with tabs[3]:
         """, unsafe_allow_html=True)
         
         st.info(f"💡 For {p_curr} A {p_type} load → Cable: **{cable_size} mm²** → Breaker: **{b_size} A**")
+
+# ==============================================================================
+# --- تب ۵: تست سرمایش HVAC (جدید) ---
+# ==============================================================================
+
+with tabs[4]:
+    st.header("❄️ HVAC Cooling Capacity Test (30 kW)")
+    
+    st.markdown("""
+    <div style='background-color: #e3f2fd; padding: 15px; border-radius: 10px; margin-bottom: 15px;'>
+        <b>📋 هدف:</b> تست توان سرمایشی ۳۰ کیلوواتی با استفاده از بادسنج (انیمومتر)
+        <br>
+        <b>📐 فرمول:</b> P = ṁ × Cₚ × ΔT
+        <br>
+        <b>🔧 پارامترهای پیش‌فرض:</b> چگالی هوا = ۱.۲ kg/m³ | Cₚ = ۱.۰۰۵ kJ/kg·K
+    </div>
+    """, unsafe_allow_html=True)
+    
+    with st.container(border=True):
+        st.subheader("📊 ورودی‌های اندازه‌گیری")
+        
+        c1, c2 = st.columns(2)
+        with c1:
+            air_velocity = st.number_input(
+                "سرعت باد (m/s)", 
+                value=2.0, 
+                step=0.1, 
+                format="%.1f",
+                help="سرعت هوای عبوری از روی کویل (اندازه‌گیری با بادسنج)"
+            )
+            coil_area = st.number_input(
+                "سطح مقطع کویل (m²)", 
+                value=1.0, 
+                step=0.05, 
+                format="%.2f",
+                help="سطح مقطع کویل بر حسب متر مربع"
+            )
+        
+        with c2:
+            temp_in = st.number_input(
+                "دمای هوای ورودی (°C)", 
+                value=35.0, 
+                step=0.5, 
+                format="%.1f",
+                help="دمای هوای ورودی به کویل"
+            )
+            temp_out = st.number_input(
+                "دمای هوای خروجی (°C)", 
+                value=23.0, 
+                step=0.5, 
+                format="%.1f",
+                help="دمای هوای خروجی از کویل"
+            )
+    
+    with st.container(border=True):
+        st.subheader("⚙️ پارامترهای پیشرفته")
+        c1, c2 = st.columns(2)
+        with c1:
+            air_density = st.number_input(
+                "چگالی هوا (kg/m³)", 
+                value=1.2, 
+                step=0.01, 
+                format="%.2f",
+                help="چگالی هوا (پیش‌فرض: ۱.۲ در شرایط استاندارد)"
+            )
+        with c2:
+            cp = st.number_input(
+                "Cₚ (kJ/kg·K)", 
+                value=1.005, 
+                step=0.001, 
+                format="%.3f",
+                help="ظرفیت گرمایی ویژه هوا (پیش‌فرض: ۱.۰۰۵)"
+            )
+    
+    if st.button("❄️ Run Cooling Test", use_container_width=True):
+        # محاسبه توان سرمایشی
+        result = calculate_cooling_capacity(
+            air_velocity=air_velocity,
+            coil_area=coil_area,
+            temp_in=temp_in,
+            temp_out=temp_out,
+            air_density=air_density,
+            cp=cp,
+            target_capacity=30
+        )
+        
+        st.markdown("---")
+        st.subheader("📊 نتایج تست")
+        
+        # نمایش نتایج اصلی در ۳ ستون
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            st.metric("🌬️ دبی حجمی هوا", f"{result['volume_flow']} m³/s")
+            st.metric("🌡️ اختلاف دما (ΔT)", f"{result['delta_t']} °C")
+        with col2:
+            st.metric("⚖️ دبی جرمی هوا", f"{result['mass_flow']} kg/s")
+            st.metric("🎯 توان هدف", f"{result['target']} kW")
+        with col3:
+            st.metric("❄️ توان سرمایشی", f"{result['capacity']} kW", 
+                     delta=f"{result['percentage']}%")
+        
+        st.markdown("---")
+        
+        # نمایش نتیجه نهایی با رنگ‌بندی
+        status_class = result['status_color']
+        
+        st.markdown(f"""
+            <div class='result-box {status_class}' style='text-align: center; padding: 20px;'>
+                <div style='font-size: 24px; font-weight: 700; margin-bottom: 10px;'>
+                    {result['status_text']}
+                </div>
+                <div style='font-size: 20px; font-weight: 600;'>
+                    توان محاسبه شده: <span style='color: #1a73e8;'>{result['capacity']} kW</span>
+                    &nbsp;|&nbsp; درصد توان: <span style='color: #1a73e8;'>{result['percentage']}%</span>
+                </div>
+            </div>
+        """, unsafe_allow_html=True)
+        
+        # نمایش جزئیات محاسبات
+        with st.expander("📝 مشاهده جزئیات محاسبات"):
+            st.markdown(f"""
+            <div style='padding: 10px;'>
+                <b>مراحل محاسبه:</b><br><br>
+                ۱. <b>دبی حجمی هوا:</b> Q = سرعت باد × سطح مقطع = {air_velocity} × {coil_area} = <b>{result['volume_flow']} m³/s</b><br><br>
+                ۲. <b>دبی جرمی هوا:</b> ṁ = Q × ρ = {result['volume_flow']} × {air_density} = <b>{result['mass_flow']} kg/s</b><br><br>
+                ۳. <b>اختلاف دما:</b> ΔT = T_in - T_out = {temp_in} - {temp_out} = <b>{result['delta_t']} °C</b><br><br>
+                ۴. <b>توان سرمایشی:</b> P = ṁ × Cₚ × ΔT = {result['mass_flow']} × {cp} × {result['delta_t']} = <b>{result['capacity']} kW</b>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        # پیشنهادات برای بهبود
+        with st.expander("💡 پیشنهادات برای رسیدن به ۳۰ کیلووات"):
+            suggestions = []
+            
+            if result['capacity'] < 30:
+                # محاسبه نیاز به افزایش هر پارامتر
+                needed_capacity = 30 - result['capacity']
+                
+                # افزایش سرعت باد
+                needed_velocity = (30 * air_velocity) / result['capacity']
+                if needed_velocity > air_velocity:
+                    suggestions.append(f"🔹 افزایش سرعت باد به حدود **{needed_velocity:.2f} m/s** (از {air_velocity} m/s)")
+                
+                # افزایش سطح مقطع
+                needed_area = (30 * coil_area) / result['capacity']
+                if needed_area > coil_area:
+                    suggestions.append(f"🔹 افزایش سطح مقطع به حدود **{needed_area:.2f} m²** (از {coil_area} m²)")
+                
+                # کاهش دمای خروجی (افزایش ΔT)
+                needed_delta = (30 * result['delta_t']) / result['capacity']
+                if needed_delta > result['delta_t']:
+                    needed_temp_out = temp_in - needed_delta
+                    suggestions.append(f"🔹 کاهش دمای خروجی به حدود **{needed_temp_out:.1f}°C** (از {temp_out}°C) برای افزایش ΔT")
+                
+                if not suggestions:
+                    suggestions.append("🔸 سیستم نیاز به بررسی کامل دارد. ممکن است مشکل در کویل یا کمپرسور باشد.")
+            else:
+                suggestions.append("✅ سیستم به توان اسمی خود رسیده است. عملکرد مطلوب است.")
+            
+            for s in suggestions:
+                st.markdown(s)
+    
+    # راهنمای تست
+    with st.expander("📖 راهنمای انجام تست"):
+        st.markdown("""
+        ### 🔍 مراحل انجام تست:
+        
+        1. **اندازه‌گیری سرعت باد** با بادسنج در نقاط مختلف کویل و گرفتن میانگین
+        
+        2. **اندازه‌گیری سطح مقطع** کویل (عرض × ارتفاع)
+        
+        3. **اندازه‌گیری دمای ورودی و خروجی** هوا با دماسنج دقیق
+        
+        4. **وارد کردن مقادیر** در فرم بالا و کلیک روی دکمه تست
+        
+        ---
+        
+        ### 📊 تفسیر نتایج:
+        
+        - **✅ PASS (≥ 95%)** : سیستم به توان اسمی رسیده است
+        - **⚠️ WARNING (80% - 95%)** : سیستم به توان اسمی نرسیده، نیاز به بررسی دارد
+        - **❌ FAIL (< 80%)** : سیستم دچار مشکل جدی است
+        
+        ---
+        
+        ### ⚠️ نکات مهم:
+        
+        - تست باید در **شرایط پایدار** (Steady-State) انجام شود
+        - اگر دمای کویل از نقطه شبنم پایین‌تر باشد، رطوبت تبدیل به آب شده و محاسبات دقیق‌تر نیاز به اندازه‌گیری رطوبت دارد
+        - برای دقت بیشتر، اندازه‌گیری را در **یک شبکه منظم (Grid)** روی سطح کویل انجام دهید
+        """)
