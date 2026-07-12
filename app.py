@@ -214,7 +214,7 @@ def get_breaker_size(current_a, load_type="Resistive"):
     return standard_breakers[-1]
 
 # ==============================================================================
-# --- تابع محاسبه توان سرمایشی ---
+# --- تابع محاسبه توان سرمایشی (با قابلیت تنظیم توان هدف) ---
 # ==============================================================================
 
 def calculate_cooling_capacity(air_velocity, coil_area, temp_in, temp_out, 
@@ -229,7 +229,7 @@ def calculate_cooling_capacity(air_velocity, coil_area, temp_in, temp_out,
     - temp_out: دمای هوای خروجی (°C)
     - air_density: چگالی هوا (kg/m³) - پیش‌فرض 1.2
     - cp: ظرفیت گرمایی ویژه هوا (kJ/kg·K) - پیش‌فرض 1.005
-    - target_capacity: توان هدف (kW) - پیش‌فرض 30
+    - target_capacity: توان هدف (kW) - قابل تنظیم توسط کاربر
     
     Returns:
     - dict: شامل تمام پارامترها و نتیجه تست
@@ -249,18 +249,18 @@ def calculate_cooling_capacity(air_velocity, coil_area, temp_in, temp_out,
     # محاسبه درصد توان نسبت به هدف
     percentage = (capacity / target_capacity) * 100
     
-    # تعیین وضعیت
-    if capacity >= target_capacity * 0.95:
+    # تعیین وضعیت بر اساس درصد توان
+    if percentage >= 95:
         status = "PASS"
-        status_text = "✅ سیستم به توان اسمی خود رسیده است"
+        status_text = f"✅ سیستم به توان اسمی ({target_capacity} kW) رسیده است"
         status_color = "test-pass"
-    elif capacity >= target_capacity * 0.80:
+    elif percentage >= 80:
         status = "WARNING"
-        status_text = "⚠️ سیستم به توان اسمی نرسیده است (کمتر از 95%)"
+        status_text = f"⚠️ سیستم به توان اسمی نرسیده است ({percentage:.1f}% از {target_capacity} kW)"
         status_color = "test-warning"
     else:
         status = "FAIL"
-        status_text = "❌ سیستم دچار مشکل است (کمتر از 80% توان اسمی)"
+        status_text = f"❌ سیستم دچار مشکل است ({percentage:.1f}% از {target_capacity} kW)"
         status_color = "test-fail"
     
     return {
@@ -489,21 +489,35 @@ with tabs[3]:
         st.info(f"💡 For {p_curr} A {p_type} load → Cable: **{cable_size} mm²** → Breaker: **{b_size} A**")
 
 # ==============================================================================
-# --- تب ۵: تست سرمایش HVAC (جدید) ---
+# --- تب ۵: تست سرمایش HVAC (با قابلیت تنظیم توان هدف) ---
 # ==============================================================================
 
 with tabs[4]:
-    st.header("❄️ HVAC Cooling Capacity Test (30 kW)")
+    st.header("❄️ HVAC Cooling Capacity Test")
     
     st.markdown("""
     <div style='background-color: #e3f2fd; padding: 15px; border-radius: 10px; margin-bottom: 15px;'>
-        <b>📋 هدف:</b> تست توان سرمایشی ۳۰ کیلوواتی با استفاده از بادسنج (انیمومتر)
+        <b>📋 هدف:</b> تست توان سرمایشی با استفاده از بادسنج (انیمومتر)
         <br>
         <b>📐 فرمول:</b> P = ṁ × Cₚ × ΔT
         <br>
         <b>🔧 پارامترهای پیش‌فرض:</b> چگالی هوا = ۱.۲ kg/m³ | Cₚ = ۱.۰۰۵ kJ/kg·K
+        <br>
+        <b>🎯 تنظیم توان هدف:</b> می‌توانید هر توانی را برای تست وارد کنید
     </div>
     """, unsafe_allow_html=True)
+    
+    with st.container(border=True):
+        st.subheader("🎯 تنظیم توان هدف")
+        
+        target_capacity = st.number_input(
+            "توان هدف (kW)", 
+            value=30.0, 
+            step=1.0, 
+            min_value=1.0,
+            format="%.1f",
+            help="توان اسمی سیستم مورد نظر برای تست (مثلاً 30، 50، 100 کیلووات)"
+        )
     
     with st.container(border=True):
         st.subheader("📊 ورودی‌های اندازه‌گیری")
@@ -570,7 +584,7 @@ with tabs[4]:
             temp_out=temp_out,
             air_density=air_density,
             cp=cp,
-            target_capacity=30
+            target_capacity=target_capacity
         )
         
         st.markdown("---")
@@ -586,7 +600,7 @@ with tabs[4]:
             st.metric("🎯 توان هدف", f"{result['target']} kW")
         with col3:
             st.metric("❄️ توان سرمایشی", f"{result['capacity']} kW", 
-                     delta=f"{result['percentage']}%")
+                     delta=f"{result['percentage']}% of target")
         
         st.markdown("---")
         
@@ -601,6 +615,7 @@ with tabs[4]:
                 <div style='font-size: 20px; font-weight: 600;'>
                     توان محاسبه شده: <span style='color: #1a73e8;'>{result['capacity']} kW</span>
                     &nbsp;|&nbsp; درصد توان: <span style='color: #1a73e8;'>{result['percentage']}%</span>
+                    &nbsp;|&nbsp; وضعیت: <span style='color: #1a73e8;'>{result['status']}</span>
                 </div>
             </div>
         """, unsafe_allow_html=True)
@@ -618,33 +633,38 @@ with tabs[4]:
             """, unsafe_allow_html=True)
         
         # پیشنهادات برای بهبود
-        with st.expander("💡 پیشنهادات برای رسیدن به ۳۰ کیلووات"):
+        with st.expander("💡 پیشنهادات برای رسیدن به توان هدف"):
             suggestions = []
             
-            if result['capacity'] < 30:
+            if result['capacity'] < target_capacity:
                 # محاسبه نیاز به افزایش هر پارامتر
-                needed_capacity = 30 - result['capacity']
+                needed_capacity = target_capacity - result['capacity']
                 
                 # افزایش سرعت باد
-                needed_velocity = (30 * air_velocity) / result['capacity']
+                needed_velocity = (target_capacity * air_velocity) / result['capacity']
                 if needed_velocity > air_velocity:
                     suggestions.append(f"🔹 افزایش سرعت باد به حدود **{needed_velocity:.2f} m/s** (از {air_velocity} m/s)")
                 
                 # افزایش سطح مقطع
-                needed_area = (30 * coil_area) / result['capacity']
+                needed_area = (target_capacity * coil_area) / result['capacity']
                 if needed_area > coil_area:
                     suggestions.append(f"🔹 افزایش سطح مقطع به حدود **{needed_area:.2f} m²** (از {coil_area} m²)")
                 
                 # کاهش دمای خروجی (افزایش ΔT)
-                needed_delta = (30 * result['delta_t']) / result['capacity']
+                needed_delta = (target_capacity * result['delta_t']) / result['capacity']
                 if needed_delta > result['delta_t']:
                     needed_temp_out = temp_in - needed_delta
                     suggestions.append(f"🔹 کاهش دمای خروجی به حدود **{needed_temp_out:.1f}°C** (از {temp_out}°C) برای افزایش ΔT")
                 
+                # افزایش دبی جرمی
+                needed_mass_flow = (target_capacity * result['mass_flow']) / result['capacity']
+                if needed_mass_flow > result['mass_flow']:
+                    suggestions.append(f"🔹 افزایش دبی جرمی هوا به حدود **{needed_mass_flow:.3f} kg/s** (از {result['mass_flow']} kg/s)")
+                
                 if not suggestions:
                     suggestions.append("🔸 سیستم نیاز به بررسی کامل دارد. ممکن است مشکل در کویل یا کمپرسور باشد.")
             else:
-                suggestions.append("✅ سیستم به توان اسمی خود رسیده است. عملکرد مطلوب است.")
+                suggestions.append(f"✅ سیستم به توان اسمی {target_capacity} kW رسیده است. عملکرد مطلوب است.")
             
             for s in suggestions:
                 st.markdown(s)
@@ -654,13 +674,15 @@ with tabs[4]:
         st.markdown("""
         ### 🔍 مراحل انجام تست:
         
-        1. **اندازه‌گیری سرعت باد** با بادسنج در نقاط مختلف کویل و گرفتن میانگین
+        1. **تنظیم توان هدف** (مقدار اسمی سیستم خود را وارد کنید)
         
-        2. **اندازه‌گیری سطح مقطع** کویل (عرض × ارتفاع)
+        2. **اندازه‌گیری سرعت باد** با بادسنج در نقاط مختلف کویل و گرفتن میانگین
         
-        3. **اندازه‌گیری دمای ورودی و خروجی** هوا با دماسنج دقیق
+        3. **اندازه‌گیری سطح مقطع** کویل (عرض × ارتفاع)
         
-        4. **وارد کردن مقادیر** در فرم بالا و کلیک روی دکمه تست
+        4. **اندازه‌گیری دمای ورودی و خروجی** هوا با دماسنج دقیق
+        
+        5. **وارد کردن مقادیر** در فرم بالا و کلیک روی دکمه تست
         
         ---
         
