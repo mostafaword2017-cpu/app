@@ -498,45 +498,45 @@ with tabs[3]:
         st.info(f"💡 For {p_curr} A {p_type} load → Cable: **{cable_size} mm²** → Breaker: **{b_size} A**")
 
 # ==============================================================================
-# --- تب ۵: HVAC تست سرمایش ---
+# --- تب ۵: HVAC تست سرمایش (انگلیسی با توضیحات فارسی بعد از اجرا) ---
 # ==============================================================================
 
 with tabs[4]:
-    st.header("❄️ تست توان سرمایشی")
+    st.header("❄️ HVAC Cooling Capacity Test")
 
-    # ---- تنظیم توان هدف ----
+    # ---- Target Capacity Setting ----
     with st.container(border=True):
-        st.subheader("🎯 تنظیم توان هدف")
+        st.subheader("🎯 Target Capacity Setting")
         
         target_capacity = st.number_input(
-            "توان هدف (کیلووات)", 
+            "Target Capacity (kW)", 
             value=30.0, 
             step=1.0, 
             min_value=1.0,
             format="%.1f"
         )
     
-    # ---- ورودی‌های اندازه‌گیری ----
+    # ---- Measurement Inputs ----
     with st.container(border=True):
-        st.subheader("📊 ورودی‌های اندازه‌گیری")
+        st.subheader("📊 Measurement Inputs")
         
         c1, c2 = st.columns(2)
         with c1:
             air_velocity = st.number_input(
-                "سرعت باد (متر بر ثانیه)", 
+                "Air Velocity (m/s)", 
                 value=2.0, 
                 step=0.1, 
                 format="%.1f"
             )
             
             area_method = st.radio(
-                "روش محاسبه سطح مقطع:",
-                ["ورود دستی", "محاسبه از روی فن‌ها"]
+                "Coil Area Calculation Method:",
+                ["Manual Entry", "Calculate from Fans"]
             )
             
-            if area_method == "ورود دستی":
+            if area_method == "Manual Entry":
                 coil_area = st.number_input(
-                    "سطح مقطع کویل (متر مربع)", 
+                    "Coil Area (m²)", 
                     value=1.0, 
                     step=0.05, 
                     format="%.2f"
@@ -546,14 +546,14 @@ with tabs[4]:
                 col_f1, col_f2 = st.columns(2)
                 with col_f1:
                     num_fans = st.number_input(
-                        "تعداد فن‌ها", 
+                        "Number of Fans", 
                         value=6, 
                         step=1, 
                         min_value=1
                     )
                 with col_f2:
                     fan_diameter = st.number_input(
-                        "قطر هر فن (سانتی‌متر)", 
+                        "Fan Diameter (cm)", 
                         value=30.0, 
                         step=1.0, 
                         min_value=1.0,
@@ -566,11 +566,11 @@ with tabs[4]:
                 single_fan_area = math.pi * (fan_radius ** 2)
                 
                 st.info(f"""
-                    **📐 محاسبه سطح مقطع از روی فن‌ها:**
-                    - تعداد فن‌ها: {num_fans} عدد
-                    - قطر هر فن: {fan_diameter} سانتی‌متر
-                    - سطح مقطع هر فن: {single_fan_area:.4f} متر مربع
-                    - **سطح مقطع کل: {coil_area:.4f} متر مربع**
+                    **📐 Coil Area Calculated from Fans:**
+                    - Number of Fans: {num_fans}
+                    - Fan Diameter: {fan_diameter} cm
+                    - Single Fan Area: {single_fan_area:.4f} m²
+                    - **Total Coil Area: {coil_area:.4f} m²**
                 """)
                 
                 fan_info = {
@@ -582,25 +582,25 @@ with tabs[4]:
         
         with c2:
             temp_in = st.number_input(
-                "دمای هوای ورودی (درجه سانتی‌گراد)", 
+                "Inlet Air Temp (°C)", 
                 value=35.0, 
                 step=0.5, 
                 format="%.1f"
             )
             temp_out = st.number_input(
-                "دمای هوای خروجی (درجه سانتی‌گراد)", 
+                "Outlet Air Temp (°C)", 
                 value=23.0, 
                 step=0.5, 
                 format="%.1f"
             )
     
-    # ---- پارامترهای پیشرفته ----
+    # ---- Advanced Parameters ----
     with st.container(border=True):
-        st.subheader("⚙️ پارامترهای پیشرفته")
+        st.subheader("⚙️ Advanced Parameters")
         c1, c2 = st.columns(2)
         with c1:
             air_density = st.number_input(
-                "چگالی هوا (kg/m³)", 
+                "Air Density (kg/m³)", 
                 value=1.2, 
                 step=0.01, 
                 format="%.2f"
@@ -613,8 +613,8 @@ with tabs[4]:
                 format="%.3f"
             )
     
-    # ---- دکمه محاسبه ----
-    if st.button("❄️ اجرای تست سرمایش", use_container_width=True):
+    # ---- Calculate Button ----
+    if st.button("❄️ Run Cooling Test", use_container_width=True):
         result = calculate_cooling_capacity(
             air_velocity=air_velocity,
             coil_area=coil_area,
@@ -626,7 +626,7 @@ with tabs[4]:
         )
         
         st.markdown("---")
-        st.subheader("📊 نتایج تست")
+        st.subheader("📊 Test Results")
         
         if fan_info:
             st.markdown(f"""
@@ -639,19 +639,20 @@ with tabs[4]:
         
         col1, col2, col3 = st.columns(3)
         with col1:
-            st.metric("🌬️ دبی حجمی هوا", f"{result['volume_flow']} m³/s")
-            st.metric("🌡️ اختلاف دما (ΔT)", f"{result['delta_t']} °C")
+            st.metric("🌬️ Volume Flow", f"{result['volume_flow']} m³/s")
+            st.metric("🌡️ Temperature Diff (ΔT)", f"{result['delta_t']} °C")
         with col2:
-            st.metric("⚖️ دبی جرمی هوا", f"{result['mass_flow']} kg/s")
-            st.metric("🎯 توان هدف", f"{result['target']} kW")
+            st.metric("⚖️ Mass Flow", f"{result['mass_flow']} kg/s")
+            st.metric("🎯 Target Capacity", f"{result['target']} kW")
         with col3:
-            st.metric("❄️ توان سرمایشی", f"{result['capacity']} kW", 
+            st.metric("❄️ Cooling Capacity", f"{result['capacity']} kW", 
                      delta=f"{result['percentage']}%")
         
         st.markdown("---")
         
         status_class = result['status_color']
         
+        # نتیجه به فارسی
         st.markdown(f"""
             <div class='result-box {status_class}' style='text-align: center; padding: 20px;'>
                 <div style='font-size: 24px; font-weight: 700; margin-bottom: 10px;'>
@@ -665,6 +666,7 @@ with tabs[4]:
             </div>
         """, unsafe_allow_html=True)
         
+        # جزئیات محاسبات به فارسی
         with st.expander("📝 جزئیات محاسبات"):
             st.markdown(f"""
             <div style='padding: 10px; direction: rtl; text-align: right;'>
@@ -676,6 +678,7 @@ with tabs[4]:
             </div>
             """, unsafe_allow_html=True)
         
+        # پیشنهادات به فارسی
         with st.expander("💡 پیشنهادات"):
             suggestions = []
             
@@ -704,7 +707,7 @@ with tabs[4]:
                 st.markdown(s)
     
     # ================================================================
-    # 📘 باکس اطلاعات آبی
+    # 📘 باکس اطلاعات آبی (فارسی)
     # ================================================================
     
     st.markdown("""
@@ -720,7 +723,7 @@ with tabs[4]:
     </div>
     """, unsafe_allow_html=True)
     
-    with st.expander("📖 راهنمای انجام تست"):
+    with st.expander("📖 Test Procedure Guide (راهنمای انجام تست)"):
         st.markdown("""
         ### 🔍 مراحل انجام تست:
         
