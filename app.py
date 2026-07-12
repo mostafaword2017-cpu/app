@@ -48,9 +48,9 @@ st.markdown("""
     
     @media screen and (max-width: 640px) {
         .stTabs [role="tab"] {
-            font-size: 18px !important;
-            padding: 10px 16px !important;
-            min-width: 70px !important;
+            font-size: 16px !important;
+            padding: 8px 12px !important;
+            min-width: 60px !important;
         }
     }
     
@@ -89,18 +89,55 @@ st.markdown("""
         color: #1a73e8 !important;
         margin-bottom: 5px;
     }
+
+    /* ========== اسم نرم‌افزار واکنش‌گرا ========== */
+    .app-title {
+        text-align: center;
+        padding: 5px 0 10px 0;
+        margin: 0;
+        font-size: 34px;
+        font-weight: 700;
+        color: #1a1a1a;
+        word-break: keep-all;
+        white-space: nowrap;
+        overflow: visible;
+    }
+    
+    .app-title .lightning {
+        color: #f9a825;
+        display: inline-block;
+    }
+
+    /* موبایل */
+    @media screen and (max-width: 480px) {
+        .app-title {
+            font-size: 22px !important;
+            white-space: normal !important;
+            word-break: break-word !important;
+            line-height: 1.3 !important;
+            padding: 5px 10px !important;
+        }
+    }
+
+    @media screen and (max-width: 380px) {
+        .app-title {
+            font-size: 18px !important;
+            white-space: normal !important;
+            word-break: break-word !important;
+            line-height: 1.3 !important;
+            padding: 5px 8px !important;
+        }
+    }
     </style>
 """, unsafe_allow_html=True)
 
 # ==============================================================================
-# --- نمایش اسم نرم‌افزار (2 درجه کوچکتر = از 44px به 34px) ---
+# --- نمایش اسم نرم‌افزار (واکنش‌گرا) ---
 # ==============================================================================
 
 st.markdown("""
-    <div style='text-align: center; padding: 5px 0 10px 0;'>
-        <h1 style='font-size: 34px; font-weight: 700; margin: 0; color: #1a1a1a;'>
-            ElectroCalc <span style='color: #f9a825;'>⚡</span> M&F
-        </h1>
+    <div class="app-title">
+        ElectroCalc <span class="lightning">⚡</span> M&F
     </div>
 """, unsafe_allow_html=True)
 
@@ -305,13 +342,8 @@ with tabs[1]:
         res = calculate_ups_fixed(u_kva, u_min, u_bat, u_volt)
         volt_text = "12V" if u_volt == 12 else "24V"
         
-        # محاسبه جریان UPS (فرمول تجربی: I = kVA × 1.44)
         ups_current = u_kva * 1.44
-        
-        # سایز کابل
         ups_cable = get_cable_size(ups_current, ups_voltage, 0.8, 2, cable_length_ups)
-        
-        # کلید محافظ
         ups_breaker = get_breaker_size(ups_current, "Inductive")
         
         st.latex(r"Ah = \frac{Ah_{Base} \times \frac{kVA}{10} \times 32}{N_{Battery} \times \frac{V_{Battery}}{12}}")
@@ -348,16 +380,9 @@ with tabs[2]:
             cable_length_motor = st.number_input("Cable Length (m)", value=50, step=10, key="cable_length_motor")
     
     if st.button("🔍 Calculate Generator", use_container_width=True):
-        # فرمول تجربی: I = kVA × 1.44
         gen_current = m_kva * 1.44
-        
-        # جریان راه‌اندازی (۶ برابر)
         starting_current = gen_current * 6
-        
-        # سایز کابل
         gen_cable = get_cable_size(gen_current, motor_voltage, m_cos, 2, cable_length_motor)
-        
-        # کلید محافظ
         gen_breaker = get_breaker_size(gen_current, "Motor")
         starting_breaker = get_breaker_size(starting_current, "Motor")
         
