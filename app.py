@@ -11,29 +11,29 @@ st.set_page_config(
 )
 
 # ==============================================================================
-# --- استایل با تب‌های پررنگ و حذف فضای خالی بالا ---
+# --- استایل با تنظیم فاصله مناسب از بالا ---
 # ==============================================================================
 
 st.markdown("""
     <style>
-    /* ========== حذف فضای خالی بالای صفحه ========== */
+    /* ========== تنظیم فاصله مناسب از بالای صفحه (نصف حالت قبل) ========== */
     .main > div {
         padding-top: 0px !important;
     }
     
     .stApp {
-        margin-top: -50px !important;
+        margin-top: -25px !important;  /* نصف مقدار قبلی (-50 به -25) */
     }
     
     .block-container {
-        padding-top: 5px !important;
+        padding-top: 10px !important;
         padding-bottom: 20px !important;
     }
 
     /* ========== اسم نرم‌افزار ========== */
     .app-title {
         text-align: center;
-        padding: 5px 0 15px 0 !important;
+        padding: 0px 0 12px 0 !important;
         margin: 0 !important;
         font-size: 60px !important;
         font-weight: 800 !important;
@@ -43,7 +43,7 @@ st.markdown("""
         letter-spacing: 1px !important;
         line-height: 1.2 !important;
         border-bottom: 3px solid #e8e8e8 !important;
-        margin-bottom: 10px !important;
+        margin-bottom: 8px !important;
     }
     
     .app-title .lightning {
@@ -56,7 +56,7 @@ st.markdown("""
     @media screen and (max-width: 640px) {
         .app-title {
             font-size: 38px !important;
-            padding: 5px 0 12px 0 !important;
+            padding: 0px 0 10px 0 !important;
             white-space: normal !important;
             word-break: break-word !important;
             line-height: 1.3 !important;
@@ -69,7 +69,7 @@ st.markdown("""
     @media screen and (max-width: 400px) {
         .app-title {
             font-size: 30px !important;
-            padding: 3px 0 10px 0 !important;
+            padding: 0px 0 8px 0 !important;
         }
         .app-title .lightning {
             font-size: 34px !important;
@@ -83,9 +83,9 @@ st.markdown("""
         overflow-x: auto !important;
         justify-content: center !important;
         display: flex !important;
-        padding: 8px 0 5px 0 !important;
+        padding: 6px 0 5px 0 !important;
         border-bottom: 3px solid #c0c0c0 !important;
-        margin-top: 2px !important;
+        margin-top: 0px !important;
     }
     
     .stTabs [role="tab"] {
@@ -135,9 +135,17 @@ st.markdown("""
     
     /* ========== موبایل ========== */
     @media screen and (max-width: 640px) {
+        .stApp {
+            margin-top: -10px !important;
+        }
+        
+        .block-container {
+            padding-top: 5px !important;
+        }
+        
         .stTabs div[role="tablist"] {
             gap: 4px !important;
-            padding: 6px 0 4px 0 !important;
+            padding: 4px 0 4px 0 !important;
             justify-content: flex-start !important;
             overflow-x: auto !important;
             -webkit-overflow-scrolling: touch !important;
