@@ -11,12 +11,11 @@ st.set_page_config(
 )
 
 # ==============================================================================
-# --- استایل برای بزرگتر و وسط‌چین کردن تب‌ها ---
+# --- استایل ---
 # ==============================================================================
 
 st.markdown("""
     <style>
-    /* ========== تب‌ها را بزرگتر و وسط‌چین کن ========== */
     .stTabs div[role="tablist"] {
         gap: 10px !important;
         flex-wrap: nowrap !important;
@@ -27,7 +26,7 @@ st.markdown("""
     }
     
     .stTabs [role="tab"] {
-        font-size: 22px !important;  /* بزرگتر */
+        font-size: 22px !important;
         padding: 14px 24px !important;
         border-radius: 10px 10px 0px 0px !important;
         background-color: #f0f2f6 !important;
@@ -47,7 +46,6 @@ st.markdown("""
         border-color: #4CAF50 !important;
     }
     
-    /* ========== موبایل ========== */
     @media screen and (max-width: 640px) {
         .stTabs [role="tab"] {
             font-size: 18px !important;
@@ -56,7 +54,6 @@ st.markdown("""
         }
     }
     
-    /* ========== مخفی کردن المان‌های اضافی ========== */
     .stAppHeader, header[data-testid="stHeader"] {
         display: none !important;
     }
@@ -76,6 +73,22 @@ st.markdown("""
     .stAppFooter {
         display: none !important;
     }
+    
+    .result-box {
+        text-align: center;
+        padding: 15px;
+        border-radius: 15px;
+        background-color: #f1f3f4;
+        border: 2px solid #3c4043;
+        margin: 15px 0;
+    }
+    
+    .result-text {
+        font-size: 18px !important;
+        font-weight: 600 !important;
+        color: #1a73e8 !important;
+        margin-bottom: 5px;
+    }
     </style>
 """, unsafe_allow_html=True)
 
@@ -92,7 +105,55 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ==============================================================================
-# --- توابع محاسباتی ---
+# --- توابع کمکی برای کابل و کلید ---
+# ==============================================================================
+
+def get_cable_size(current_a, voltage=380, cos_phi=0.8, max_drop=2, length=50):
+    """محاسبه سایز کابل مناسب بر اساس جریان"""
+    standard_sizes = [1.5, 2.5, 4, 6, 10, 16, 25, 35, 50, 70, 95, 120, 150, 185, 240, 300]
+    current_capacity = {1.5:18, 2.5:24, 4:32, 6:41, 10:57, 16:76, 25:101, 35:125, 50:151, 70:192, 95:232, 120:269, 150:300, 185:341, 240:400, 300:460}
+    
+    # بر اساس جریان
+    min_size = 1.5
+    for size, max_current in current_capacity.items():
+        if current_a <= max_current:
+            min_size = size
+            break
+    else:
+        min_size = 300
+    
+    # بر اساس افت ولتاژ
+    try:
+        area_drop = (current_a * length * 1.732 * cos_phi * 100) / (56 * voltage * max_drop)
+    except:
+        area_drop = 0
+    
+    required_area = max(min_size, area_drop)
+    
+    # گرد کردن به سایز استاندارد
+    selected = 1.5
+    for size in standard_sizes:
+        if size >= required_area:
+            selected = size
+            break
+    else:
+        selected = 300
+    
+    return selected
+
+def get_breaker_size(current_a, load_type="Resistive"):
+    """محاسبه سایز کلید محافظ مناسب"""
+    multiplier = 1.25 if load_type == "Resistive" else 1.5
+    required = current_a * multiplier
+    standard_breakers = [6, 10, 16, 20, 25, 32, 40, 50, 63, 80, 100, 125, 160, 200, 250, 315, 400, 500, 630]
+    
+    for breaker in standard_breakers:
+        if breaker >= required:
+            return breaker
+    return standard_breakers[-1]
+
+# ==============================================================================
+# --- توابع اصلی محاسباتی ---
 # ==============================================================================
 
 def calculate_cable_fixed(p_kw, length, sigma, voltage=380, max_drop_percent=2):
@@ -182,7 +243,7 @@ def suggest_breaker(current, type_load="Resistive"):
     return suggested
 
 # ==============================================================================
-# --- تب‌ها (با سایز بزرگتر و وسط‌چین) ---
+# --- تب‌ها ---
 # ==============================================================================
 
 tabs = st.tabs(["📏 Cable", "🔋 UPS", "⚙️ Motor", "🛡️ Protect"])
@@ -206,16 +267,16 @@ with tabs[0]:
         curr, f_size, s_size, raw = calculate_cable_fixed(p_in, l_in, s_in, 380, d_in)
         st.latex(r"S = \frac{P \times L \times 100}{\sigma \times V^2 \times \Delta V\%}")
         st.markdown(f"""
-            <div style='text-align: center; padding: 15px; border-radius: 15px; background-color: #f1f3f4; border: 2px solid #3c4043; margin: 15px 0;'>
-                <div style='font-size: 18px; font-weight: 600; color: #1a73e8; margin-bottom: 5px;'>⚡ Current: {curr} A</div>
-                <div style='font-size: 18px; font-weight: 600; color: #1b5e20; margin-bottom: 5px;'>📏 Standard: {f_size} mm²</div>
-                <div style='font-size: 18px; font-weight: 600; color: #e65100; margin-bottom: 5px;'>🚀 Safe Size: {s_size} mm²</div>
+            <div class='result-box'>
+                <div class='result-text'>⚡ Current: {curr} A</div>
+                <div class='result-text' style='color: #1b5e20;'>📏 Standard: {f_size} mm²</div>
+                <div class='result-text' style='color: #e65100;'>🚀 Safe Size: {s_size} mm²</div>
                 <p style='color: #5f6368;'>Exact Calc: {raw} mm²</p>
             </div>
         """, unsafe_allow_html=True)
 
 # ==============================================================================
-# --- تب ۲: UPS ---
+# --- تب ۲: UPS (با کابل و کلید ورودی/خروجی) ---
 # ==============================================================================
 
 with tabs[1]:
@@ -225,50 +286,139 @@ with tabs[1]:
         with c1:
             u_kva = st.number_input("UPS Power (kVA)", value=40.0, step=1.0, key="u_kva")
             u_min = st.number_input("Time (min)", value=15, step=5, key="u_min")
+            ups_voltage = st.selectbox("System Voltage (V)", [380, 400, 415], index=0, key="ups_voltage")
         with c2:
             u_bat = st.number_input("Number of Batteries", value=32, step=1, key="u_bat")
             u_volt = st.selectbox("Battery Voltage", [12, 24], index=0, key="u_volt")
+            cable_length_ups = st.number_input("Cable Length (m)", value=50, step=5, key="cable_length_ups")
     
     if st.button("🔍 Calculate UPS", use_container_width=True):
         res = calculate_ups_fixed(u_kva, u_min, u_bat, u_volt)
         volt_text = "12V" if u_volt == 12 else "24V"
+        
+        # محاسبه جریان ورودی و خروجی UPS
+        cos_phi_ups = 0.8
+        input_current = (u_kva * 1000) / (math.sqrt(3) * ups_voltage * cos_phi_ups)
+        output_current = (u_kva * 1000) / (math.sqrt(3) * 220 * cos_phi_ups)  # ولتاژ خروجی 220V
+        
+        # سایز کابل ورودی و خروجی
+        input_cable = get_cable_size(input_current, ups_voltage, cos_phi_ups, 2, cable_length_ups)
+        output_cable = get_cable_size(output_current, 220, cos_phi_ups, 2, cable_length_ups)
+        
+        # کلید ورودی و خروجی
+        input_breaker = get_breaker_size(input_current, "Inductive")
+        output_breaker = get_breaker_size(output_current, "Resistive")
+        
         st.latex(r"Ah = \frac{Ah_{Base} \times \frac{kVA}{10} \times 32}{N_{Battery} \times \frac{V_{Battery}}{12}}")
+        
+        # نتایج اصلی UPS
         st.markdown(f"""
-            <div style='text-align: center; padding: 15px; border-radius: 15px; background-color: #f1f3f4; border: 2px solid #3c4043; margin: 15px 0;'>
-                <div style='font-size: 18px; font-weight: 600; color: #1a73e8; margin-bottom: 5px;'>📦 Battery Capacity: {res} Ah</div>
-                <div style='font-size: 18px; font-weight: 600; color: #0d47a1; margin-bottom: 5px;'>🔋 Required: {u_bat} Batteries</div>
-                <div style='font-size: 18px; font-weight: 600; color: #e65100;'>⚡ System Voltage: {volt_text}</div>
+            <div class='result-box'>
+                <div class='result-text'>📦 Battery Capacity: {res} Ah</div>
+                <div class='result-text' style='color: #0d47a1;'>🔋 Required: {u_bat} Batteries</div>
+                <div class='result-text' style='color: #e65100;'>⚡ System Voltage: {volt_text}</div>
             </div>
         """, unsafe_allow_html=True)
+        
         if u_volt == 24:
             st.info("💡 With 24V system, required Ah is HALF of 12V system")
+        
+        # نتایج کابل و کلید
+        st.subheader("🔌 Input / Output Sizing")
+        
+        col1, col2 = st.columns(2)
+        with col1:
+            st.markdown(f"""
+                <div style='background-color: #e8f0fe; padding: 12px; border-radius: 10px; margin: 5px 0;'>
+                    <b>⬅️ INPUT SIDE</b><br>
+                    Current: <b>{input_current:.2f} A</b><br>
+                    Cable: <b>{input_cable} mm²</b><br>
+                    Breaker: <b>{input_breaker} A</b>
+                </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            st.markdown(f"""
+                <div style='background-color: #fce8e6; padding: 12px; border-radius: 10px; margin: 5px 0;'>
+                    <b>➡️ OUTPUT SIDE</b><br>
+                    Current: <b>{output_current:.2f} A</b><br>
+                    Cable: <b>{output_cable} mm²</b><br>
+                    Breaker: <b>{output_breaker} A</b>
+                </div>
+            """, unsafe_allow_html=True)
 
 # ==============================================================================
-# --- تب ۳: موتور ---
+# --- تب ۳: موتور (با کابل و کلید ورودی/خروجی) ---
 # ==============================================================================
 
 with tabs[2]:
-    st.header("⚙️ Motor Calculations")
+    st.header("⚙️ Motor Calculations (Generator)")
     with st.container(border=True):
         c1, c2 = st.columns(2)
         with c1:
             m_kva = st.number_input("Power (kVA)", value=150.0, step=5.0, key="m_kva")
             m_eff = st.number_input("Efficiency", value=0.85, step=0.01, key="m_eff")
+            motor_voltage = st.selectbox("System Voltage (V)", [380, 400, 415, 480], index=0, key="motor_voltage")
         with c2:
             m_cos = st.number_input("Power Factor (cos φ)", value=0.8, step=0.01, key="m_cos")
             m_vol = st.number_input("Voltage (V)", value=380, step=10, key="m_vol")
+            cable_length_motor = st.number_input("Cable Length (m)", value=100, step=10, key="cable_length_motor")
     
     if st.button("🔍 Calculate Motor", use_container_width=True):
         curr, p_in, s_curr, p_kw_out = calculate_motor_from_kva(m_kva, m_eff, m_cos, m_vol)
+        
+        # محاسبه جریان ورودی (برای ژنراتور)
+        input_current_motor = (p_in * 1000) / (math.sqrt(3) * motor_voltage * m_cos)
+        
+        # سایز کابل ورودی و خروجی
+        input_cable_motor = get_cable_size(input_current_motor, motor_voltage, m_cos, 2, cable_length_motor)
+        output_cable_motor = get_cable_size(curr, m_vol, m_cos, 2, cable_length_motor)
+        
+        # کلید ورودی و خروجی
+        input_breaker_motor = get_breaker_size(input_current_motor, "Motor")
+        output_breaker_motor = get_breaker_size(curr, "Motor")
+        
+        # کلید با در نظر گرفتن جریان راه‌اندازی
+        starting_breaker = get_breaker_size(s_curr, "Motor")
+        
         st.latex(r"I = \frac{P_{kW} \times 1000}{\eta \times \sqrt{3} \times V \times \cos\phi}")
+        
+        # نتایج اصلی موتور
         st.markdown(f"""
-            <div style='text-align: center; padding: 15px; border-radius: 15px; background-color: #f1f3f4; border: 2px solid #3c4043; margin: 15px 0;'>
-                <div style='font-size: 18px; font-weight: 600; color: #1a73e8; margin-bottom: 5px;'>⚡ Rated Current: {curr} A</div>
-                <div style='font-size: 18px; font-weight: 600; color: #e65100; margin-bottom: 5px;'>🚀 Start Current: {s_curr} A</div>
-                <div style='font-size: 18px; font-weight: 600; color: #1a73e8; margin-bottom: 5px;'>🔌 Input Power: {p_in} kW</div>
-                <div style='font-size: 18px; font-weight: 600; color: #1b5e20;'>🎯 Output Power: {p_kw_out} kW</div>
+            <div class='result-box'>
+                <div class='result-text'>⚡ Rated Current: {curr} A</div>
+                <div class='result-text' style='color: #e65100;'>🚀 Start Current: {s_curr} A</div>
+                <div class='result-text' style='color: #1a73e8;'>🔌 Input Power: {p_in} kW</div>
+                <div class='result-text' style='color: #1b5e20;'>🎯 Output Power: {p_kw_out} kW</div>
             </div>
         """, unsafe_allow_html=True)
+        
+        # نتایج کابل و کلید
+        st.subheader("🔌 Input / Output Sizing")
+        
+        col1, col2 = st.columns(2)
+        with col1:
+            st.markdown(f"""
+                <div style='background-color: #e8f0fe; padding: 12px; border-radius: 10px; margin: 5px 0;'>
+                    <b>⬅️ INPUT SIDE (Generator Supply)</b><br>
+                    Current: <b>{input_current_motor:.2f} A</b><br>
+                    Cable: <b>{input_cable_motor} mm²</b><br>
+                    Breaker: <b>{input_breaker_motor} A</b>
+                </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            st.markdown(f"""
+                <div style='background-color: #fce8e6; padding: 12px; border-radius: 10px; margin: 5px 0;'>
+                    <b>➡️ OUTPUT SIDE (Load)</b><br>
+                    Rated Current: <b>{curr} A</b><br>
+                    Cable: <b>{output_cable_motor} mm²</b><br>
+                    Breaker (Rated): <b>{output_breaker_motor} A</b><br>
+                    Breaker (Starting): <b>{starting_breaker} A</b>
+                </div>
+            """, unsafe_allow_html=True)
+        
+        st.info(f"💡 For motor starting, breaker should handle {s_curr} A starting current → Suggested: {starting_breaker} A")
 
 # ==============================================================================
 # --- تب ۴: حفاظت ---
@@ -278,13 +428,17 @@ with tabs[3]:
     st.header("🛡️ Breaker Sizing")
     with st.container(border=True):
         p_curr = st.number_input("Load Current (A)", value=100.0, step=1.0, key="p_curr")
-        p_type = st.selectbox("Load Type", ["Resistive", "Inductive"], key="p_type")
+        p_type = st.selectbox("Load Type", ["Resistive", "Inductive", "Motor"], key="p_type")
+        cable_len = st.number_input("Cable Length (m)", value=50, step=5, key="cable_len_breaker")
     
     if st.button("🔍 Suggest Breaker", use_container_width=True):
         b_size = suggest_breaker(p_curr, p_type)
+        cable_size = get_cable_size(p_curr, 380, 0.8, 2, cable_len)
+        
         st.markdown(f"""
-            <div style='text-align: center; padding: 15px; border-radius: 15px; background-color: #f1f3f4; border: 2px solid #3c4043; margin: 15px 0;'>
-                <div style='font-size: 18px; font-weight: 600; color: #1a73e8; margin-bottom: 5px;'>🛡️ Suggested Breaker: {b_size} A</div>
+            <div class='result-box'>
+                <div class='result-text'>🛡️ Suggested Breaker: {b_size} A</div>
+                <div class='result-text' style='color: #1b5e20;'>📏 Recommended Cable: {cable_size} mm²</div>
                 <p style='color: #5f6368;'>Based on IEC 60947 standard</p>
             </div>
         """, unsafe_allow_html=True)
