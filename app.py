@@ -11,11 +11,12 @@ st.set_page_config(
 )
 
 # ==============================================================================
-# --- استایل ---
+# --- استایل با نمایش واضح تب انتخاب شده ---
 # ==============================================================================
 
 st.markdown("""
     <style>
+    /* ========== تب‌ها با نمایش واضح حالت انتخاب ========== */
     .stTabs div[role="tablist"] {
         gap: 8px !important;
         flex-wrap: nowrap !important;
@@ -23,21 +24,31 @@ st.markdown("""
         justify-content: center !important;
         display: flex !important;
         padding: 5px 0 !important;
+        border-bottom: 3px solid #e0e0e0 !important;
     }
     
     .stTabs [role="tab"] {
         font-size: 20px !important;
-        padding: 12px 20px !important;
-        border-radius: 10px 10px 0px 0px !important;
-        background-color: #f0f2f6 !important;
-        color: #1a1a1a !important;
+        padding: 12px 24px !important;
+        border-radius: 12px 12px 0px 0px !important;
+        background-color: #f5f5f5 !important;
+        color: #888888 !important;
         white-space: nowrap !important;
-        min-width: 80px !important;
+        min-width: 90px !important;
         text-align: center !important;
-        font-weight: 600 !important;
-        border: 2px solid #ddd !important;
+        font-weight: 500 !important;
+        border: 2px solid #e0e0e0 !important;
         border-bottom: none !important;
-        display: inline-block !important;
+        transition: all 0.3s ease !important;
+        cursor: pointer !important;
+        opacity: 0.7 !important;
+    }
+    
+    .stTabs [role="tab"]:hover {
+        background-color: #e8f5e9 !important;
+        color: #2e7d32 !important;
+        opacity: 1 !important;
+        transform: translateY(-2px) !important;
     }
     
     .stTabs [aria-selected="true"] {
@@ -45,11 +56,21 @@ st.markdown("""
         color: white !important;
         font-weight: 700 !important;
         border-color: #4CAF50 !important;
+        border-bottom: 3px solid #4CAF50 !important;
+        opacity: 1 !important;
+        transform: translateY(-3px) !important;
+        box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3) !important;
     }
     
+    .stTabs [aria-selected="true"]:hover {
+        background-color: #43a047 !important;
+        transform: translateY(-3px) !important;
+    }
+    
+    /* ========== موبایل ========== */
     @media screen and (max-width: 640px) {
         .stTabs div[role="tablist"] {
-            gap: 5px !important;
+            gap: 4px !important;
             padding: 5px 0 !important;
             justify-content: flex-start !important;
             overflow-x: auto !important;
@@ -63,8 +84,11 @@ st.markdown("""
             border-radius: 8px 8px 0px 0px !important;
             flex: 0 0 auto !important;
             display: inline-block !important;
-            border: 2px solid #ddd !important;
-            border-bottom: none !important;
+        }
+        
+        .stTabs [aria-selected="true"] {
+            transform: translateY(-2px) !important;
+            box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3) !important;
         }
     }
 
@@ -76,6 +100,7 @@ st.markdown("""
         }
     }
     
+    /* ========== مخفی کردن المان‌های اضافی ========== */
     .stAppHeader, header[data-testid="stHeader"] {
         display: none !important;
     }
@@ -96,6 +121,7 @@ st.markdown("""
         display: none !important;
     }
     
+    /* ========== جعبه نتایج ========== */
     .result-box {
         text-align: center;
         padding: 15px;
@@ -112,6 +138,7 @@ st.markdown("""
         margin-bottom: 5px;
     }
 
+    /* ========== اسم نرم‌افزار ========== */
     .app-title {
         text-align: center;
         padding: 5px 0 10px 0;
@@ -144,6 +171,7 @@ st.markdown("""
         }
     }
 
+    /* ========== استایل برای نتایج تست ========== */
     .test-pass {
         background-color: #e8f5e9 !important;
         border: 3px solid #4CAF50 !important;
@@ -159,6 +187,7 @@ st.markdown("""
         border: 3px solid #ff9800 !important;
     }
 
+    /* ========== باکس اطلاعات آبی ========== */
     .info-box {
         background-color: #e3f2fd;
         padding: 15px;
@@ -201,7 +230,6 @@ def get_cable_size(current_a, voltage=380, cos_phi=0.8, max_drop=2, length=50, c
     """محاسبه سایز کابل مناسب با یک پله بالاتر"""
     standard_sizes = [1.5, 2.5, 4, 6, 10, 16, 25, 35, 50, 70, 95, 120, 150, 185, 240, 300]
     
-    # ظرفیت جریان بر اساس نوع هادی
     if conductor == "Copper":
         current_capacity = {
             1.5: 18, 2.5: 24, 4: 32, 6: 41, 10: 57, 16: 76,
@@ -209,7 +237,7 @@ def get_cable_size(current_a, voltage=380, cos_phi=0.8, max_drop=2, length=50, c
             120: 269, 150: 300, 185: 341, 240: 400, 300: 460
         }
         conductivity = 56
-    else:  # Aluminum
+    else:
         current_capacity = {
             1.5: 14, 2.5: 18, 4: 25, 6: 32, 10: 44, 16: 60,
             25: 80, 35: 100, 50: 120, 70: 150, 95: 185,
@@ -233,7 +261,6 @@ def get_cable_size(current_a, voltage=380, cos_phi=0.8, max_drop=2, length=50, c
     
     selected = standard_sizes[selected_index]
     
-    # بررسی افت ولتاژ
     try:
         area_drop = (current_a * length * 1.732 * cos_phi * 100) / (conductivity * voltage * max_drop)
         if area_drop > selected:
@@ -268,7 +295,6 @@ def get_breaker_size(current_a, load_type="Motor"):
     return standard_breakers[-1]
 
 def calculate_voltage_drop(current_a, length, cable_size, voltage=415, cos_phi=0.8, conductor="Copper"):
-    """محاسبه افت ولتاژ"""
     conductivity = 56 if conductor == "Copper" else 35
     try:
         drop = (current_a * length * 1.732 * cos_phi * 100) / (conductivity * voltage * cable_size)
@@ -487,7 +513,7 @@ with tabs[1]:
         """, unsafe_allow_html=True)
 
 # ==============================================================================
-# --- تب ۳: موتور / ژنراتور (با دو حالت کشویی) ---
+# --- تب ۳: موتور ---
 # ==============================================================================
 
 with tabs[2]:
@@ -514,7 +540,6 @@ with tabs[2]:
                 help="حداکثر توان نامی ژنراتور"
             )
             
-            # ========== حالت کشویی برای انتخاب مبنای محاسبه ==========
             calc_mode = st.selectbox(
                 "Calculation Mode:",
                 ["Based on Generator Max Power", "Based on Actual Load"],
@@ -555,7 +580,7 @@ with tabs[2]:
             system_voltage = st.selectbox(
                 "System Voltage (V)", 
                 [380, 400, 415, 480], 
-                index=2,  # 415V
+                index=2,
                 key="motor_voltage_new"
             )
             cable_length = st.number_input(
@@ -582,19 +607,15 @@ with tabs[2]:
             )
     
     if st.button("🔍 Calculate Generator", use_container_width=True):
-        # محاسبه بر اساس توان نامی ژنراتور
         gen_current = gen_kva * 1.44
         starting_current = gen_current * 6
         
-        # محاسبه بر اساس بار واقعی
         actual_current = actual_load * 1.44
         actual_starting_current = actual_current * 6
         
-        # اعمال ضریب توسعه آینده
         future_factor = 1 + (future_expansion / 100)
         design_current = actual_current * future_factor
         
-        # محاسبه سایز کابل (بر اساس حالت انتخاب شده)
         if calc_mode == "Based on Generator Max Power":
             base_for_cable = gen_current
             mode_label = "Generator Max Power"
@@ -611,7 +632,6 @@ with tabs[2]:
             conductor_type
         )
         
-        # محاسبه افت ولتاژ
         voltage_drop = calculate_voltage_drop(
             base_for_cable, 
             cable_length, 
@@ -621,7 +641,6 @@ with tabs[2]:
             conductor_type
         )
         
-        # کلید محافظ
         breaker_size = get_breaker_size(base_for_cable, "Motor")
         starting_breaker = get_breaker_size(actual_starting_current * future_factor, "Motor")
         
@@ -644,7 +663,6 @@ with tabs[2]:
         
         st.markdown("---")
         
-        # نمایش نتایج کابل و کلید
         st.markdown(f"""
             <div class='result-box'>
                 <div class='result-text'>🔌 Cable Sizing</div>
@@ -666,15 +684,12 @@ with tabs[2]:
             </div>
         """, unsafe_allow_html=True)
         
-        # هشدار در صورت افت ولتاژ بالا
         if voltage_drop > 3:
             st.warning(f"⚠️ Voltage drop is {voltage_drop}% which exceeds the recommended 3% limit. Consider increasing cable size to {get_cable_size(base_for_cable, system_voltage, power_factor, 2, cable_length * 1.5, conductor_type)} mm².")
         
-        # نمایش مقایسه اقتصادی
         if calc_mode == "Based on Actual Load" and actual_load < gen_kva:
             st.success(f"💡 You saved cable size by designing based on actual load ({actual_load} kVA) instead of generator max power ({gen_kva} kVA).")
         
-        # توضیحات فارسی
         st.markdown(f"""
         <div class='info-box'>
             <b>📋 نتیجه محاسبه ژنراتور:</b><br><br>
@@ -725,7 +740,7 @@ with tabs[3]:
         """, unsafe_allow_html=True)
 
 # ==============================================================================
-# --- تب ۵: HVAC تست سرمایش ---
+# --- تب ۵: HVAC ---
 # ==============================================================================
 
 with tabs[4]:
