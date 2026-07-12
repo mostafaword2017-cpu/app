@@ -172,6 +172,14 @@ st.markdown("""
     .info-box b {
         color: #0d47a1;
     }
+
+    .highlight-box {
+        background-color: #fff8e1;
+        padding: 12px;
+        border-radius: 8px;
+        border-right: 4px solid #ff9800;
+        margin: 8px 0;
+    }
     </style>
 """, unsafe_allow_html=True)
 
@@ -189,14 +197,25 @@ st.markdown("""
 # --- توابع کمکی ---
 # ==============================================================================
 
-def get_cable_size(current_a, voltage=380, cos_phi=0.8, max_drop=2, length=50):
+def get_cable_size(current_a, voltage=380, cos_phi=0.8, max_drop=2, length=50, conductor="Copper"):
+    """محاسبه سایز کابل مناسب با یک پله بالاتر"""
     standard_sizes = [1.5, 2.5, 4, 6, 10, 16, 25, 35, 50, 70, 95, 120, 150, 185, 240, 300]
     
-    current_capacity = {
-        1.5: 18, 2.5: 24, 4: 32, 6: 41, 10: 57, 16: 76,
-        25: 101, 35: 125, 50: 151, 70: 192, 95: 232,
-        120: 269, 150: 300, 185: 341, 240: 400, 300: 460
-    }
+    # ظرفیت جریان بر اساس نوع هادی
+    if conductor == "Copper":
+        current_capacity = {
+            1.5: 18, 2.5: 24, 4: 32, 6: 41, 10: 57, 16: 76,
+            25: 101, 35: 125, 50: 151, 70: 192, 95: 232,
+            120: 269, 150: 300, 185: 341, 240: 400, 300: 460
+        }
+        conductivity = 56
+    else:  # Aluminum
+        current_capacity = {
+            1.5: 14, 2.5: 18, 4: 25, 6: 32, 10: 44, 16: 60,
+            25: 80, 35: 100, 50: 120, 70: 150, 95: 185,
+            120: 215, 150: 240, 185: 270, 240: 320, 300: 370
+        }
+        conductivity = 35
     
     safety_factor = 1.25
     required_current = current_a * safety_factor
@@ -214,8 +233,9 @@ def get_cable_size(current_a, voltage=380, cos_phi=0.8, max_drop=2, length=50):
     
     selected = standard_sizes[selected_index]
     
+    # بررسی افت ولتاژ
     try:
-        area_drop = (current_a * length * 1.732 * cos_phi * 100) / (56 * voltage * max_drop)
+        area_drop = (current_a * length * 1.732 * cos_phi * 100) / (conductivity * voltage * max_drop)
         if area_drop > selected:
             for size in standard_sizes:
                 if size >= area_drop:
@@ -230,7 +250,8 @@ def get_cable_size(current_a, voltage=380, cos_phi=0.8, max_drop=2, length=50):
     
     return selected
 
-def get_breaker_size(current_a, load_type="Resistive"):
+def get_breaker_size(current_a, load_type="Motor"):
+    """محاسبه سایز کلید محافظ مناسب"""
     if load_type == "Motor":
         multiplier = 1.6
     elif load_type == "Inductive":
@@ -245,6 +266,15 @@ def get_breaker_size(current_a, load_type="Resistive"):
         if breaker >= required:
             return breaker
     return standard_breakers[-1]
+
+def calculate_voltage_drop(current_a, length, cable_size, voltage=415, cos_phi=0.8, conductor="Copper"):
+    """محاسبه افت ولتاژ"""
+    conductivity = 56 if conductor == "Copper" else 35
+    try:
+        drop = (current_a * length * 1.732 * cos_phi * 100) / (conductivity * voltage * cable_size)
+        return round(drop, 2)
+    except:
+        return 0
 
 def calculate_coil_area_from_fans(num_fans, fan_diameter_cm):
     fan_radius_m = (fan_diameter_cm / 100) / 2
@@ -369,7 +399,7 @@ def calculate_ups_fixed(load_kva, backup_min, num_batteries, battery_voltage=12)
 tabs = st.tabs(["📏 Cable", "🔋 UPS", "⚙️ Motor", "🛡️ Protect", "❄️ HVAC Test"])
 
 # ==============================================================================
-# --- تب ۱: کابل (انگلیسی + توضیحات فارسی بعد از اجرا) ---
+# --- تب ۱: کابل ---
 # ==============================================================================
 
 with tabs[0]:
@@ -395,7 +425,6 @@ with tabs[0]:
             </div>
         """, unsafe_allow_html=True)
         
-        # توضیحات فارسی بعد از اجرا
         st.markdown("""
         <div class='info-box'>
             <b>📋 نتیجه محاسبه کابل:</b><br><br>
@@ -407,7 +436,7 @@ with tabs[0]:
         """, unsafe_allow_html=True)
 
 # ==============================================================================
-# --- تب ۲: UPS (انگلیسی + توضیحات فارسی بعد از اجرا) ---
+# --- تب ۲: UPS ---
 # ==============================================================================
 
 with tabs[1]:
@@ -447,7 +476,6 @@ with tabs[1]:
         
         st.info(f"💡 For {u_kva} kVA UPS → Current = {u_kva} × 1.44 = **{ups_current:.2f} A** → Cable: **{ups_cable} mm²** → Breaker: **{ups_breaker} A**")
         
-        # توضیحات فارسی بعد از اجرا
         st.markdown("""
         <div class='info-box'>
             <b>📋 نتیجه محاسبه UPS:</b><br><br>
@@ -459,55 +487,210 @@ with tabs[1]:
         """, unsafe_allow_html=True)
 
 # ==============================================================================
-# --- تب ۳: موتور (انگلیسی + توضیحات فارسی بعد از اجرا) ---
+# --- تب ۳: موتور / ژنراتور (با دو حالت کشویی) ---
 # ==============================================================================
 
 with tabs[2]:
-    st.header("⚙️ Motor / Generator Sizing with Cable & Breaker")
+    st.header("⚙️ Motor / Generator Sizing with Dual Mode")
+    
+    st.markdown("""
+    <div style='background-color: #e8f5e9; padding: 12px; border-radius: 8px; margin-bottom: 15px; direction: rtl; text-align: right;'>
+        <b>📌 دو حالت محاسبه:</b><br>
+        • <b>حالت توان نامی موتور:</b> محاسبه بر اساس حداکثر توان ژنراتور (مناسب برای طراحی اولیه)<br>
+        • <b>حالت توان بار مصرفی:</b> محاسبه بر اساس بار واقعی (مناسب برای انتخاب کابل و کلید اقتصادی)
+    </div>
+    """, unsafe_allow_html=True)
+    
     with st.container(border=True):
+        st.subheader("🎯 Generator Specifications")
+        
         c1, c2 = st.columns(2)
         with c1:
-            m_kva = st.number_input("Generator Power (kVA)", value=150.0, step=5.0, key="m_kva")
-            m_eff = st.number_input("Efficiency (η)", value=0.85, step=0.01, key="m_eff")
-            motor_voltage = st.selectbox("System Voltage (V)", [380, 400, 415, 480], index=0, key="motor_voltage")
+            gen_kva = st.number_input(
+                "Generator Max Power (kVA)", 
+                value=150.0, 
+                step=5.0, 
+                key="gen_kva",
+                help="حداکثر توان نامی ژنراتور"
+            )
+            
+            # ========== حالت کشویی برای انتخاب مبنای محاسبه ==========
+            calc_mode = st.selectbox(
+                "Calculation Mode:",
+                ["Based on Generator Max Power", "Based on Actual Load"],
+                help="انتخاب کنید که کابل و کلید بر اساس چه توانی محاسبه شود"
+            )
+            
+            if calc_mode == "Based on Actual Load":
+                actual_load = st.number_input(
+                    "Actual Load (kVA)", 
+                    value=85.0, 
+                    step=1.0, 
+                    min_value=1.0,
+                    key="actual_load",
+                    help="بار مصرفی واقعی (برای انتخاب کابل و کلید اقتصادی)"
+                )
+            else:
+                actual_load = gen_kva
+        
         with c2:
-            m_cos = st.number_input("Power Factor (cos φ)", value=0.8, step=0.01, key="m_cos")
+            efficiency = st.number_input(
+                "Efficiency (η)", 
+                value=0.85, 
+                step=0.01, 
+                key="motor_eff_new"
+            )
+            power_factor = st.number_input(
+                "Power Factor (cos φ)", 
+                value=0.8, 
+                step=0.01, 
+                key="motor_cos_new"
+            )
+    
+    with st.container(border=True):
+        st.subheader("🔌 Cable & Installation Parameters")
+        
+        c1, c2 = st.columns(2)
+        with c1:
+            system_voltage = st.selectbox(
+                "System Voltage (V)", 
+                [380, 400, 415, 480], 
+                index=2,  # 415V
+                key="motor_voltage_new"
+            )
+            cable_length = st.number_input(
+                "Cable Length (m)", 
+                value=30.0, 
+                step=5.0, 
+                min_value=1.0,
+                key="cable_length_motor_new",
+                help="طول کابل از ژنراتور تا تابلو برق"
+            )
+        with c2:
+            conductor_type = st.selectbox(
+                "Conductor Type",
+                ["Copper", "Aluminum"],
+                key="conductor_type"
+            )
+            future_expansion = st.slider(
+                "Future Expansion (%)", 
+                min_value=0, 
+                max_value=100, 
+                value=0, 
+                step=10,
+                help="درصد افزایش بار احتمالی در آینده"
+            )
     
     if st.button("🔍 Calculate Generator", use_container_width=True):
-        gen_current = m_kva * 1.44
+        # محاسبه بر اساس توان نامی ژنراتور
+        gen_current = gen_kva * 1.44
         starting_current = gen_current * 6
-        gen_cable = get_cable_size(gen_current, motor_voltage, m_cos, 2, 50)
-        gen_breaker = get_breaker_size(gen_current, "Motor")
-        starting_breaker = get_breaker_size(starting_current, "Motor")
         
-        st.latex(r"I_{gen} = kVA \times 1.44 \quad \text{(Empirical Formula)}")
+        # محاسبه بر اساس بار واقعی
+        actual_current = actual_load * 1.44
+        actual_starting_current = actual_current * 6
         
+        # اعمال ضریب توسعه آینده
+        future_factor = 1 + (future_expansion / 100)
+        design_current = actual_current * future_factor
+        
+        # محاسبه سایز کابل (بر اساس حالت انتخاب شده)
+        if calc_mode == "Based on Generator Max Power":
+            base_for_cable = gen_current
+            mode_label = "Generator Max Power"
+        else:
+            base_for_cable = design_current
+            mode_label = f"Actual Load ({actual_load} kVA) + Future Expansion ({future_expansion}%)"
+        
+        cable_size = get_cable_size(
+            base_for_cable, 
+            system_voltage, 
+            power_factor, 
+            2, 
+            cable_length,
+            conductor_type
+        )
+        
+        # محاسبه افت ولتاژ
+        voltage_drop = calculate_voltage_drop(
+            base_for_cable, 
+            cable_length, 
+            cable_size, 
+            system_voltage, 
+            power_factor,
+            conductor_type
+        )
+        
+        # کلید محافظ
+        breaker_size = get_breaker_size(base_for_cable, "Motor")
+        starting_breaker = get_breaker_size(actual_starting_current * future_factor, "Motor")
+        
+        st.markdown("---")
+        st.subheader("📊 Results")
+        
+        col1, col2 = st.columns(2)
+        with col1:
+            st.metric("⚡ Generator Max Current", f"{gen_current:.2f} A")
+            st.metric("⚡ Actual Load Current", f"{actual_current:.2f} A")
+            st.metric("📐 Design Current", f"{design_current:.2f} A", 
+                     delta=f"Based on: {mode_label}")
+        
+        with col2:
+            st.metric("🚀 Starting Current", f"{actual_starting_current:.2f} A")
+            st.metric("📏 Recommended Cable", f"{cable_size} mm²", 
+                     delta=f"Conductor: {conductor_type}")
+            st.metric("📉 Voltage Drop", f"{voltage_drop}%",
+                     delta="OK" if voltage_drop <= 3 else "High!")
+        
+        st.markdown("---")
+        
+        # نمایش نتایج کابل و کلید
         st.markdown(f"""
             <div class='result-box'>
-                <div class='result-text'>⚡ Generator Current: {gen_current:.2f} A</div>
-                <div class='result-text' style='color: #e65100;'>🚀 Starting Current: {starting_current:.2f} A</div>
-                <div class='result-text' style='color: #1b5e20;'>📏 Recommended Cable: {gen_cable} mm²</div>
-                <div class='result-text' style='color: #d32f2f;'>🛡️ Breaker (Rated): {gen_breaker} A</div>
-                <div class='result-text' style='color: #e65100;'>⚡ Breaker (Starting): {starting_breaker} A</div>
+                <div class='result-text'>🔌 Cable Sizing</div>
+                <div style='font-size: 16px;'>
+                    <b>Based on:</b> {mode_label}<br>
+                    <b>Design Current:</b> {design_current:.2f} A<br>
+                    <b>Recommended Cable:</b> {cable_size} mm² ({conductor_type})<br>
+                    <b>Voltage Drop:</b> {voltage_drop}% {'✅ Acceptable' if voltage_drop <= 3 else '⚠️ Consider larger cable'}
+                </div>
+            </div>
+            
+            <div class='result-box'>
+                <div class='result-text'>🛡️ Breaker Sizing</div>
+                <div style='font-size: 16px;'>
+                    <b>Rated Breaker:</b> {breaker_size} A<br>
+                    <b>Starting Breaker:</b> {starting_breaker} A<br>
+                    <b>Load Type:</b> Motor (Inductive)
+                </div>
             </div>
         """, unsafe_allow_html=True)
         
-        st.info(f"💡 For {m_kva} kVA Generator → Current = {m_kva} × 1.44 = **{gen_current:.2f} A** → Cable: **{gen_cable} mm²** → Breaker: **{gen_breaker} A**")
+        # هشدار در صورت افت ولتاژ بالا
+        if voltage_drop > 3:
+            st.warning(f"⚠️ Voltage drop is {voltage_drop}% which exceeds the recommended 3% limit. Consider increasing cable size to {get_cable_size(base_for_cable, system_voltage, power_factor, 2, cable_length * 1.5, conductor_type)} mm².")
         
-        # توضیحات فارسی بعد از اجرا
-        st.markdown("""
+        # نمایش مقایسه اقتصادی
+        if calc_mode == "Based on Actual Load" and actual_load < gen_kva:
+            st.success(f"💡 You saved cable size by designing based on actual load ({actual_load} kVA) instead of generator max power ({gen_kva} kVA).")
+        
+        # توضیحات فارسی
+        st.markdown(f"""
         <div class='info-box'>
             <b>📋 نتیجه محاسبه ژنراتور:</b><br><br>
-            • <b>جریان نامی:</b> با استفاده از فرمول تجربی I = kVA × 1.44 محاسبه شده است<br>
-            • <b>جریان راه‌اندازی:</b> حدود ۶ برابر جریان نامی در نظر گرفته شده است<br>
-            • <b>سایز کابل:</b> بر اساس جریان نامی با ضریب اطمینان پیشنهاد شده است<br>
-            • <b>کلید محافظ:</b> برای جریان نامی و جریان راه‌اندازی جداگانه پیشنهاد شده است<br><br>
-            <b>📐 فرمول:</b> I_gen = kVA × 1.44 (فرمول تجربی برای ولتاژ ۳۸۰ ولت)
+            • <b>حالت محاسبه:</b> {mode_label}<br>
+            • <b>جریان طراحی:</b> {design_current:.2f} آمپر<br>
+            • <b>سایز کابل پیشنهادی:</b> {cable_size} میلی‌متر مربع ({conductor_type})<br>
+            • <b>افت ولتاژ:</b> {voltage_drop}% {'(مناسب)' if voltage_drop <= 3 else '(بیش از حد مجاز)'}<br>
+            • <b>کلید محافظ:</b> {breaker_size} آمپر (نامی) | {starting_breaker} آمپر (راه‌اندازی)<br><br>
+            <b>📐 فرمول‌ها:</b><br>
+            • I_gen = kVA × 1.44 (فرمول تجربی برای ولتاژ ۳۸۰-۴۱۵ ولت)<br>
+            • I_design = I_actual × (1 + Future Expansion%)
         </div>
         """, unsafe_allow_html=True)
 
 # ==============================================================================
-# --- تب ۴: حفاظت (انگلیسی + توضیحات فارسی بعد از اجرا) ---
+# --- تب ۴: حفاظت ---
 # ==============================================================================
 
 with tabs[3]:
@@ -531,7 +714,6 @@ with tabs[3]:
         
         st.info(f"💡 For {p_curr} A {p_type} load → Cable: **{cable_size} mm²** → Breaker: **{b_size} A**")
         
-        # توضیحات فارسی بعد از اجرا
         st.markdown("""
         <div class='info-box'>
             <b>📋 نتیجه محاسبه حفاظت:</b><br><br>
@@ -543,13 +725,12 @@ with tabs[3]:
         """, unsafe_allow_html=True)
 
 # ==============================================================================
-# --- تب ۵: HVAC تست سرمایش (انگلیسی + توضیحات فارسی بعد از اجرا) ---
+# --- تب ۵: HVAC تست سرمایش ---
 # ==============================================================================
 
 with tabs[4]:
     st.header("❄️ HVAC Cooling Capacity Test")
 
-    # ---- Target Capacity Setting ----
     with st.container(border=True):
         st.subheader("🎯 Target Capacity Setting")
         
@@ -561,7 +742,6 @@ with tabs[4]:
             format="%.1f"
         )
     
-    # ---- Measurement Inputs ----
     with st.container(border=True):
         st.subheader("📊 Measurement Inputs")
         
@@ -639,7 +819,6 @@ with tabs[4]:
                 format="%.1f"
             )
     
-    # ---- Advanced Parameters ----
     with st.container(border=True):
         st.subheader("⚙️ Advanced Parameters")
         c1, c2 = st.columns(2)
@@ -658,7 +837,6 @@ with tabs[4]:
                 format="%.3f"
             )
     
-    # ---- Calculate Button ----
     if st.button("❄️ Run Cooling Test", use_container_width=True):
         result = calculate_cooling_capacity(
             air_velocity=air_velocity,
@@ -747,10 +925,6 @@ with tabs[4]:
             
             for s in suggestions:
                 st.markdown(s)
-    
-    # ================================================================
-    # 📘 باکس اطلاعات آبی (فارسی)
-    # ================================================================
     
     st.markdown("""
     <div class='info-box'>
