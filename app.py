@@ -90,7 +90,6 @@ st.markdown("""
         margin-bottom: 5px;
     }
 
-    /* ========== اسم نرم‌افزار ========== */
     .app-title {
         text-align: center;
         padding: 5px 0 10px 0;
@@ -136,11 +135,14 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ==============================================================================
-# --- توابع کمکی ---
+# --- توابع کمکی (اصلاح شده) ---
 # ==============================================================================
 
 def get_cable_size(current_a, voltage=380, cos_phi=0.8, max_drop=2, length=50):
-    """محاسبه سایز کابل مناسب بر اساس جریان با ضریب اطمینان"""
+    """
+    محاسبه سایز کابل مناسب بر اساس جریان با ضریب اطمینان
+    ✅ اصلاح: یک پله بالاتر از سایز محاسبه شده پیشنهاد میدهد
+    """
     standard_sizes = [1.5, 2.5, 4, 6, 10, 16, 25, 35, 50, 70, 95, 120, 150, 185, 240, 300]
     
     current_capacity = {
@@ -149,23 +151,37 @@ def get_cable_size(current_a, voltage=380, cos_phi=0.8, max_drop=2, length=50):
         120: 269, 150: 300, 185: 341, 240: 400, 300: 460
     }
     
+    # ضریب اطمینان ۱.۲۵
     safety_factor = 1.25
     required_current = current_a * safety_factor
     
-    selected = 1.5
-    for size, capacity in current_capacity.items():
+    # پیدا کردن سایز مناسب
+    selected_index = 0
+    for i, (size, capacity) in enumerate(current_capacity.items()):
         if capacity >= required_current:
-            selected = size
+            selected_index = i
             break
     else:
-        selected = 300
+        selected_index = len(standard_sizes) - 1
     
+    # ✅ یک پله بالاتر (برای داشتن ضریب اطمینان بیشتر)
+    if selected_index < len(standard_sizes) - 1:
+        selected_index += 1
+    
+    selected = standard_sizes[selected_index]
+    
+    # بررسی افت ولتاژ (برای طول‌های بلند)
     try:
         area_drop = (current_a * length * 1.732 * cos_phi * 100) / (56 * voltage * max_drop)
         if area_drop > selected:
             for size in standard_sizes:
                 if size >= area_drop:
-                    selected = size
+                    # ✅ یک پله بالاتر
+                    idx = standard_sizes.index(size)
+                    if idx < len(standard_sizes) - 1:
+                        selected = standard_sizes[idx + 1]
+                    else:
+                        selected = size
                     break
     except:
         pass
@@ -297,7 +313,7 @@ with tabs[0]:
         """, unsafe_allow_html=True)
 
 # ==============================================================================
-# --- تب ۲: UPS (بدون ورودی سایز کابل) ---
+# --- تب ۲: UPS ---
 # ==============================================================================
 
 with tabs[1]:
@@ -316,10 +332,7 @@ with tabs[1]:
         res = calculate_ups_fixed(u_kva, u_min, u_bat, u_volt)
         volt_text = "12V" if u_volt == 12 else "24V"
         
-        # محاسبه جریان UPS با فرمول تجربی
         ups_current = u_kva * 1.44
-        
-        # محاسبه سایز کابل (با طول پیش‌فرض 50 متر)
         ups_cable = get_cable_size(ups_current, ups_voltage, 0.8, 2, 50)
         ups_breaker = get_breaker_size(ups_current, "Inductive")
         
@@ -341,7 +354,7 @@ with tabs[1]:
         st.info(f"💡 For {u_kva} kVA UPS → Current = {u_kva} × 1.44 = **{ups_current:.2f} A** → Cable: **{ups_cable} mm²** → Breaker: **{ups_breaker} A**")
 
 # ==============================================================================
-# --- تب ۳: موتور / ژنراتور (بدون ورودی سایز کابل) ---
+# --- تب ۳: موتور / ژنراتور ---
 # ==============================================================================
 
 with tabs[2]:
@@ -356,11 +369,8 @@ with tabs[2]:
             m_cos = st.number_input("Power Factor (cos φ)", value=0.8, step=0.01, key="m_cos")
     
     if st.button("🔍 Calculate Generator", use_container_width=True):
-        # فرمول تجربی: I = kVA × 1.44
         gen_current = m_kva * 1.44
         starting_current = gen_current * 6
-        
-        # محاسبه سایز کابل (با طول پیش‌فرض 50 متر)
         gen_cable = get_cable_size(gen_current, motor_voltage, m_cos, 2, 50)
         gen_breaker = get_breaker_size(gen_current, "Motor")
         starting_breaker = get_breaker_size(starting_current, "Motor")
