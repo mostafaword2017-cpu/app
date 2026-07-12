@@ -172,6 +172,8 @@ st.markdown("""
         border-radius: 10px;
         margin-top: 20px;
         border-left: 5px solid #2196F3;
+        direction: rtl;
+        text-align: right;
     }
     
     .info-box b {
@@ -511,69 +513,69 @@ with tabs[3]:
 # ==============================================================================
 
 with tabs[4]:
-    st.header("❄️ HVAC Cooling Capacity Test")
-    
+    st.header("❄️ تست توان سرمایشی")
+
     # ---- تنظیم توان هدف ----
     with st.container(border=True):
-        st.subheader("🎯 Target Capacity Setting")
+        st.subheader("🎯 تنظیم توان هدف")
         
         target_capacity = st.number_input(
-            "Target Capacity (kW)", 
+            "توان هدف (کیلووات)", 
             value=30.0, 
             step=1.0, 
             min_value=1.0,
             format="%.1f",
-            help="Enter the nominal cooling capacity of your system"
+            help="توان اسمی سیستم مورد نظر را وارد کنید"
         )
     
     # ---- ورودی‌های اندازه‌گیری ----
     with st.container(border=True):
-        st.subheader("📊 Measurement Inputs")
+        st.subheader("📊 ورودی‌های اندازه‌گیری")
         
         c1, c2 = st.columns(2)
         with c1:
             air_velocity = st.number_input(
-                "Air Velocity (m/s)", 
+                "سرعت باد (متر بر ثانیه)", 
                 value=2.0, 
                 step=0.1, 
                 format="%.1f",
-                help="Air speed measured with anemometer"
+                help="سرعت هوای عبوری از روی کویل (اندازه‌گیری با بادسنج)"
             )
             coil_area = st.number_input(
-                "Coil Area (m²)", 
+                "سطح مقطع کویل (متر مربع)", 
                 value=1.0, 
                 step=0.05, 
                 format="%.2f",
-                help="Coil cross-sectional area"
+                help="سطح مقطع کویل بر حسب متر مربع"
             )
         
         with c2:
             temp_in = st.number_input(
-                "Inlet Air Temp (°C)", 
+                "دمای هوای ورودی (درجه سانتی‌گراد)", 
                 value=35.0, 
                 step=0.5, 
                 format="%.1f",
-                help="Air temperature entering the coil"
+                help="دمای هوای ورودی به کویل"
             )
             temp_out = st.number_input(
-                "Outlet Air Temp (°C)", 
+                "دمای هوای خروجی (درجه سانتی‌گراد)", 
                 value=23.0, 
                 step=0.5, 
                 format="%.1f",
-                help="Air temperature leaving the coil"
+                help="دمای هوای خروجی از کویل"
             )
     
     # ---- پارامترهای پیشرفته ----
     with st.container(border=True):
-        st.subheader("⚙️ Advanced Parameters")
+        st.subheader("⚙️ پارامترهای پیشرفته")
         c1, c2 = st.columns(2)
         with c1:
             air_density = st.number_input(
-                "Air Density (kg/m³)", 
+                "چگالی هوا (kg/m³)", 
                 value=1.2, 
                 step=0.01, 
                 format="%.2f",
-                help="Air density (default: 1.2 at standard conditions)"
+                help="چگالی هوا (پیش‌فرض: ۱.۲ در شرایط استاندارد)"
             )
         with c2:
             cp = st.number_input(
@@ -581,11 +583,11 @@ with tabs[4]:
                 value=1.005, 
                 step=0.001, 
                 format="%.3f",
-                help="Specific heat capacity of air (default: 1.005)"
+                help="ظرفیت گرمایی ویژه هوا (پیش‌فرض: ۱.۰۰۵)"
             )
     
     # ---- دکمه محاسبه ----
-    if st.button("❄️ Run Cooling Test", use_container_width=True):
+    if st.button("❄️ اجرای تست سرمایش", use_container_width=True):
         result = calculate_cooling_capacity(
             air_velocity=air_velocity,
             coil_area=coil_area,
@@ -597,18 +599,18 @@ with tabs[4]:
         )
         
         st.markdown("---")
-        st.subheader("📊 Test Results")
+        st.subheader("📊 نتایج تست")
         
         # نتایج اصلی
         col1, col2, col3 = st.columns(3)
         with col1:
-            st.metric("🌬️ Volume Flow", f"{result['volume_flow']} m³/s")
-            st.metric("🌡️ ΔT", f"{result['delta_t']} °C")
+            st.metric("🌬️ دبی حجمی هوا", f"{result['volume_flow']} m³/s")
+            st.metric("🌡️ اختلاف دما (ΔT)", f"{result['delta_t']} °C")
         with col2:
-            st.metric("⚖️ Mass Flow", f"{result['mass_flow']} kg/s")
-            st.metric("🎯 Target", f"{result['target']} kW")
+            st.metric("⚖️ دبی جرمی هوا", f"{result['mass_flow']} kg/s")
+            st.metric("🎯 توان هدف", f"{result['target']} kW")
         with col3:
-            st.metric("❄️ Cooling Capacity", f"{result['capacity']} kW", 
+            st.metric("❄️ توان سرمایشی", f"{result['capacity']} kW", 
                      delta=f"{result['percentage']}%")
         
         st.markdown("---")
@@ -622,27 +624,27 @@ with tabs[4]:
                     {result['status_text']}
                 </div>
                 <div style='font-size: 20px; font-weight: 600;'>
-                    Calculated Capacity: <span style='color: #1a73e8;'>{result['capacity']} kW</span>
-                    &nbsp;|&nbsp; Percentage: <span style='color: #1a73e8;'>{result['percentage']}%</span>
-                    &nbsp;|&nbsp; Status: <span style='color: #1a73e8;'>{result['status']}</span>
+                    توان محاسبه شده: <span style='color: #1a73e8;'>{result['capacity']} کیلووات</span>
+                    &nbsp;|&nbsp; درصد توان: <span style='color: #1a73e8;'>{result['percentage']}%</span>
+                    &nbsp;|&nbsp; وضعیت: <span style='color: #1a73e8;'>{result['status']}</span>
                 </div>
             </div>
         """, unsafe_allow_html=True)
         
         # جزئیات محاسبات
-        with st.expander("📝 Calculation Details"):
+        with st.expander("📝 جزئیات محاسبات"):
             st.markdown(f"""
             <div style='padding: 10px;'>
-                <b>Calculation Steps:</b><br><br>
-                1. <b>Volume Flow:</b> Q = Velocity × Area = {air_velocity} × {coil_area} = <b>{result['volume_flow']} m³/s</b><br><br>
-                2. <b>Mass Flow:</b> ṁ = Q × ρ = {result['volume_flow']} × {air_density} = <b>{result['mass_flow']} kg/s</b><br><br>
-                3. <b>Temperature Difference:</b> ΔT = T_in - T_out = {temp_in} - {temp_out} = <b>{result['delta_t']} °C</b><br><br>
-                4. <b>Cooling Capacity:</b> P = ṁ × Cₚ × ΔT = {result['mass_flow']} × {cp} × {result['delta_t']} = <b>{result['capacity']} kW</b>
+                <b>مراحل محاسبه:</b><br><br>
+                ۱. <b>دبی حجمی هوا:</b> Q = سرعت باد × سطح مقطع = {air_velocity} × {coil_area} = <b>{result['volume_flow']} m³/s</b><br><br>
+                ۲. <b>دبی جرمی هوا:</b> ṁ = Q × ρ = {result['volume_flow']} × {air_density} = <b>{result['mass_flow']} kg/s</b><br><br>
+                ۳. <b>اختلاف دما:</b> ΔT = T_ورودی - T_خروجی = {temp_in} - {temp_out} = <b>{result['delta_t']} °C</b><br><br>
+                ۴. <b>توان سرمایشی:</b> P = ṁ × Cₚ × ΔT = {result['mass_flow']} × {cp} × {result['delta_t']} = <b>{result['capacity']} کیلووات</b>
             </div>
             """, unsafe_allow_html=True)
         
         # پیشنهادات
-        with st.expander("💡 Recommendations"):
+        with st.expander("💡 پیشنهادات"):
             suggestions = []
             
             if result['capacity'] < target_capacity:
@@ -650,21 +652,21 @@ with tabs[4]:
                 
                 needed_velocity = (target_capacity * air_velocity) / result['capacity']
                 if needed_velocity > air_velocity:
-                    suggestions.append(f"🔹 Increase air velocity to approximately **{needed_velocity:.2f} m/s** (from {air_velocity} m/s)")
+                    suggestions.append(f"🔹 افزایش سرعت باد به حدود **{needed_velocity:.2f} متر بر ثانیه** (از {air_velocity} متر بر ثانیه)")
                 
                 needed_area = (target_capacity * coil_area) / result['capacity']
                 if needed_area > coil_area:
-                    suggestions.append(f"🔹 Increase coil area to approximately **{needed_area:.2f} m²** (from {coil_area} m²)")
+                    suggestions.append(f"🔹 افزایش سطح مقطع به حدود **{needed_area:.2f} متر مربع** (از {coil_area} متر مربع)")
                 
                 needed_delta = (target_capacity * result['delta_t']) / result['capacity']
                 if needed_delta > result['delta_t']:
                     needed_temp_out = temp_in - needed_delta
-                    suggestions.append(f"🔹 Reduce outlet temperature to approximately **{needed_temp_out:.1f}°C** (from {temp_out}°C) to increase ΔT")
+                    suggestions.append(f"🔹 کاهش دمای خروجی به حدود **{needed_temp_out:.1f} درجه سانتی‌گراد** (از {temp_out} درجه سانتی‌گراد) برای افزایش ΔT")
                 
                 if not suggestions:
-                    suggestions.append("🔸 System needs full inspection. Possible issues with coil or compressor.")
+                    suggestions.append("🔸 سیستم نیاز به بررسی کامل دارد. ممکن است مشکل در کویل یا کمپرسور باشد.")
             else:
-                suggestions.append(f"✅ System has reached the nominal capacity of {target_capacity} kW. Performance is optimal.")
+                suggestions.append(f"✅ سیستم به توان اسمی {target_capacity} کیلووات رسیده است. عملکرد مطلوب است.")
             
             for s in suggestions:
                 st.markdown(s)
@@ -675,37 +677,37 @@ with tabs[4]:
     
     st.markdown("""
     <div class='info-box'>
-        <b>📋 Test Method:</b> Cooling capacity test using an anemometer (indirect measurement)<br><br>
-        <b>📐 Formula:</b> P = ṁ × Cₚ × ΔT<br><br>
-        <b>🔧 Default Parameters:</b> Air Density = 1.2 kg/m³ | Cₚ = 1.005 kJ/kg·K<br><br>
-        <b>🎯 Target Capacity:</b> Adjustable - test any cooling capacity<br><br>
-        <b>📊 Result Interpretation:</b><br>
-        • ✅ PASS (≥ 95% of target): System meets nominal capacity<br>
-        • ⚠️ WARNING (80% - 95% of target): System underperforming, needs inspection<br>
-        • ❌ FAIL (< 80% of target): System has serious issues
+        <b>📋 روش تست:</b> تست توان سرمایشی با استفاده از بادسنج (انیمومتر) - اندازه‌گیری غیرمستقیم<br><br>
+        <b>📐 فرمول:</b> P = ṁ × Cₚ × ΔT<br><br>
+        <b>🔧 پارامترهای پیش‌فرض:</b> چگالی هوا = ۱.۲ kg/m³ | Cₚ = ۱.۰۰۵ kJ/kg·K<br><br>
+        <b>🎯 توان هدف:</b> قابل تنظیم - هر توان سرمایشی را تست کنید<br><br>
+        <b>📊 تفسیر نتایج:</b><br>
+        • ✅ PASS (≥ ۹۵% توان هدف): سیستم به توان اسمی رسیده است<br>
+        • ⚠️ WARNING (۸۰% - ۹۵% توان هدف): سیستم به توان اسمی نرسیده، نیاز به بررسی دارد<br>
+        • ❌ FAIL (< ۸۰% توان هدف): سیستم دچار مشکل جدی است
     </div>
     """, unsafe_allow_html=True)
     
     # راهنمای تست
-    with st.expander("📖 Test Procedure Guide"):
+    with st.expander("📖 راهنمای انجام تست"):
         st.markdown("""
-        ### 🔍 Test Procedure:
+        ### 🔍 مراحل انجام تست:
         
-        1. **Set Target Capacity** - Enter the nominal capacity of your system
+        1. **تنظیم توان هدف** - توان اسمی سیستم خود را وارد کنید
         
-        2. **Measure Air Velocity** with an anemometer at multiple points on the coil and take the average
+        2. **اندازه‌گیری سرعت باد** با بادسنج در نقاط مختلف کویل و گرفتن میانگین
         
-        3. **Measure Coil Area** (width × height)
+        3. **اندازه‌گیری سطح مقطع** کویل (عرض × ارتفاع)
         
-        4. **Measure Inlet and Outlet Air Temperatures** with a precise thermometer
+        4. **اندازه‌گیری دمای ورودی و خروجی** هوا با دماسنج دقیق
         
-        5. **Enter Values** in the form above and click the test button
+        5. **وارد کردن مقادیر** در فرم بالا و کلیک روی دکمه تست
         
         ---
         
-        ### ⚠️ Important Notes:
+        ### ⚠️ نکات مهم:
         
-        - Test must be performed in **Steady-State** conditions
-        - If coil temperature is below the dew point, moisture condenses and latent heat calculations require humidity measurement
-        - For better accuracy, perform measurements in a **regular Grid** pattern on the coil surface
+        - تست باید در **شرایط پایدار** (Steady-State) انجام شود
+        - اگر دمای کویل از نقطه شبنم پایین‌تر باشد، رطوبت تبدیل به آب شده و محاسبات دقیق‌تر نیاز به اندازه‌گیری رطوبت دارد
+        - برای دقت بیشتر، اندازه‌گیری را در **یک شبکه منظم (Grid)** روی سطح کویل انجام دهید
         """)
