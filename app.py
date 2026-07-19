@@ -16,12 +16,18 @@ st.set_page_config(
 
 if 'theme' not in st.session_state:
     st.session_state.theme = 'light'
+    
+if 'show_settings' not in st.session_state:
+    st.session_state.show_settings = False
 
 def toggle_theme():
     if st.session_state.theme == 'light':
         st.session_state.theme = 'dark'
     else:
         st.session_state.theme = 'light'
+
+def toggle_settings():
+    st.session_state.show_settings = not st.session_state.show_settings
 
 # تعیین رنگ‌ها بر اساس تم
 if st.session_state.theme == 'light':
@@ -37,6 +43,7 @@ if st.session_state.theme == 'light':
     sidebar_bg = "#f0f2f6"
     input_bg = "#ffffff"
     settings_bg = "#e8e8e8"
+    icon_color = "#333333"
 else:
     bg_color = "#1a1a1a"
     text_color = "#f0f0f0"
@@ -50,6 +57,7 @@ else:
     sidebar_bg = "#252525"
     input_bg = "#333333"
     settings_bg = "#333333"
+    icon_color = "#cccccc"
 
 # ==============================================================================
 # --- استایل ---
@@ -67,64 +75,8 @@ st.markdown(f"""
     }}
     
     .block-container {{
-        padding-top: 50px !important;  /* افزایش فاصله از بالا */
-        padding-bottom: 20px !important;
-    }}
-
-    /* ========== منو تنظیمات در بالای صفحه ========== */
-    .settings-top {{
-        text-align: right;
-        padding: 10px 20px 5px 20px !important;
-        background-color: {settings_bg};
-        border-radius: 12px;
-        margin-bottom: 15px !important;
-        border: 1px solid {border_color};
-        display: flex;
-        justify-content: flex-end;
-        align-items: center;
-        gap: 15px;
-        flex-wrap: wrap;
-        direction: rtl;
-    }}
-    
-    .settings-top .theme-btn {{
-        background-color: {tab_bg};
-        color: {text_color};
-        border: 1px solid {border_color};
-        border-radius: 8px;
-        padding: 6px 16px;
-        font-size: 14px;
-        font-weight: 500;
-        cursor: pointer;
-        transition: all 0.3s ease;
-    }}
-    
-    .settings-top .theme-btn:hover {{
-        background-color: {tab_active};
-        color: white;
-        transform: scale(1.02);
-    }}
-    
-    .settings-top .settings-label {{
-        font-size: 16px;
-        font-weight: 600;
-        color: {text_color};
-        margin-left: 10px;
-    }}
-    
-    @media screen and (max-width: 640px) {{
-        .settings-top {{
-            padding: 8px 12px !important;
-            justify-content: center !important;
-            flex-direction: row;
-        }}
-        .settings-top .settings-label {{
-            font-size: 14px;
-        }}
-        .settings-top .theme-btn {{
-            font-size: 12px;
-            padding: 4px 12px;
-        }}
+        padding-top: 30px !important;
+        padding-bottom: 80px !important;  /* فضای برای منوی پایین */
     }}
 
     /* ========== اسم نرم‌افزار ========== */
@@ -152,7 +104,8 @@ st.markdown(f"""
 
     @media screen and (max-width: 640px) {{
         .block-container {{
-            padding-top: 30px !important;
+            padding-top: 20px !important;
+            padding-bottom: 70px !important;
         }}
         .app-title {{
             font-size: 38px !important;
@@ -168,7 +121,8 @@ st.markdown(f"""
 
     @media screen and (max-width: 400px) {{
         .block-container {{
-            padding-top: 20px !important;
+            padding-top: 15px !important;
+            padding-bottom: 60px !important;
         }}
         .app-title {{
             font-size: 30px !important;
@@ -357,40 +311,101 @@ st.markdown(f"""
         margin: 8px 0;
     }}
 
-    /* ========== استایل سایدبار ========== */
-    .css-1d391kg, .css-12oz5g7 {{
-        background-color: {sidebar_bg} !important;
+    /* ========== منوی تنظیمات در پایین صفحه ========== */
+    .settings-bottom {{
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        z-index: 9999;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 10px;
+    }}
+    
+    .settings-icon {{
+        background-color: {tab_active};
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 55px;
+        height: 55px;
+        font-size: 28px;
+        cursor: pointer;
+        box-shadow: 0 4px 15px rgba(46, 125, 50, 0.4);
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 2px solid white;
+    }}
+    
+    .settings-icon:hover {{
+        transform: scale(1.1);
+        box-shadow: 0 6px 25px rgba(46, 125, 50, 0.5);
+    }}
+    
+    .settings-panel {{
+        background-color: {card_bg};
+        border: 2px solid {border_color};
+        border-radius: 16px;
+        padding: 20px;
+        min-width: 220px;
+        box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+        display: { 'block' if st.session_state.show_settings else 'none' };
+        margin-bottom: 10px;
+        direction: rtl;
+    }}
+    
+    .settings-panel .setting-item {{
+        padding: 8px 0;
+        border-bottom: 1px solid {border_color};
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }}
+    
+    .settings-panel .setting-item:last-child {{
+        border-bottom: none;
+    }}
+    
+    .settings-panel .setting-label {{
+        font-size: 14px;
+        font-weight: 600;
+        color: {text_color};
+    }}
+    
+    .settings-panel .theme-toggle-btn {{
+        background-color: {tab_bg};
+        color: {text_color};
+        border: 1px solid {border_color};
+        border-radius: 8px;
+        padding: 6px 14px;
+        font-size: 13px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }}
+    
+    .settings-panel .theme-toggle-btn:hover {{
+        background-color: {tab_active};
+        color: white;
+    }}
+    
+    @media screen and (max-width: 640px) {{
+        .settings-icon {{
+            width: 48px;
+            height: 48px;
+            font-size: 22px;
+            bottom: 15px;
+            right: 15px;
+        }}
+        .settings-panel {{
+            min-width: 180px;
+            padding: 15px;
+        }}
     }}
     </style>
 """, unsafe_allow_html=True)
-
-# ==============================================================================
-# --- منو تنظیمات در بالای صفحه (قبل از اسم) ---
-# ==============================================================================
-
-# آیکون و برچسب تم
-theme_icon = "🌙" if st.session_state.theme == 'light' else "☀️"
-theme_label = "Dark Mode" if st.session_state.theme == 'light' else "Light Mode"
-
-# نمایش منو تنظیمات با استفاده از st.columns برای چیدمان بهتر
-col1, col2, col3 = st.columns([1, 2, 1])
-with col2:
-    st.markdown(f"""
-    <div class='settings-top'>
-        <span class='settings-label'>⚙️ Settings</span>
-        <button class='theme-btn' onclick="location.href='?theme=toggle'">
-            {theme_icon} {theme_label}
-        </button>
-    </div>
-    """, unsafe_allow_html=True)
-
-# بررسی تغییر تم از طریق URL
-import urllib.parse
-query_params = st.query_params
-if 'theme' in query_params and query_params['theme'] == 'toggle':
-    toggle_theme()
-    st.query_params.clear()
-    st.rerun()
 
 # ==============================================================================
 # --- نمایش اسم نرم‌افزار ---
@@ -401,6 +416,46 @@ st.markdown(f"""
         ElectroCalc <span class="lightning">⚡</span> M&F
     </div>
 """, unsafe_allow_html=True)
+
+# ==============================================================================
+# --- منوی تنظیمات در پایین صفحه (چرخ‌دنده) ---
+# ==============================================================================
+
+# نمایش آیکون چرخ‌دنده و منو در پایین صفحه
+theme_icon = "🌙" if st.session_state.theme == 'light' else "☀️"
+theme_label = "Dark Mode" if st.session_state.theme == 'light' else "Light Mode"
+
+st.markdown(f"""
+    <div class="settings-bottom">
+        <div class="settings-panel" id="settingsPanel">
+            <div class="setting-item">
+                <span class="setting-label">🌓 تغییر تم</span>
+                <button class="theme-toggle-btn" onclick="location.href='?theme=toggle'">
+                    {theme_icon} {theme_label}
+                </button>
+            </div>
+            <div class="setting-item">
+                <span class="setting-label">📱 نسخه</span>
+                <span style="color: {text_color}; font-size: 13px;">v2.0</span>
+            </div>
+        </div>
+        <button class="settings-icon" onclick="location.href='?settings=toggle'" title="Settings">
+            ⚙️
+        </button>
+    </div>
+""", unsafe_allow_html=True)
+
+# بررسی تغییرات از طریق URL
+query_params = st.query_params
+if 'theme' in query_params and query_params['theme'] == 'toggle':
+    toggle_theme()
+    st.query_params.clear()
+    st.rerun()
+
+if 'settings' in query_params and query_params['settings'] == 'toggle':
+    toggle_settings()
+    st.query_params.clear()
+    st.rerun()
 
 # ==============================================================================
 # --- توابع کمکی ---
