@@ -1827,7 +1827,6 @@ st.markdown("""
 **ElectroCalc ⚡ M&F**  
 Version: **2.0**  
 Developed for Power Systems Engineering  
-
 **Standards Used:**
 - IEC 60364 - Cable Sizing
 - IEEE 485 - UPS Sizing
@@ -1835,9 +1834,7 @@ Developed for Power Systems Engineering
 - IEC 60947 - Breaker Selection
 - IEC 60909 - Short Circuit
 """)
-
 st.divider()
-
 # ========== وضعیت ==========
 st.subheader("🔒 Status")
 st.markdown(f"""
