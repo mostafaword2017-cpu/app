@@ -16,17 +16,18 @@ st.set_page_config(
 
 st.markdown("""
     <style>
-    /* ========== تنظیم فاصله مناسب از بالای صفحه ========== */
+    /* ========== تنظیم فاصله از بالای صفحه ========== */
     .main > div {
         padding-top: 0px !important;
     }
     
+    /* ========== تنظیم margin-top برای پایین آوردن اسم ========== */
     .stApp {
-        margin-top: -25px !important;
+        margin-top: 0px !important;  /* تغییر از -25px به 0px */
     }
     
     .block-container {
-        padding-top: 10px !important;
+        padding-top: 30px !important;  /* افزایش از 10px به 30px */
         padding-bottom: 20px !important;
     }
 
@@ -139,11 +140,11 @@ st.markdown("""
     /* ========== موبایل ========== */
     @media screen and (max-width: 640px) {
         .stApp {
-            margin-top: -10px !important;
+            margin-top: 0px !important;
         }
         
         .block-container {
-            padding-top: 5px !important;
+            padding-top: 20px !important;
         }
         
         .stTabs div[role="tablist"] {
