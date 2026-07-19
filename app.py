@@ -52,10 +52,13 @@ if st.session_state.theme == 'light':
     st_warning_text = "#bf360c"
     st_success_bg = "#e8f5e9"
     st_success_text = "#1b5e20"
-    # رنگ باکس دو حالت محاسبه (روشن)
     dual_mode_bg = "#e8f5e9"
     dual_mode_text = "#1b5e20"
     dual_mode_border = "#4CAF50"
+    # رنگ باکس تنظیمات (روشن)
+    settings_box_bg = "#e3f2fd"
+    settings_box_text = "#0d47a1"
+    settings_box_border = "#1a73e8"
 else:
     bg_color = "#0a0a0a"
     text_color = "#ffffff"
@@ -84,10 +87,13 @@ else:
     st_warning_text = "#ffab91"
     st_success_bg = "#0d2e1a"
     st_success_text = "#81c784"
-    # رنگ باکس دو حالت محاسبه (تاریک - آبی سرمه‌ای)
-    dual_mode_bg = "#0d2137"  # آبی سرمه‌ای
-    dual_mode_text = "#90CAF9"  # آبی روشن برای خوانایی
+    dual_mode_bg = "#0d2137"
+    dual_mode_text = "#90CAF9"
     dual_mode_border = "#4FC3F7"
+    # رنگ باکس تنظیمات (تاریک - آبی سرمه‌ای)
+    settings_box_bg = "#0d2137"  # آبی سرمه‌ای
+    settings_box_text = "#90CAF9"  # آبی روشن برای خوانایی
+    settings_box_border = "#4FC3F7"
 
 # ==============================================================================
 # --- استایل ---
@@ -398,6 +404,25 @@ st.markdown(f"""
     
     .dual-mode-box, .dual-mode-box p, .dual-mode-box span, .dual-mode-box div {{
         color: {dual_mode_text} !important;
+    }}
+
+    /* ========== باکس تنظیمات (تب Settings) ========== */
+    .settings-box {{
+        background-color: {settings_box_bg} !important;
+        padding: 15px !important;
+        border-radius: 10px !important;
+        margin-bottom: 20px !important;
+        border-right: 4px solid {settings_box_border} !important;
+        direction: rtl !important;
+        text-align: right !important;
+    }}
+    
+    .settings-box b {{
+        color: {settings_box_text} !important;
+    }}
+    
+    .settings-box, .settings-box p, .settings-box span, .settings-box div {{
+        color: {settings_box_text} !important;
     }}
 
     /* ========== تنظیم رنگ متریک‌ها ========== */
@@ -812,13 +837,12 @@ with tabs[1]:
         )
 
 # ==============================================================================
-# --- تب ۳: موتور (با باکس دو حالت اصلاح شده) ---
+# --- تب ۳: موتور ---
 # ==============================================================================
 
 with tabs[2]:
     st.header("⚙️ Motor / Generator Sizing with Dual Mode")
     
-    # باکس دو حالت محاسبه با رنگ اصلاح شده
     st.markdown(f"""
     <div class="dual-mode-box">
         <b>📌 دو حالت محاسبه:</b><br>
@@ -1276,14 +1300,15 @@ with tabs[4]:
         """)
 
 # ==============================================================================
-# --- تب ۶: تنظیمات (Settings) ---
+# --- تب ۶: تنظیمات (Settings) با باکس آبی سرمه‌ای ---
 # ==============================================================================
 
 with tabs[5]:
     st.header("⚙️ Settings")
     
-    st.markdown("""
-    <div style='background-color: #e3f2fd; padding: 15px; border-radius: 10px; margin-bottom: 20px;'>
+    # باکس تنظیمات با رنگ جدید (آبی سرمه‌ای در حالت تاریک)
+    st.markdown(f"""
+    <div class="settings-box">
         <b>📋 مدیریت تنظیمات نرم‌افزار</b><br>
         در این بخش می‌توانید تنظیمات ظاهری نرم‌افزار را تغییر دهید.
     </div>
