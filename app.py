@@ -1808,7 +1808,7 @@ st.subheader("🌓 Theme Settings")
 
 col1, col2 = st.columns(2)
 with col1:
-current_theme = "🌞 Light" if st.session_state.theme == 'light' else "🌙 Dark"
+    current_theme = "🌞 Light" if st.session_state.theme == 'light' else "🌙 Dark"
 st.info(f"Current Theme: **{current_theme}**")
 
 with col2:
