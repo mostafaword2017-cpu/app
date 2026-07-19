@@ -16,18 +16,12 @@ st.set_page_config(
 
 if 'theme' not in st.session_state:
     st.session_state.theme = 'light'
-    
-if 'show_settings' not in st.session_state:
-    st.session_state.show_settings = False
 
 def toggle_theme():
     if st.session_state.theme == 'light':
         st.session_state.theme = 'dark'
     else:
         st.session_state.theme = 'light'
-
-def toggle_settings():
-    st.session_state.show_settings = not st.session_state.show_settings
 
 # تعیین رنگ‌ها بر اساس تم
 if st.session_state.theme == 'light':
@@ -76,7 +70,7 @@ st.markdown(f"""
     
     .block-container {{
         padding-top: 30px !important;
-        padding-bottom: 120px !important;
+        padding-bottom: 30px !important;
     }}
 
     /* ========== اسم نرم‌افزار ========== */
@@ -105,7 +99,7 @@ st.markdown(f"""
     @media screen and (max-width: 640px) {{
         .block-container {{
             padding-top: 20px !important;
-            padding-bottom: 100px !important;
+            padding-bottom: 20px !important;
         }}
         .app-title {{
             font-size: 38px !important;
@@ -122,7 +116,7 @@ st.markdown(f"""
     @media screen and (max-width: 400px) {{
         .block-container {{
             padding-top: 15px !important;
-            padding-bottom: 90px !important;
+            padding-bottom: 15px !important;
         }}
         .app-title {{
             font-size: 30px !important;
@@ -310,89 +304,6 @@ st.markdown(f"""
         border-right: 4px solid #ff9800;
         margin: 8px 0;
     }}
-
-    /* ========== منوی تنظیمات در پایین سمت چپ ========== */
-    .settings-bottom-left {{
-        position: fixed;
-        bottom: 30px;
-        left: 20px;
-        z-index: 9999;
-        display: flex;
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 10px;
-    }}
-    
-    .settings-icon-left {{
-        background-color: {tab_active};
-        color: white;
-        border: none;
-        border-radius: 50%;
-        width: 55px;
-        height: 55px;
-        font-size: 28px;
-        cursor: pointer;
-        box-shadow: 0 4px 15px rgba(46, 125, 50, 0.4);
-        transition: all 0.3s ease;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border: 2px solid white;
-    }}
-    
-    .settings-icon-left:hover {{
-        transform: scale(1.1);
-        box-shadow: 0 6px 25px rgba(46, 125, 50, 0.5);
-    }}
-    
-    .settings-panel-left {{
-        background-color: {card_bg};
-        border: 2px solid {border_color};
-        border-radius: 16px;
-        padding: 20px;
-        min-width: 220px;
-        box-shadow: 0 8px 30px rgba(0,0,0,0.2);
-        display: { 'block' if st.session_state.show_settings else 'none' };
-        margin-bottom: 10px;
-        direction: rtl;
-    }}
-    
-    .settings-panel-left .setting-item {{
-        padding: 8px 0;
-        border-bottom: 1px solid {border_color};
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }}
-    
-    .settings-panel-left .setting-item:last-child {{
-        border-bottom: none;
-    }}
-    
-    .settings-panel-left .setting-label {{
-        font-size: 14px;
-        font-weight: 600;
-        color: {text_color};
-    }}
-    
-    @media screen and (max-width: 640px) {{
-        .settings-bottom-left {{
-            bottom: 20px;
-            left: 10px;
-        }}
-        .settings-icon-left {{
-            width: 48px;
-            height: 48px;
-            font-size: 22px;
-        }}
-        .settings-panel-left {{
-            min-width: 160px;
-            padding: 12px;
-        }}
-        .settings-panel-left .setting-label {{
-            font-size: 12px;
-        }}
-    }}
     </style>
 """, unsafe_allow_html=True)
 
@@ -404,94 +315,6 @@ st.markdown(f"""
     <div class="app-title">
         ElectroCalc <span class="lightning">⚡</span> M&F
     </div>
-""", unsafe_allow_html=True)
-
-# ==============================================================================
-# --- منوی تنظیمات با استفاده از st.button (روش مطمئن) ---
-# ==============================================================================
-
-# نمایش دکمه چرخ‌دنده با استایل CSS
-st.markdown(f"""
-    <div class="settings-bottom-left">
-        <div class="settings-panel-left" id="settingsPanel">
-            <div class="setting-item">
-                <span class="setting-label">🌓 تغییر تم</span>
-                <span style="color: {text_color}; font-size: 13px;">با دکمه پایین</span>
-            </div>
-            <div class="setting-item">
-                <span class="setting-label">📱 نسخه</span>
-                <span style="color: {text_color}; font-size: 13px;">v2.0</span>
-            </div>
-            <div class="setting-item">
-                <span class="setting-label">🔒 وضعیت</span>
-                <span style="color: #4CAF50; font-size: 13px;">● آنلاین</span>
-            </div>
-        </div>
-        <button class="settings-icon-left" id="settingsToggleBtn">
-            ⚙️
-        </button>
-    </div>
-""", unsafe_allow_html=True)
-
-# ==============================================================================
-# --- دکمه‌های کنترلی با Streamlit (روش مطمئن برای تغییر تم و تنظیمات) ---
-# ==============================================================================
-
-# ایجاد یک کانتینر مخفی برای دکمه‌ها
-with st.sidebar:
-    st.markdown("## ⚙️ Settings")
-    
-    theme_icon = "🌙" if st.session_state.theme == 'light' else "☀️"
-    theme_label = "Dark Mode" if st.session_state.theme == 'light' else "Light Mode"
-    
-    if st.button(f"{theme_icon} {theme_label}", use_container_width=True):
-        toggle_theme()
-        st.rerun()
-    
-    st.divider()
-    
-    if st.button("⚙️ Toggle Settings Panel", use_container_width=True):
-        toggle_settings()
-        st.rerun()
-    
-    st.divider()
-    
-    st.markdown("### 📚 Standards")
-    st.markdown("""
-    **IEC 60364** - Cable Sizing  
-    **IEEE 485** - UPS Sizing  
-    **IEC 60034** - Motor Calculations  
-    **IEC 60947** - Breaker Selection  
-    **IEC 60909** - Short Circuit  
-    """)
-    
-    st.divider()
-    
-    st.markdown("### ℹ️ About")
-    st.caption("⚡ ElectroCalc M&F v2.0")
-    st.caption("Developed for Power Systems Engineering")
-
-# ==============================================================================
-# --- جاوااسکریپت برای باز کردن منو با کلیک روی چرخ‌دنده ---
-# ==============================================================================
-
-st.markdown("""
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const toggleBtn = document.getElementById('settingsToggleBtn');
-    const panel = document.getElementById('settingsPanel');
-    
-    if (toggleBtn && panel) {
-        toggleBtn.addEventListener('click', function() {
-            if (panel.style.display === 'block') {
-                panel.style.display = 'none';
-            } else {
-                panel.style.display = 'block';
-            }
-        });
-    }
-});
-</script>
 """, unsafe_allow_html=True)
 
 # ==============================================================================
@@ -691,10 +514,10 @@ def calculate_ups_fixed(load_kva, backup_min, num_batteries, battery_voltage=12)
     return round(result, 1)
 
 # ==============================================================================
-# --- تب‌ها ---
+# --- تب‌ها (6 تب) ---
 # ==============================================================================
 
-tabs = st.tabs(["📏 Cable", "🔋 UPS", "⚙️ Motor", "🛡️ Protect", "❄️ HVAC Test"])
+tabs = st.tabs(["📏 Cable", "🔋 UPS", "⚙️ Motor", "🛡️ Protect", "❄️ HVAC Test", "⚙️ Settings"])
 
 # ==============================================================================
 # --- تب ۱: کابل ---
@@ -1250,3 +1073,60 @@ with tabs[4]:
         - اگر دمای کویل از نقطه شبنم پایین‌تر باشد، رطوبت تبدیل به آب شده و محاسبات دقیق‌تر نیاز به اندازه‌گیری رطوبت دارد
         - برای دقت بیشتر، اندازه‌گیری را در **یک شبکه منظم (Grid)** روی سطح کویل انجام دهید
         """)
+
+# ==============================================================================
+# --- تب ۶: تنظیمات (Settings) ---
+# ==============================================================================
+
+with tabs[5]:
+    st.header("⚙️ Settings")
+    
+    st.markdown("""
+    <div style='background-color: #e3f2fd; padding: 15px; border-radius: 10px; margin-bottom: 20px;'>
+        <b>📋 مدیریت تنظیمات نرم‌افزار</b><br>
+        در این بخش می‌توانید تنظیمات ظاهری و سایر پارامترهای نرم‌افزار را تغییر دهید.
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # تنظیمات تم
+    st.subheader("🌓 Theme Settings")
+    
+    col1, col2 = st.columns(2)
+    with col1:
+        current_theme = "🌞 Light" if st.session_state.theme == 'light' else "🌙 Dark"
+        st.info(f"Current Theme: **{current_theme}**")
+    
+    with col2:
+        theme_icon = "🌙" if st.session_state.theme == 'light' else "☀️"
+        theme_label = "Switch to Dark Mode" if st.session_state.theme == 'light' else "Switch to Light Mode"
+        
+        if st.button(f"{theme_icon} {theme_label}", use_container_width=True):
+            toggle_theme()
+            st.rerun()
+    
+    st.divider()
+    
+    # اطلاعات نرم‌افزار
+    st.subheader("ℹ️ About")
+    st.markdown("""
+    **ElectroCalc ⚡ M&F**  
+    Version: **2.0**  
+    Developed for Power Systems Engineering  
+    
+    **Standards Used:**
+    - IEC 60364 - Cable Sizing
+    - IEEE 485 - UPS Sizing
+    - IEC 60034 - Motor Calculations
+    - IEC 60947 - Breaker Selection
+    - IEC 60909 - Short Circuit
+    """)
+    
+    st.divider()
+    
+    # وضعیت
+    st.subheader("🔒 Status")
+    st.markdown("""
+    ✅ **Application Status:** Online  
+    ✅ **Theme:** {}  
+    ✅ **Version:** 2.0
+    """.format("Light" if st.session_state.theme == 'light' else "Dark"))
