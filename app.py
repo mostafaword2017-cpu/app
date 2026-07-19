@@ -76,7 +76,7 @@ st.markdown(f"""
     
     .block-container {{
         padding-top: 30px !important;
-        padding-bottom: 100px !important;
+        padding-bottom: 120px !important;
     }}
 
     /* ========== اسم نرم‌افزار ========== */
@@ -105,7 +105,7 @@ st.markdown(f"""
     @media screen and (max-width: 640px) {{
         .block-container {{
             padding-top: 20px !important;
-            padding-bottom: 90px !important;
+            padding-bottom: 100px !important;
         }}
         .app-title {{
             font-size: 38px !important;
@@ -122,7 +122,7 @@ st.markdown(f"""
     @media screen and (max-width: 400px) {{
         .block-container {{
             padding-top: 15px !important;
-            padding-bottom: 80px !important;
+            padding-bottom: 90px !important;
         }}
         .app-title {{
             font-size: 30px !important;
@@ -375,22 +375,6 @@ st.markdown(f"""
         color: {text_color};
     }}
     
-    .settings-panel-left .theme-toggle-btn {{
-        background-color: {tab_bg};
-        color: {text_color};
-        border: 1px solid {border_color};
-        border-radius: 8px;
-        padding: 6px 14px;
-        font-size: 13px;
-        cursor: pointer;
-        transition: all 0.3s ease;
-    }}
-    
-    .settings-panel-left .theme-toggle-btn:hover {{
-        background-color: {tab_active};
-        color: white;
-    }}
-    
     @media screen and (max-width: 640px) {{
         .settings-bottom-left {{
             bottom: 20px;
@@ -408,10 +392,6 @@ st.markdown(f"""
         .settings-panel-left .setting-label {{
             font-size: 12px;
         }}
-        .settings-panel-left .theme-toggle-btn {{
-            font-size: 11px;
-            padding: 4px 10px;
-        }}
     }}
     </style>
 """, unsafe_allow_html=True)
@@ -427,20 +407,16 @@ st.markdown(f"""
 """, unsafe_allow_html=True)
 
 # ==============================================================================
-# --- منوی تنظیمات در پایین سمت چپ (چرخ‌دنده) ---
+# --- منوی تنظیمات با استفاده از st.button (روش مطمئن) ---
 # ==============================================================================
 
-theme_icon = "🌙" if st.session_state.theme == 'light' else "☀️"
-theme_label = "Dark Mode" if st.session_state.theme == 'light' else "Light Mode"
-
+# نمایش دکمه چرخ‌دنده با استایل CSS
 st.markdown(f"""
     <div class="settings-bottom-left">
         <div class="settings-panel-left" id="settingsPanel">
             <div class="setting-item">
                 <span class="setting-label">🌓 تغییر تم</span>
-                <button class="theme-toggle-btn" onclick="location.href='?theme=toggle'">
-                    {theme_icon} {theme_label}
-                </button>
+                <span style="color: {text_color}; font-size: 13px;">با دکمه پایین</span>
             </div>
             <div class="setting-item">
                 <span class="setting-label">📱 نسخه</span>
@@ -451,23 +427,72 @@ st.markdown(f"""
                 <span style="color: #4CAF50; font-size: 13px;">● آنلاین</span>
             </div>
         </div>
-        <button class="settings-icon-left" onclick="location.href='?settings=toggle'" title="Settings">
+        <button class="settings-icon-left" id="settingsToggleBtn">
             ⚙️
         </button>
     </div>
 """, unsafe_allow_html=True)
 
-# بررسی تغییرات از طریق URL
-query_params = st.query_params
-if 'theme' in query_params and query_params['theme'] == 'toggle':
-    toggle_theme()
-    st.query_params.clear()
-    st.rerun()
+# ==============================================================================
+# --- دکمه‌های کنترلی با Streamlit (روش مطمئن برای تغییر تم و تنظیمات) ---
+# ==============================================================================
 
-if 'settings' in query_params and query_params['settings'] == 'toggle':
-    toggle_settings()
-    st.query_params.clear()
-    st.rerun()
+# ایجاد یک کانتینر مخفی برای دکمه‌ها
+with st.sidebar:
+    st.markdown("## ⚙️ Settings")
+    
+    theme_icon = "🌙" if st.session_state.theme == 'light' else "☀️"
+    theme_label = "Dark Mode" if st.session_state.theme == 'light' else "Light Mode"
+    
+    if st.button(f"{theme_icon} {theme_label}", use_container_width=True):
+        toggle_theme()
+        st.rerun()
+    
+    st.divider()
+    
+    if st.button("⚙️ Toggle Settings Panel", use_container_width=True):
+        toggle_settings()
+        st.rerun()
+    
+    st.divider()
+    
+    st.markdown("### 📚 Standards")
+    st.markdown("""
+    **IEC 60364** - Cable Sizing  
+    **IEEE 485** - UPS Sizing  
+    **IEC 60034** - Motor Calculations  
+    **IEC 60947** - Breaker Selection  
+    **IEC 60909** - Short Circuit  
+    """)
+    
+    st.divider()
+    
+    st.markdown("### ℹ️ About")
+    st.caption("⚡ ElectroCalc M&F v2.0")
+    st.caption("Developed for Power Systems Engineering")
+
+# ==============================================================================
+# --- جاوااسکریپت برای باز کردن منو با کلیک روی چرخ‌دنده ---
+# ==============================================================================
+
+st.markdown("""
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const toggleBtn = document.getElementById('settingsToggleBtn');
+    const panel = document.getElementById('settingsPanel');
+    
+    if (toggleBtn && panel) {
+        toggleBtn.addEventListener('click', function() {
+            if (panel.style.display === 'block') {
+                panel.style.display = 'none';
+            } else {
+                panel.style.display = 'block';
+            }
+        });
+    }
+});
+</script>
+""", unsafe_allow_html=True)
 
 # ==============================================================================
 # --- توابع کمکی ---
