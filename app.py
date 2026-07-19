@@ -1493,13 +1493,14 @@ with tabs[5]:
         
         # --- ترانسفورماتور ---
         if source_type in ["🔴 ترانسفورماتور", "🔵 ترکیبی (ترانس + ژنراتور)"]:
-            # جریان نامی
+            
+            # 🔹 فرمول ۱: جریان نامی ترانسفورماتور
             I_nom_tr = (S_nom_tr * 1000) / (math.sqrt(3) * V_sec_tr)
             
-            # امپدانس
+            # 🔹 فرمول ۲: امپدانس ترانسفورماتور
             Z_tr = (Uk_percent / 100) * (V_sec_tr**2 / (S_nom_tr * 1000))
             
-            # مقاومت و راکتانس
+            # 🔹 فرمول ۳: مقاومت و راکتانس ترانسفورماتور
             if P_k_tr > 0:
                 R_tr = (P_k_tr * 1000 * V_sec_tr**2) / (S_nom_tr * 1000)**2
                 X_tr = math.sqrt(max(0, Z_tr**2 - R_tr**2))
@@ -1522,15 +1523,19 @@ with tabs[5]:
                 R_tr = Z_tr / math.sqrt(1 + X_over_R_use**2)
                 X_tr = R_tr * X_over_R_use
             
-            # جریان اتصال کوتاه
+            # 🔹 فرمول ۴: جریان اتصال کوتاه ترانسفورماتور
             I_sc_tr = (V_sec_tr / math.sqrt(3)) / Z_tr
+            
+            # 🔹 فرمول ۵: جریان اتصال کوتاه (روش ساده)
             I_sc_simple = I_nom_tr * (100 / Uk_percent)
             
-            # ضریب پیک
+            # 🔹 فرمول ۶: ضریب پیک ترانسفورماتور
             kappa_tr = 1.02 + 0.98 * math.exp(-3 * (X_tr / R_tr)) if R_tr > 0 else 1.8
+            
+            # 🔹 فرمول ۷: جریان پیک ترانسفورماتور
             I_peak_tr = kappa_tr * math.sqrt(2) * I_sc_tr
             
-            # توان اتصال کوتاه
+            # 🔹 فرمول ۸: توان اتصال کوتاه ترانسفورماتور
             S_sc_tr = math.sqrt(3) * V_sec_tr * I_sc_tr / 1000  # kVA
             
             results['transformer'] = {
@@ -1548,43 +1553,46 @@ with tabs[5]:
         
         # --- ژنراتور ---
         if source_type in ["🟢 ژنراتور", "🔵 ترکیبی (ترانس + ژنراتور)"]:
-            # جریان نامی
+            
+            # 🔹 فرمول ۱: جریان نامی ژنراتور
             I_nom_gen = (S_nom_gen * 1000) / (math.sqrt(3) * V_nom_gen)
             
-            # راکتانس زیرگذرا
+            # 🔹 فرمول ۲: راکتانس زیرگذرا ژنراتور
             Xd = (Xd_percent / 100) * (V_nom_gen**2 / (S_nom_gen * 1000))
             
-            # مقاومت
+            # 🔹 فرمول ۳: مقاومت ژنراتور
             if X_over_R_gen > 0:
                 R_gen = Xd / X_over_R_gen
             else:
                 R_gen = Xd / 10
             
-            # امپدانس
+            # 🔹 فرمول ۴: امپدانس ژنراتور
             Z_gen = math.sqrt(R_gen**2 + Xd**2)
             
-            # جریان اتصال کوتاه زیرگذرا
+            # 🔹 فرمول ۵: جریان اتصال کوتاه زیرگذرا
             I_sc_sub = (V_nom_gen / math.sqrt(3)) / Xd
             
-            # جریان اتصال کوتاه گذرا
+            # 🔹 فرمول ۶: جریان اتصال کوتاه گذرا (اختیاری)
             if Xd_prime > 0:
                 Xd_p = (Xd_prime / 100) * (V_nom_gen**2 / (S_nom_gen * 1000))
                 I_sc_trans = (V_nom_gen / math.sqrt(3)) / Xd_p
             else:
                 I_sc_trans = None
             
-            # جریان اتصال کوتاه ماندگار
+            # 🔹 فرمول ۷: جریان اتصال کوتاه ماندگار (اختیاری)
             if Xd_steady > 0:
                 Xd_s = (Xd_steady / 100) * (V_nom_gen**2 / (S_nom_gen * 1000))
                 I_sc_steady = (V_nom_gen / math.sqrt(3)) / Xd_s
             else:
                 I_sc_steady = None
             
-            # ضریب پیک
+            # 🔹 فرمول ۸: ضریب پیک ژنراتور
             kappa_gen = 1.02 + 0.98 * math.exp(-3 * (Xd / R_gen)) if R_gen > 0 else 1.8
+            
+            # 🔹 فرمول ۹: جریان پیک ژنراتور
             I_peak_gen = kappa_gen * math.sqrt(2) * I_sc_sub
             
-            # جریان نامتقارن
+            # 🔹 فرمول ۱۰: جریان نامتقارن ژنراتور
             I_asym_gen = I_sc_sub * math.sqrt(1 + 2 * (kappa_gen - 1)**2)
             
             results['generator'] = {
@@ -1603,7 +1611,8 @@ with tabs[5]:
         
         # --- کابلها ---
         if include_cable and cable_length > 0:
-            # مقاومت مخصوص بر اساس جنس هادی
+            
+            # 🔹 فرمول ۱: مقاومت مخصوص با تصحیح دما
             if conductor_type == "مس":
                 rho_20 = 0.01724
                 alpha = 0.00393
@@ -1611,16 +1620,15 @@ with tabs[5]:
                 rho_20 = 0.02826
                 alpha = 0.00403
             
-            # تصحیح دما
             rho = rho_20 * (1 + alpha * (cable_temp - 20))
             
-            # مقاومت یک رشته
+            # 🔹 فرمول ۲: مقاومت یک رشته کابل
             R_single = rho * cable_length / cable_area
             
-            # مقاومت معادل با تعداد رشتههای موازی
+            # 🔹 فرمول ۳: مقاومت معادل با تعداد رشتههای موازی
             R_cable = R_single / cable_count
             
-            # راکتانس بر اساس سطح مقطع
+            # 🔹 فرمول ۴: راکتانس کابل (بر اساس سطح مقطع)
             if cable_area <= 16:
                 X_per_km = 0.085
             elif cable_area <= 35:
@@ -1634,7 +1642,9 @@ with tabs[5]:
             else:
                 X_per_km = 0.038
             
-            X_cable = X_per_km * cable_length / 1000 / cable_count
+            # 🔹 فرمول ۵: راکتانس معادل کابل
+            X_cable = X_per_km * cable_length / 1000 / cable_count            
+            # 🔹 فرمول ۶: امپدانس کابل
             Z_cable = math.sqrt(R_cable**2 + X_cable**2)
             
             results['cable'] = {
@@ -1711,9 +1721,13 @@ with tabs[5]:
             # محاسبه جریان در انتهای کابل
             if 'transformer' in results:
                 tr = results['transformer']
+                
+                # 🔹 فرمول ۷: امپدانس کل مسیر (ترانس + کابل)
                 R_total = tr['R_tr'] + cab['R_cable']
                 X_total = tr['X_tr'] + cab['X_cable']
                 Z_total = math.sqrt(R_total**2 + X_total**2)
+                
+                # 🔹 فرمول ۸: جریان اتصال کوتاه در انتهای کابل
                 I_sc_end = (V_sec_tr / math.sqrt(3)) / Z_total
                 
                 # کاهش جریان
@@ -1755,3 +1769,78 @@ with tabs[5]:
             st.markdown("""
             **فرمولهای ترانسفورماتور:**
             
+**فرمولهای ژنراتور:**
+
+**فرمولهای کابل:**
+""")
+
+# --- جعبه اطلاعات ---
+show_info_box(
+"📋 تفسیر نتایج اتصال کوتاه",
+[
+    f'<span class="highlight">Uk% = {Uk_percent}%</span> - هرچه کمتر باشد، جریان اتصال کوتاه بیشتر است',
+    'جریان اتصال کوتاه در ترمینال ترانس: حداکثر مقدار ممکن',
+    'با افزودن کابلها، جریان کاهش مییابد (امپدانس افزایش مییابد)',
+    'کلید محافظ باید قدرت قطعی ≥ جریان اتصال کوتاه محل نصب داشته باشد',
+    '<span class="highlight">ضریب پیک κ:</span> برای محاسبه جریان دینامیکی (الکترودینامیکی)',
+    '<span class="highlight">جریان نامتقارن:</span> برای انتخاب کلیدهای قدرت (بریکرها)',
+    'در شبکههای LV، جریان اتصال کوتاه معمولاً ۵-۲۰ kA در تابلوها است'
+]
+)
+
+# ==============================================================================
+# --- تب ۷: تنظیمات (Settings) ---
+# ==============================================================================
+
+with tabs[6]:
+st.header("⚙️ Settings")
+
+st.markdown(f"""
+<div class="settings-box">
+<b>📋 مدیریت تنظیمات نرم‌افزار</b><br>
+در این بخش می‌توانید تنظیمات ظاهری نرم‌افزار را تغییر دهید.
+</div>
+""", unsafe_allow_html=True)
+
+# ========== تنظیمات تم ==========
+st.subheader("🌓 Theme Settings")
+
+col1, col2 = st.columns(2)
+with col1:
+current_theme = "🌞 Light" if st.session_state.theme == 'light' else "🌙 Dark"
+st.info(f"Current Theme: **{current_theme}**")
+
+with col2:
+theme_icon = "🌙" if st.session_state.theme == 'light' else "☀️"
+theme_label = "Switch to Dark Mode" if st.session_state.theme == 'light' else "Switch to Light Mode"
+
+if st.button(f"{theme_icon} {theme_label}", use_container_width=True):
+toggle_theme()
+st.rerun()
+
+st.divider()
+
+# ========== اطلاعات نرم‌افزار ==========
+st.subheader("ℹ️ About")
+st.markdown("""
+**ElectroCalc ⚡ M&F**  
+Version: **2.0**  
+Developed for Power Systems Engineering  
+
+**Standards Used:**
+- IEC 60364 - Cable Sizing
+- IEEE 485 - UPS Sizing
+- IEC 60034 - Motor Calculations
+- IEC 60947 - Breaker Selection
+- IEC 60909 - Short Circuit
+""")
+
+st.divider()
+
+# ========== وضعیت ==========
+st.subheader("🔒 Status")
+st.markdown(f"""
+✅ **Application Status:** Online  
+✅ **Theme:** {current_theme}  
+✅ **Version:** 2.0
+""")
