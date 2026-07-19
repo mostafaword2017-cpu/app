@@ -11,74 +11,176 @@ st.set_page_config(
 )
 
 # ==============================================================================
-# --- استایل با تب‌های پررنگ و متن سفید روی سبز ---
+# --- مدیریت تم (Theme) در Session State ---
 # ==============================================================================
 
-st.markdown("""
+if 'theme' not in st.session_state:
+    st.session_state.theme = 'light'
+
+def toggle_theme():
+    if st.session_state.theme == 'light':
+        st.session_state.theme = 'dark'
+    else:
+        st.session_state.theme = 'light'
+
+# تعیین رنگ‌ها بر اساس تم
+if st.session_state.theme == 'light':
+    bg_color = "#ffffff"
+    text_color = "#1a1a1a"
+    card_bg = "#f1f3f4"
+    border_color = "#3c4043"
+    tab_bg = "#f0f2f6"
+    tab_active = "#2E7D32"
+    button_bg = "#007BFF"
+    button_text = "#ffffff"
+    result_bg = "#f1f3f4"
+    sidebar_bg = "#f0f2f6"
+    input_bg = "#ffffff"
+    settings_bg = "#e8e8e8"
+else:
+    bg_color = "#1a1a1a"
+    text_color = "#f0f0f0"
+    card_bg = "#2d2d2d"
+    border_color = "#555555"
+    tab_bg = "#333333"
+    tab_active = "#2E7D32"
+    button_bg = "#0d6efd"
+    button_text = "#ffffff"
+    result_bg = "#2d2d2d"
+    sidebar_bg = "#252525"
+    input_bg = "#333333"
+    settings_bg = "#333333"
+
+# ==============================================================================
+# --- استایل ---
+# ==============================================================================
+
+st.markdown(f"""
     <style>
     /* ========== تنظیم فاصله از بالای صفحه ========== */
-    .main > div {
+    .main > div {{
         padding-top: 0px !important;
-    }
+    }}
     
-    /* ========== تنظیم margin-top برای پایین آوردن اسم ========== */
-    .stApp {
-        margin-top: 0px !important;  /* تغییر از -25px به 0px */
-    }
+    .stApp {{
+        margin-top: 0px !important;
+    }}
     
-    .block-container {
-        padding-top: 30px !important;  /* افزایش از 10px به 30px */
+    .block-container {{
+        padding-top: 50px !important;  /* افزایش فاصله از بالا */
         padding-bottom: 20px !important;
-    }
+    }}
+
+    /* ========== منو تنظیمات در بالای صفحه ========== */
+    .settings-top {{
+        text-align: right;
+        padding: 10px 20px 5px 20px !important;
+        background-color: {settings_bg};
+        border-radius: 12px;
+        margin-bottom: 15px !important;
+        border: 1px solid {border_color};
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        gap: 15px;
+        flex-wrap: wrap;
+        direction: rtl;
+    }}
+    
+    .settings-top .theme-btn {{
+        background-color: {tab_bg};
+        color: {text_color};
+        border: 1px solid {border_color};
+        border-radius: 8px;
+        padding: 6px 16px;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }}
+    
+    .settings-top .theme-btn:hover {{
+        background-color: {tab_active};
+        color: white;
+        transform: scale(1.02);
+    }}
+    
+    .settings-top .settings-label {{
+        font-size: 16px;
+        font-weight: 600;
+        color: {text_color};
+        margin-left: 10px;
+    }}
+    
+    @media screen and (max-width: 640px) {{
+        .settings-top {{
+            padding: 8px 12px !important;
+            justify-content: center !important;
+            flex-direction: row;
+        }}
+        .settings-top .settings-label {{
+            font-size: 14px;
+        }}
+        .settings-top .theme-btn {{
+            font-size: 12px;
+            padding: 4px 12px;
+        }}
+    }}
 
     /* ========== اسم نرم‌افزار ========== */
-    .app-title {
+    .app-title {{
         text-align: center;
-        padding: 0px 0 12px 0 !important;
+        padding: 5px 0 12px 0 !important;
         margin: 0 !important;
         font-size: 60px !important;
         font-weight: 800 !important;
-        color: #1a1a1a;
+        color: {text_color} !important;
         white-space: nowrap;
         overflow: visible;
         letter-spacing: 1px !important;
         line-height: 1.2 !important;
         border-bottom: 3px solid #e8e8e8 !important;
         margin-bottom: 8px !important;
-    }
+    }}
     
-    .app-title .lightning {
+    .app-title .lightning {{
         color: #f9a825;
         display: inline-block;
         margin: 0 6px !important;
         font-size: 68px !important;
-    }
+    }}
 
-    @media screen and (max-width: 640px) {
-        .app-title {
+    @media screen and (max-width: 640px) {{
+        .block-container {{
+            padding-top: 30px !important;
+        }}
+        .app-title {{
             font-size: 38px !important;
             padding: 0px 0 10px 0 !important;
             white-space: normal !important;
             word-break: break-word !important;
             line-height: 1.3 !important;
-        }
-        .app-title .lightning {
+        }}
+        .app-title .lightning {{
             font-size: 42px !important;
-        }
-    }
+        }}
+    }}
 
-    @media screen and (max-width: 400px) {
-        .app-title {
+    @media screen and (max-width: 400px) {{
+        .block-container {{
+            padding-top: 20px !important;
+        }}
+        .app-title {{
             font-size: 30px !important;
             padding: 0px 0 8px 0 !important;
-        }
-        .app-title .lightning {
+        }}
+        .app-title .lightning {{
             font-size: 34px !important;
-        }
-    }
+        }}
+    }}
 
-    /* ========== تب‌ها (پررنگ و برجسته) ========== */
-    .stTabs div[role="tablist"] {
+    /* ========== تب‌ها ========== */
+    .stTabs div[role="tablist"] {{
         gap: 8px !important;
         flex-wrap: nowrap !important;
         overflow-x: auto !important;
@@ -87,9 +189,9 @@ st.markdown("""
         padding: 6px 0 5px 0 !important;
         border-bottom: 3px solid #c0c0c0 !important;
         margin-top: 0px !important;
-    }
+    }}
     
-    .stTabs [role="tab"] {
+    .stTabs [role="tab"] {{
         font-size: 20px !important;
         padding: 14px 28px !important;
         border-radius: 14px 14px 0px 0px !important;
@@ -106,18 +208,17 @@ st.markdown("""
         opacity: 0.85 !important;
         margin-bottom: -2px !important;
         box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
-    }
+    }}
     
-    .stTabs [role="tab"]:hover {
+    .stTabs [role="tab"]:hover {{
         background-color: #c8e6c9 !important;
         color: #1b5e20 !important;
         opacity: 1 !important;
         transform: translateY(-3px) !important;
         box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
-    }
+    }}
     
-    /* ========== تب انتخاب شده - سبز با متن سفید ========== */
-    .stTabs [aria-selected="true"] {
+    .stTabs [aria-selected="true"] {{
         background-color: #2E7D32 !important;
         color: #FFFFFF !important;
         font-weight: 700 !important;
@@ -128,34 +229,30 @@ st.markdown("""
         box-shadow: 0 6px 20px rgba(46, 125, 50, 0.4) !important;
         font-size: 21px !important;
         text-shadow: 0 1px 2px rgba(0,0,0,0.2) !important;
-    }
+    }}
     
-    .stTabs [aria-selected="true"]:hover {
+    .stTabs [aria-selected="true"]:hover {{
         background-color: #1B5E20 !important;
         transform: translateY(-4px) !important;
         box-shadow: 0 6px 24px rgba(46, 125, 50, 0.5) !important;
         color: #FFFFFF !important;
-    }
+    }}
     
     /* ========== موبایل ========== */
-    @media screen and (max-width: 640px) {
-        .stApp {
+    @media screen and (max-width: 640px) {{
+        .stApp {{
             margin-top: 0px !important;
-        }
+        }}
         
-        .block-container {
-            padding-top: 20px !important;
-        }
-        
-        .stTabs div[role="tablist"] {
+        .stTabs div[role="tablist"] {{
             gap: 4px !important;
             padding: 4px 0 4px 0 !important;
             justify-content: flex-start !important;
             overflow-x: auto !important;
             -webkit-overflow-scrolling: touch !important;
-        }
+        }}
         
-        .stTabs [role="tab"] {
+        .stTabs [role="tab"] {{
             font-size: 15px !important;
             padding: 10px 16px !important;
             min-width: 65px !important;
@@ -163,84 +260,82 @@ st.markdown("""
             flex: 0 0 auto !important;
             display: inline-block !important;
             font-weight: 600 !important;
-        }
+        }}
         
-        .stTabs [aria-selected="true"] {
+        .stTabs [aria-selected="true"] {{
             font-size: 16px !important;
             transform: translateY(-3px) !important;
             box-shadow: 0 4px 14px rgba(46, 125, 50, 0.35) !important;
             color: #FFFFFF !important;
-        }
-    }
+        }}
+    }}
 
-    @media screen and (max-width: 400px) {
-        .stTabs [role="tab"] {
+    @media screen and (max-width: 400px) {{
+        .stTabs [role="tab"] {{
             font-size: 13px !important;
             padding: 8px 12px !important;
             min-width: 55px !important;
-        }
-        .stTabs [aria-selected="true"] {
+        }}
+        .stTabs [aria-selected="true"] {{
             font-size: 14px !important;
             color: #FFFFFF !important;
-        }
-    }
+        }}
+    }}
     
     /* ========== مخفی کردن المان‌های اضافی ========== */
-    .stAppHeader, header[data-testid="stHeader"] {
+    .stAppHeader, header[data-testid="stHeader"] {{
         display: none !important;
-    }
+    }}
     
-    .stDeployButton, .stAppDeployButton, div[data-testid="stAppDeployButton"] {
+    .stDeployButton, .stAppDeployButton, div[data-testid="stAppDeployButton"] {{
         display: none !important;
-    }
+    }}
     
-    #MainMenu {
+    #MainMenu {{
         display: none !important;
-    }
+    }}
 
-    footer {
+    footer {{
         display: none !important;
-    }
+    }}
     
-    .stAppFooter {
+    .stAppFooter {{
         display: none !important;
-    }
+    }}
     
     /* ========== جعبه نتایج ========== */
-    .result-box {
+    .result-box {{
         text-align: center;
         padding: 15px;
         border-radius: 15px;
-        background-color: #f1f3f4;
-        border: 2px solid #3c4043;
+        background-color: {result_bg} !important;
+        border: 2px solid {border_color};
         margin: 15px 0;
-    }
+    }}
     
-    .result-text {
+    .result-text {{
         font-size: 18px !important;
         font-weight: 600 !important;
         color: #1a73e8 !important;
         margin-bottom: 5px;
-    }
+    }}
 
-    /* ========== استایل برای نتایج تست ========== */
-    .test-pass {
+    .test-pass {{
         background-color: #e8f5e9 !important;
         border: 3px solid #4CAF50 !important;
-    }
+    }}
     
-    .test-fail {
+    .test-fail {{
         background-color: #ffebee !important;
         border: 3px solid #f44336 !important;
-    }
+    }}
     
-    .test-warning {
+    .test-warning {{
         background-color: #fff3e0 !important;
         border: 3px solid #ff9800 !important;
-    }
+    }}
 
-    /* ========== باکس اطلاعات آبی ========== */
-    .info-box {
+    .info-box {{
         background-color: #e3f2fd;
         padding: 15px;
         border-radius: 10px;
@@ -248,27 +343,60 @@ st.markdown("""
         border-left: 5px solid #2196F3;
         direction: rtl;
         text-align: right;
-    }
+    }}
     
-    .info-box b {
+    .info-box b {{
         color: #0d47a1;
-    }
+    }}
 
-    .highlight-box {
+    .highlight-box {{
         background-color: #fff8e1;
         padding: 12px;
         border-radius: 8px;
         border-right: 4px solid #ff9800;
         margin: 8px 0;
-    }
+    }}
+
+    /* ========== استایل سایدبار ========== */
+    .css-1d391kg, .css-12oz5g7 {{
+        background-color: {sidebar_bg} !important;
+    }}
     </style>
 """, unsafe_allow_html=True)
+
+# ==============================================================================
+# --- منو تنظیمات در بالای صفحه (قبل از اسم) ---
+# ==============================================================================
+
+# آیکون و برچسب تم
+theme_icon = "🌙" if st.session_state.theme == 'light' else "☀️"
+theme_label = "Dark Mode" if st.session_state.theme == 'light' else "Light Mode"
+
+# نمایش منو تنظیمات با استفاده از st.columns برای چیدمان بهتر
+col1, col2, col3 = st.columns([1, 2, 1])
+with col2:
+    st.markdown(f"""
+    <div class='settings-top'>
+        <span class='settings-label'>⚙️ Settings</span>
+        <button class='theme-btn' onclick="location.href='?theme=toggle'">
+            {theme_icon} {theme_label}
+        </button>
+    </div>
+    """, unsafe_allow_html=True)
+
+# بررسی تغییر تم از طریق URL
+import urllib.parse
+query_params = st.query_params
+if 'theme' in query_params and query_params['theme'] == 'toggle':
+    toggle_theme()
+    st.query_params.clear()
+    st.rerun()
 
 # ==============================================================================
 # --- نمایش اسم نرم‌افزار ---
 # ==============================================================================
 
-st.markdown("""
+st.markdown(f"""
     <div class="app-title">
         ElectroCalc <span class="lightning">⚡</span> M&F
     </div>
