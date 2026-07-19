@@ -517,7 +517,7 @@ st.markdown(f"""
 """, unsafe_allow_html=True)
 
 # ==============================================================================
-# --- تابع برای نمایش جعبه اطلاعات با استایل جدید ---
+# --- تابع برای نمایش جعبه اطلاعات ---
 # ==============================================================================
 
 def show_info_box(title, items):
@@ -1280,7 +1280,7 @@ with tabs[4]:
         """)
 
 # ==============================================================================
-# --- تب ۶: اتصال کوتاه (Short Circuit) ---
+# --- تب ۶: اتصال کوتاه (Short Circuit) - اصلاح شده ---
 # ==============================================================================
 
 with tabs[5]:
@@ -1475,7 +1475,6 @@ with tabs[5]:
                 format="%.0f",
                 key="cable_temp"
             )
-            
             include_cable = st.checkbox(
                 "✔️ در نظر گرفتن کابل در محاسبه", 
                 value=True,
@@ -1486,359 +1485,235 @@ with tabs[5]:
     # دکمه محاسبه
     # ==========================================
     st.markdown("---")
+    
     if st.button("⚡ محاسبه جریان اتصال کوتاه", type="primary", use_container_width=True):
         
-        # ========== محاسبات ==========
         results = {}
+        error_message = None
         
-        # --- ترانسفورماتور ---
-        if source_type in ["🔴 ترانسفورماتور", "🔵 ترکیبی (ترانس + ژنراتور)"]:
-            
-            # 🔹 فرمول ۱: جریان نامی ترانسفورماتور
-            I_nom_tr = (S_nom_tr * 1000) / (math.sqrt(3) * V_sec_tr)
-            
-            # 🔹 فرمول ۲: امپدانس ترانسفورماتور
-            Z_tr = (Uk_percent / 100) * (V_sec_tr**2 / (S_nom_tr * 1000))
-            
-            # 🔹 فرمول ۳: مقاومت و راکتانس ترانسفورماتور
-            if P_k_tr > 0:
-                R_tr = (P_k_tr * 1000 * V_sec_tr**2) / (S_nom_tr * 1000)**2
-                X_tr = math.sqrt(max(0, Z_tr**2 - R_tr**2))
-            else:
-                if X_over_R_tr > 0:
-                    X_over_R_use = X_over_R_tr
-                else:
-                    # نسبت X/R بر اساس Uk%
-                    if Uk_percent <= 4:
-                        X_over_R_use = 3
-                    elif Uk_percent <= 6:
-                        X_over_R_use = 5
-                    elif Uk_percent <= 8:
-                        X_over_R_use = 8
-                    elif Uk_percent <= 12:
-                        X_over_R_use = 12
-                    else:
-                        X_over_R_use = 15
+        try:
+            # ===== ترانسفورماتور =====
+            if source_type in ["🔴 ترانسفورماتور", "🔵 ترکیبی (ترانس + ژنراتور)"]:
                 
-                R_tr = Z_tr / math.sqrt(1 + X_over_R_use**2)
-                X_tr = R_tr * X_over_R_use
+                I_nom_tr = (S_nom_tr * 1000) / (math.sqrt(3) * V_sec_tr)
+                Z_tr = (Uk_percent / 100) * (V_sec_tr**2 / (S_nom_tr * 1000))
+                
+                if P_k_tr > 0:
+                    R_tr = (P_k_tr * 1000 * V_sec_tr**2) / (S_nom_tr * 1000)**2
+                    X_tr = math.sqrt(max(0, Z_tr**2 - R_tr**2))
+                else:
+                    if X_over_R_tr > 0:
+                        X_over_R_use = X_over_R_tr
+                    else:
+                        if Uk_percent <= 4:
+                            X_over_R_use = 3
+                        elif Uk_percent <= 6:
+                            X_over_R_use = 5
+                        elif Uk_percent <= 8:
+                            X_over_R_use = 8
+                        elif Uk_percent <= 12:
+                            X_over_R_use = 12
+                        else:
+                            X_over_R_use = 15
+                    
+                    R_tr = Z_tr / math.sqrt(1 + X_over_R_use**2)
+                    X_tr = R_tr * X_over_R_use
+                
+                I_sc_tr = (V_sec_tr / math.sqrt(3)) / Z_tr
+                I_sc_simple = I_nom_tr * (100 / Uk_percent)
+                kappa_tr = 1.02 + 0.98 * math.exp(-3 * (X_tr / R_tr)) if R_tr > 0 else 1.8
+                I_peak_tr = kappa_tr * math.sqrt(2) * I_sc_tr
+                S_sc_tr = math.sqrt(3) * V_sec_tr * I_sc_tr / 1000
+                
+                results['transformer'] = {
+                    'I_nom': I_nom_tr,
+                    'Z_tr': Z_tr,
+                    'R_tr': R_tr,
+                    'X_tr': X_tr,
+                    'X_over_R': X_tr / R_tr if R_tr > 0 else 0,
+                    'I_sc': I_sc_tr,
+                    'I_sc_simple': I_sc_simple,
+                    'S_sc': S_sc_tr,
+                    'kappa': kappa_tr,
+                    'I_peak': I_peak_tr
+                }
             
-            # 🔹 فرمول ۴: جریان اتصال کوتاه ترانسفورماتور
-            I_sc_tr = (V_sec_tr / math.sqrt(3)) / Z_tr
+            # ===== ژنراتور =====
+            if source_type in ["🟢 ژنراتور", "🔵 ترکیبی (ترانس + ژنراتور)"]:
+                
+                I_nom_gen = (S_nom_gen * 1000) / (math.sqrt(3) * V_nom_gen)
+                Xd = (Xd_percent / 100) * (V_nom_gen**2 / (S_nom_gen * 1000))
+                
+                if X_over_R_gen > 0:
+                    R_gen = Xd / X_over_R_gen
+                else:
+                    R_gen = Xd / 10
+                
+                Z_gen = math.sqrt(R_gen**2 + Xd**2)
+                I_sc_sub = (V_nom_gen / math.sqrt(3)) / Xd
+                
+                if Xd_prime > 0:
+                    Xd_p = (Xd_prime / 100) * (V_nom_gen**2 / (S_nom_gen * 1000))
+                    I_sc_trans = (V_nom_gen / math.sqrt(3)) / Xd_p
+                else:
+                    I_sc_trans = None
+                
+                if Xd_steady > 0:
+                    Xd_s = (Xd_steady / 100) * (V_nom_gen**2 / (S_nom_gen * 1000))
+                    I_sc_steady = (V_nom_gen / math.sqrt(3)) / Xd_s
+                else:
+                    I_sc_steady = None
+                
+                kappa_gen = 1.02 + 0.98 * math.exp(-3 * (Xd / R_gen)) if R_gen > 0 else 1.8
+                I_peak_gen = kappa_gen * math.sqrt(2) * I_sc_sub
+                I_asym_gen = I_sc_sub * math.sqrt(1 + 2 * (kappa_gen - 1)**2)
+                
+                results['generator'] = {
+                    'I_nom': I_nom_gen,
+                    'Xd': Xd,
+                    'R_gen': R_gen,
+                    'Z_gen': Z_gen,
+                    'X_over_R': Xd / R_gen if R_gen > 0 else 0,
+                    'I_sc_sub': I_sc_sub,
+                    'I_sc_trans': I_sc_trans,
+                    'I_sc_steady': I_sc_steady,
+                    'kappa': kappa_gen,
+                    'I_peak': I_peak_gen,
+                    'I_asym': I_asym_gen
+                }
             
-            # 🔹 فرمول ۵: جریان اتصال کوتاه (روش ساده)
-            I_sc_simple = I_nom_tr * (100 / Uk_percent)
+            # ===== کابلها =====
+            if include_cable and cable_length > 0:
+                
+                if conductor_type == "مس":
+                    rho_20 = 0.01724
+                    alpha = 0.00393
+                else:
+                    rho_20 = 0.02826
+                    alpha = 0.00403
+                
+                rho = rho_20 * (1 + alpha * (cable_temp - 20))
+                R_single = rho * cable_length / cable_area
+                R_cable = R_single / cable_count
+                
+                if cable_area <= 16:
+                    X_per_km = 0.085
+                elif cable_area <= 35:
+                    X_per_km = 0.075
+                elif cable_area <= 70:
+                    X_per_km = 0.065
+                elif cable_area <= 120:
+                    X_per_km = 0.055
+                elif cable_area <= 185:
+                    X_per_km = 0.045
+                else:
+                    X_per_km = 0.038
+                
+                X_cable = X_per_km * cable_length / 1000 / cable_count
+                Z_cable = math.sqrt(R_cable**2 + X_cable**2)
+                
+                results['cable'] = {
+                    'R_cable': R_cable,
+                    'X_cable': X_cable,
+                    'Z_cable': Z_cable
+                }
             
-            # 🔹 فرمول ۶: ضریب پیک ترانسفورماتور
-            kappa_tr = 1.02 + 0.98 * math.exp(-3 * (X_tr / R_tr)) if R_tr > 0 else 1.8
+            # ===== نمایش نتایج =====
+            st.markdown("---")
+            st.subheader("📊 نتایج محاسبه")
             
-            # 🔹 فرمول ۷: جریان پیک ترانسفورماتور
-            I_peak_tr = kappa_tr * math.sqrt(2) * I_sc_tr
-            
-            # 🔹 فرمول ۸: توان اتصال کوتاه ترانسفورماتور
-            S_sc_tr = math.sqrt(3) * V_sec_tr * I_sc_tr / 1000  # kVA
-            
-            results['transformer'] = {
-                'I_nom': I_nom_tr,
-                'Z_tr': Z_tr,
-                'R_tr': R_tr,
-                'X_tr': X_tr,
-                'X_over_R': X_tr / R_tr if R_tr > 0 else 0,
-                'I_sc': I_sc_tr,
-                'I_sc_simple': I_sc_simple,
-                'S_sc': S_sc_tr,
-                'kappa': kappa_tr,
-                'I_peak': I_peak_tr
-            }
-        
-        # --- ژنراتور ---
-        if source_type in ["🟢 ژنراتور", "🔵 ترکیبی (ترانس + ژنراتور)"]:
-            
-            # 🔹 فرمول ۱: جریان نامی ژنراتور
-            I_nom_gen = (S_nom_gen * 1000) / (math.sqrt(3) * V_nom_gen)
-            
-            # 🔹 فرمول ۲: راکتانس زیرگذرا ژنراتور
-            Xd = (Xd_percent / 100) * (V_nom_gen**2 / (S_nom_gen * 1000))
-            
-            # 🔹 فرمول ۳: مقاومت ژنراتور
-            if X_over_R_gen > 0:
-                R_gen = Xd / X_over_R_gen
-            else:
-                R_gen = Xd / 10
-            
-            # 🔹 فرمول ۴: امپدانس ژنراتور
-            Z_gen = math.sqrt(R_gen**2 + Xd**2)
-            
-            # 🔹 فرمول ۵: جریان اتصال کوتاه زیرگذرا
-            I_sc_sub = (V_nom_gen / math.sqrt(3)) / Xd
-            
-            # 🔹 فرمول ۶: جریان اتصال کوتاه گذرا (اختیاری)
-            if Xd_prime > 0:
-                Xd_p = (Xd_prime / 100) * (V_nom_gen**2 / (S_nom_gen * 1000))
-                I_sc_trans = (V_nom_gen / math.sqrt(3)) / Xd_p
-            else:
-                I_sc_trans = None
-            
-            # 🔹 فرمول ۷: جریان اتصال کوتاه ماندگار (اختیاری)
-            if Xd_steady > 0:
-                Xd_s = (Xd_steady / 100) * (V_nom_gen**2 / (S_nom_gen * 1000))
-                I_sc_steady = (V_nom_gen / math.sqrt(3)) / Xd_s
-            else:
-                I_sc_steady = None
-            
-            # 🔹 فرمول ۸: ضریب پیک ژنراتور
-            kappa_gen = 1.02 + 0.98 * math.exp(-3 * (Xd / R_gen)) if R_gen > 0 else 1.8
-            
-            # 🔹 فرمول ۹: جریان پیک ژنراتور
-            I_peak_gen = kappa_gen * math.sqrt(2) * I_sc_sub
-            
-            # 🔹 فرمول ۱۰: جریان نامتقارن ژنراتور
-            I_asym_gen = I_sc_sub * math.sqrt(1 + 2 * (kappa_gen - 1)**2)
-            
-            results['generator'] = {
-                'I_nom': I_nom_gen,
-                'Xd': Xd,
-                'R_gen': R_gen,
-                'Z_gen': Z_gen,
-                'X_over_R': Xd / R_gen if R_gen > 0 else 0,
-                'I_sc_sub': I_sc_sub,
-                'I_sc_trans': I_sc_trans,
-                'I_sc_steady': I_sc_steady,
-                'kappa': kappa_gen,
-                'I_peak': I_peak_gen,
-                'I_asym': I_asym_gen
-            }
-        
-        # --- کابلها ---
-        if include_cable and cable_length > 0:
-            
-            # 🔹 فرمول ۱: مقاومت مخصوص با تصحیح دما
-            if conductor_type == "مس":
-                rho_20 = 0.01724
-                alpha = 0.00393
-            else:
-                rho_20 = 0.02826
-                alpha = 0.00403
-            
-            rho = rho_20 * (1 + alpha * (cable_temp - 20))
-            
-            # 🔹 فرمول ۲: مقاومت یک رشته کابل
-            R_single = rho * cable_length / cable_area
-            
-            # 🔹 فرمول ۳: مقاومت معادل با تعداد رشتههای موازی
-            R_cable = R_single / cable_count
-            
-            # 🔹 فرمول ۴: راکتانس کابل (بر اساس سطح مقطع)
-            if cable_area <= 16:
-                X_per_km = 0.085
-            elif cable_area <= 35:
-                X_per_km = 0.075
-            elif cable_area <= 70:
-                X_per_km = 0.065
-            elif cable_area <= 120:
-                X_per_km = 0.055
-            elif cable_area <= 185:
-                X_per_km = 0.045
-            else:
-                X_per_km = 0.038
-            
-            # 🔹 فرمول ۵: راکتانس معادل کابل
-            X_cable = X_per_km * cable_length / 1000 / cable_count
-            
-            # 🔹 فرمول ۶: امپدانس کابل
-            Z_cable = math.sqrt(R_cable**2 + X_cable**2)
-            
-            results['cable'] = {
-                'R_cable': R_cable,
-                'X_cable': X_cable,
-                'Z_cable': Z_cable
-            }
-        
-        # ========== نمایش نتایج ==========
-        st.markdown("---")
-        st.subheader("📊 نتایج محاسبه")
-        
-        # --- نمایش نتایج ترانسفورماتور ---
-        if 'transformer' in results:
-            tr = results['transformer']
-            
-            st.markdown("### 🔴 نتایج ترانسفورماتور")
-            
-            col1, col2, col3 = st.columns(3)
-            with col1:
-                st.metric("جریان نامی", f"{tr['I_nom']:.1f} A")
-                st.metric("امپدانس Z_tr", f"{tr['Z_tr']:.4f} Ω")
-                st.metric("نسبت X/R", f"{tr['X_over_R']:.2f}")
-            
-            with col2:
-                st.metric("جریان اتصال کوتاه", f"{tr['I_sc']/1000:.2f} kA", 
-                         delta=f"{tr['I_sc_simple']/1000:.2f} kA (ساده)")
-                st.metric("مقاومت R_tr", f"{tr['R_tr']:.4f} Ω")
-                st.metric("ضریب پیک κ", f"{tr['kappa']:.3f}")
-            
-            with col3:
-                st.metric("توان اتصال کوتاه", f"{tr['S_sc']:.1f} MVA")
-                st.metric("راکتانس X_tr", f"{tr['X_tr']:.4f} Ω")
-                st.metric("جریان پیک I_peak", f"{tr['I_peak']/1000:.2f} kA")
-        
-        # --- نمایش نتایج ژنراتور ---
-        if 'generator' in results:
-            gen = results['generator']
-            
-            st.markdown("### 🟢 نتایج ژنراتور")
-            
-            col1, col2, col3 = st.columns(3)
-            with col1:
-                st.metric("جریان نامی", f"{gen['I_nom']:.1f} A")
-                st.metric("راکتانس Xd″", f"{gen['Xd']:.4f} Ω")
-                st.metric("نسبت X/R", f"{gen['X_over_R']:.2f}")
-            
-            with col2:
-                st.metric("جریان زیرگذرا", f"{gen['I_sc_sub']/1000:.2f} kA")
-                if gen['I_sc_trans']:
-                    st.metric("جریان گذرا", f"{gen['I_sc_trans']/1000:.2f} kA")
-                if gen['I_sc_steady']:
-                    st.metric("جریان ماندگار", f"{gen['I_sc_steady']/1000:.2f} kA")
-            
-            with col3:
-                st.metric("ضریب پیک κ", f"{gen['kappa']:.3f}")
-                st.metric("جریان پیک I_peak", f"{gen['I_peak']/1000:.2f} kA")
-                st.metric("جریان نامتقارن", f"{gen['I_asym']/1000:.2f} kA")
-        
-        # --- نمایش نتایج کابل ---
-        if 'cable' in results and include_cable and cable_length > 0:
-            cab = results['cable']
-            
-            st.markdown("### 📏 نتایج کابلها")
-            
-            col1, col2, col3 = st.columns(3)
-            with col1:
-                st.metric("مقاومت کل R_cable", f"{cab['R_cable']:.6f} Ω")
-                st.metric("امپدانس Z_cable", f"{cab['Z_cable']:.6f} Ω")
-            
-            with col2:
-                st.metric("راکتانس X_cable", f"{cab['X_cable']:.6f} Ω")
-            
-            # محاسبه جریان در انتهای کابل
+            # --- نتایج ترانسفورماتور ---
             if 'transformer' in results:
                 tr = results['transformer']
+                st.markdown("### 🔴 نتایج ترانسفورماتور")
                 
-                # 🔹 فرمول ۷: امپدانس کل مسیر (ترانس + کابل)
-                R_total = tr['R_tr'] + cab['R_cable']
-                X_total = tr['X_tr'] + cab['X_cable']
-                Z_total = math.sqrt(R_total**2 + X_total**2)
+                c1, c2, c3 = st.columns(3)
+                with c1:
+                    st.metric("جریان نامی", f"{tr['I_nom']:.1f} A")
+                    st.metric("امپدانس Z_tr", f"{tr['Z_tr']:.4f} Ω")
+                    st.metric("نسبت X/R", f"{tr['X_over_R']:.2f}")
+                with c2:
+                    st.metric("جریان اتصال کوتاه", f"{tr['I_sc']/1000:.2f} kA")
+                    st.metric("مقاومت R_tr", f"{tr['R_tr']:.4f} Ω")
+                    st.metric("ضریب پیک κ", f"{tr['kappa']:.3f}")
+                with c3:
+                    st.metric("توان اتصال کوتاه", f"{tr['S_sc']:.1f} MVA")
+                    st.metric("راکتانس X_tr", f"{tr['X_tr']:.4f} Ω")
+                    st.metric("جریان پیک I_peak", f"{tr['I_peak']/1000:.2f} kA")
+            
+            # --- نتایج ژنراتور ---
+            if 'generator' in results:
+                gen = results['generator']
+                st.markdown("### 🟢 نتایج ژنراتور")
                 
-                # 🔹 فرمول ۸: جریان اتصال کوتاه در انتهای کابل
-                I_sc_end = (V_sec_tr / math.sqrt(3)) / Z_total
-                
-                # کاهش جریان
-                reduction = ((tr['I_sc'] - I_sc_end) / tr['I_sc']) * 100
-                
-                with col3:
-                    st.metric("جریان در انتهای کابل", f"{I_sc_end/1000:.2f} kA")
-                    st.metric("کاهش جریان", f"{reduction:.1f}%")
-                
-                # نمایش امپدانس کل
-                st.info(f"""
-                **امپدانس کل مسیر (ترانس + کابل):**
-                - R_total = {R_total:.6f} Ω
-                - X_total = {X_total:.6f} Ω
-                - Z_total = {Z_total:.6f} Ω
-                """)
-        
-        # --- انتخاب کلید مناسب ---
-        st.markdown("---")
-        st.subheader("🛡️ انتخاب کلید مناسب")
-        
-        sc_values = []
-        if 'transformer' in results:
-            sc_values.append(('ترمینال ترانس', results['transformer']['I_sc']))
+                c1, c2, c3 = st.columns(3)
+                with c1:
+                    st.metric("جریان نامی", f"{gen['I_nom']:.1f} A")
+                    st.metric("راکتانس Xd″", f"{gen['Xd']:.4f} Ω")
+                    st.metric("نسبت X/R", f"{gen['X_over_R']:.2f}")
+                with c2:
+                    st.metric("جریان زیرگذرا", f"{gen['I_sc_sub']/1000:.2f} kA")
+                    if gen['I_sc_trans']:
+                        st.metric("جریان گذرا", f"{gen['I_sc_trans']/1000:.2f} kA")
+                    if gen['I_sc_steady']:
+                        st.metric("جریان ماندگار", f"{gen['I_sc_steady']/1000:.2f} kA")
+                with c3:
+                    st.metric("ضریب پیک κ", f"{gen['kappa']:.3f}")
+                    st.metric("جریان پیک I_peak", f"{gen['I_peak']/1000:.2f} kA")
+                    st.metric("جریان نامتقارن", f"{gen['I_asym']/1000:.2f} kA")
+            
+            # --- نتایج کابل ---
             if 'cable' in results and include_cable and cable_length > 0:
-                sc_values.append(('انتهای کابل', I_sc_end))
-        if 'generator' in results:
-            sc_values.append(('ژنراتور', results['generator']['I_sc_sub']))
-        
-        for location, current in sc_values:
-            recommended = math.ceil(current / 1000) * 1000
-            st.markdown(f"""
-            **📍 {location}:** جریان اتصال کوتاه = **{current/1000:.2f} kA**  
-            ✅ کلید پیشنهادی: **≥ {recommended} A**  
-            """)
-        
-        # --- نمایش فرمولها ---
-        with st.expander("📐 مشاهده فرمولهای محاسبه"):
-            st.markdown("""
-            **فرمولهای ترانسفورماتور:**
+                cab = results['cable']
+                st.markdown("### 📏 نتایج کابلها")
+                
+                c1, c2, c3 = st.columns(3)
+                with c1:
+                    st.metric("مقاومت کل R_cable", f"{cab['R_cable']:.6f} Ω")
+                    st.metric("امپدانس Z_cable", f"{cab['Z_cable']:.6f} Ω")
+                with c2:
+                    st.metric("راکتانس X_cable", f"{cab['X_cable']:.6f} Ω")
+                
+                if 'transformer' in results:
+                    tr = results['transformer']
+                    R_total = tr['R_tr'] + cab['R_cable']
+                    X_total = tr['X_tr'] + cab['X_cable']
+                    Z_total = math.sqrt(R_total**2 + X_total**2)
+                    I_sc_end = (V_sec_tr / math.sqrt(3)) / Z_total
+                    reduction = ((tr['I_sc'] - I_sc_end) / tr['I_sc']) * 100
+                    
+                    with c3:
+                        st.metric("جریان در انتهای کابل", f"{I_sc_end/1000:.2f} kA")
+                        st.metric("کاهش جریان", f"{reduction:.1f}%")
+                    
+                    st.info(f"""
+                    **امپدانس کل مسیر (ترانس + کابل):**
+                    - R_total = {R_total:.6f} Ω
+                    - X_total = {X_total:.6f} Ω
+                    - Z_total = {Z_total:.6f} Ω
+                    """)
             
-            **فرمولهای ژنراتور:**
+            # --- انتخاب کلید مناسب ---
+            st.markdown("---")
+            st.subheader("🛡️ انتخاب کلید مناسب")
             
-            **فرمولهای کابل:**
-""")
-
-# --- جعبه اطلاعات ---
-show_info_box(
-"📋 تفسیر نتایج اتصال کوتاه",
-[
-    f'<span class="highlight">Uk% = {Uk_percent}%</span> - هرچه کمتر باشد، جریان اتصال کوتاه بیشتر است',
-    'جریان اتصال کوتاه در ترمینال ترانس: حداکثر مقدار ممکن',
-    'با افزودن کابلها، جریان کاهش مییابد (امپدانس افزایش مییابد)',
-    'کلید محافظ باید قدرت قطعی ≥ جریان اتصال کوتاه محل نصب داشته باشد',
-    '<span class="highlight">ضریب پیک κ:</span> برای محاسبه جریان دینامیکی (الکترودینامیکی)',
-    '<span class="highlight">جریان نامتقارن:</span> برای انتخاب کلیدهای قدرت (بریکرها)',
-    'در شبکههای LV، جریان اتصال کوتاه معمولاً ۵-۲۰ kA در تابلوها است'
-]
-)
-
-# ==============================================================================
-# --- تب ۷: تنظیمات (Settings) ---
-# ==============================================================================
-
-with tabs[6]:
-    st.header("⚙️ Settings")
-
-st.markdown(f"""
-<div class="settings-box">
-<b>📋 مدیریت تنظیمات نرم‌افزار</b><br>
-در این بخش می‌توانید تنظیمات ظاهری نرم‌افزار را تغییر دهید.
-</div>
-""", unsafe_allow_html=True)
-
-# ========== تنظیمات تم ==========
-st.subheader("🌓 Theme Settings")
-
-col1, col2 = st.columns(2)
-with col1:
-    current_theme = "🌞 Light" if st.session_state.theme == 'light' else "🌙 Dark"
-st.info(f"Current Theme: **{current_theme}**")
-
-with col2:
-    theme_icon = "🌙" if st.session_state.theme == 'light' else "☀️"
-    theme_label = "Switch to Dark Mode" if st.session_state.theme == 'light' else "Switch to Light Mode"
-
-if st.button(f"{theme_icon} {theme_label}", use_container_width=True):
-    toggle_theme()
-st.rerun()
-
-st.divider()
-
-# ========== اطلاعات نرم‌افزار ==========
-st.subheader("ℹ️ About")
-st.markdown("""
-**ElectroCalc ⚡ M&F**  
-Version: **2.0**  
-Developed for Power Systems Engineering  
-**Standards Used:**
-- IEC 60364 - Cable Sizing
-- IEEE 485 - UPS Sizing
-- IEC 60034 - Motor Calculations
-- IEC 60947 - Breaker Selection
-- IEC 60909 - Short Circuit
-""")
-st.divider()
-# ========== وضعیت ==========
-st.subheader("🔒 Status")
-st.markdown(f"""
-✅ **Application Status:** Online  
-✅ **Theme:** {current_theme}  
-✅ **Version:** 2.0
-""")
+            sc_values = []
+            if 'transformer' in results:
+                sc_values.append(('ترمینال ترانس', results['transformer']['I_sc']))
+                if 'cable' in results and include_cable and cable_length > 0:
+                    sc_values.append(('انتهای کابل', I_sc_end))
+            if 'generator' in results:
+                sc_values.append(('ژنراتور', results['generator']['I_sc_sub']))
+            
+            for location, current in sc_values:
+                recommended = math.ceil(current / 1000) * 1000
+                st.markdown(f"""
+                **📍 {location}:** جریان اتصال کوتاه = **{current/1000:.2f} kA**  
+                ✅ کلید پیشنهادی: **≥ {recommended} A**  
+                """)
+            
+            # --- نمایش فرمولها ---
+            with st.expander("📐 مشاهده فرمولهای محاسبه"):
+                st.markdown("""
+                **فرمولهای ترانسفورماتور:**
+                
