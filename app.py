@@ -58,6 +58,9 @@ if st.session_state.theme == 'light':
     settings_box_bg = "#e3f2fd"
     settings_box_text = "#0d47a1"
     settings_box_border = "#1a73e8"
+    sc_box_bg = "#fff3e0"
+    sc_box_text = "#bf360c"
+    sc_box_border = "#ff9800"
 else:
     bg_color = "#0a0a0a"
     text_color = "#ffffff"
@@ -92,6 +95,9 @@ else:
     settings_box_bg = "#0d2137"
     settings_box_text = "#90CAF9"
     settings_box_border = "#4FC3F7"
+    sc_box_bg = "#2a1500"
+    sc_box_text = "#ffab91"
+    sc_box_border = "#ff9800"
 
 # ==============================================================================
 # --- Styles ---
@@ -186,13 +192,13 @@ st.markdown(f"""
     }}
     
     .stTabs [role="tab"] {{
-        font-size: 20px !important;
-        padding: 14px 28px !important;
+        font-size: 18px !important;
+        padding: 12px 22px !important;
         border-radius: 14px 14px 0px 0px !important;
         background-color: {tab_bg} !important;
         color: {text_color} !important;
         white-space: nowrap !important;
-        min-width: 100px !important;
+        min-width: 80px !important;
         text-align: center !important;
         font-weight: 600 !important;
         border: 2px solid {border_color} !important;
@@ -221,7 +227,7 @@ st.markdown(f"""
         opacity: 1 !important;
         transform: translateY(-4px) !important;
         box-shadow: 0 6px 20px rgba(46, 125, 50, 0.4) !important;
-        font-size: 21px !important;
+        font-size: 19px !important;
         text-shadow: 0 1px 2px rgba(0,0,0,0.2) !important;
     }}
     
@@ -247,9 +253,9 @@ st.markdown(f"""
         }}
         
         .stTabs [role="tab"] {{
-            font-size: 15px !important;
-            padding: 10px 16px !important;
-            min-width: 65px !important;
+            font-size: 13px !important;
+            padding: 8px 12px !important;
+            min-width: 55px !important;
             border-radius: 10px 10px 0px 0px !important;
             flex: 0 0 auto !important;
             display: inline-block !important;
@@ -257,7 +263,7 @@ st.markdown(f"""
         }}
         
         .stTabs [aria-selected="true"] {{
-            font-size: 16px !important;
+            font-size: 14px !important;
             transform: translateY(-3px) !important;
             box-shadow: 0 4px 14px rgba(46, 125, 50, 0.35) !important;
             color: #FFFFFF !important;
@@ -266,12 +272,12 @@ st.markdown(f"""
 
     @media screen and (max-width: 400px) {{
         .stTabs [role="tab"] {{
-            font-size: 13px !important;
-            padding: 8px 12px !important;
-            min-width: 55px !important;
+            font-size: 11px !important;
+            padding: 6px 8px !important;
+            min-width: 45px !important;
         }}
         .stTabs [aria-selected="true"] {{
-            font-size: 14px !important;
+            font-size: 12px !important;
             color: #FFFFFF !important;
         }}
     }}
@@ -402,6 +408,25 @@ st.markdown(f"""
     
     .dual-mode-box, .dual-mode-box p, .dual-mode-box span, .dual-mode-box div {{
         color: {dual_mode_text} !important;
+    }}
+
+    /* ========== Short Circuit box ========== */
+    .sc-box {{
+        background-color: {sc_box_bg} !important;
+        padding: 12px !important;
+        border-radius: 8px !important;
+        margin-bottom: 15px !important;
+        direction: rtl !important;
+        text-align: right !important;
+        border-right: 4px solid {sc_box_border} !important;
+    }}
+    
+    .sc-box b {{
+        color: {sc_box_text} !important;
+    }}
+    
+    .sc-box, .sc-box p, .sc-box span, .sc-box div {{
+        color: {sc_box_text} !important;
     }}
 
     /* ========== Settings box (Settings tab) ========== */
@@ -741,10 +766,73 @@ def calculate_ups_fixed(load_kva, backup_min, num_batteries, battery_voltage=12)
     return round(result, 1)
 
 # ==============================================================================
-# --- Tabs (6 tabs) - تعریف تب‌ها ---
+# --- Short Circuit Calculation Functions ---
 # ==============================================================================
 
-tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(["📏 Cable", "🔋 UPS", "⚙️ Motor", "🛡️ Protect", "❄️ HVAC Test", "⚙️ Settings"])
+def calculate_short_circuit(transformer_kva, uk_percent, voltage=400, 
+                            cable_size=240, cable_length=200, num_cables=3,
+                            conductor_type="Copper"):
+    """
+    Calculate short circuit current at transformer terminals and at cable end
+    """
+    # Calculate rated current
+    in_rated = transformer_kva * 1000 / (math.sqrt(3) * voltage)
+    
+    # Short circuit at transformer terminals
+    isc_transformer = in_rated * (100 / uk_percent)
+    
+    # Transformer impedance
+    z_transformer = (uk_percent / 100) * (voltage**2) / (transformer_kva * 1000)
+    
+    # Cable impedance per km (approximate)
+    if conductor_type == "Copper":
+        r_per_km = 0.091  # ohm/km for 240mm² copper
+        x_per_km = 0.089  # ohm/km (reactance)
+    else:
+        r_per_km = 0.148  # ohm/km for 240mm² aluminum
+        x_per_km = 0.089  # ohm/km (reactance)
+    
+    # Cable impedance for length
+    r_cable = (r_per_km * cable_length / 1000) / num_cables
+    x_cable = (x_per_km * cable_length / 1000) / num_cables
+    z_cable = math.sqrt(r_cable**2 + x_cable**2)
+    
+    # Total impedance
+    z_total = z_transformer + z_cable
+    
+    # Short circuit at cable end
+    isc_cable_end = voltage / (math.sqrt(3) * z_total)
+    
+    # Breaker rating check (assuming 10kA standard)
+    breaker_rating = 10  # kA standard
+    breaker_ok = isc_transformer / 1000 <= breaker_rating
+    
+    return {
+        'rated_current': round(in_rated, 1),
+        'isc_transformer': round(isc_transformer / 1000, 2),
+        'isc_cable_end': round(isc_cable_end / 1000, 2),
+        'z_transformer': round(z_transformer * 1000, 3),
+        'z_cable': round(z_cable * 1000, 3),
+        'z_total': round(z_total * 1000, 3),
+        'breaker_rating': breaker_rating,
+        'breaker_ok': breaker_ok,
+        'voltage': voltage,
+        'uk_percent': uk_percent,
+        'transformer_kva': transformer_kva,
+        'cable_size': cable_size,
+        'cable_length': cable_length,
+        'num_cables': num_cables,
+        'conductor_type': conductor_type
+    }
+
+# ==============================================================================
+# --- Tabs (7 tabs) - تعریف تب‌ها ---
+# ==============================================================================
+
+tab1, tab2, tab3, tab4, tab5, tab6, tab7 = st.tabs([
+    "📏 Cable", "🔋 UPS", "⚙️ Motor", "🛡️ Protect", 
+    "❄️ HVAC Test", "🔌 Short Circuit", "⚙️ Settings"
+])
 
 # ==============================================================================
 # --- Tab 1: Cable ---
@@ -1298,10 +1386,177 @@ with tab5:
         """)
 
 # ==============================================================================
-# --- Tab 6: Settings ---
+# --- Tab 6: Short Circuit ---
 # ==============================================================================
 
 with tab6:
+    st.header("🔌 Transformer Short Circuit Calculation")
+    
+    st.markdown(f"""
+    <div class="sc-box">
+        <b>📌 محاسبه جریان اتصال کوتاه ترانسفورماتور:</b><br>
+        • جریان اتصال کوتاه در پایانه‌های ترانس: Isc = In × (100 / Uk%)<br>
+        • با افزایش فاصله از ترانس، کابل‌ها وارد مدار شده و جریان اتصال کوتاه کاهش می‌یابد<br>
+        • برای انتخاب کلید مناسب، باید قدرت قطع آن از جریان اتصال کوتاه نقطه نصب بیشتر باشد
+    </div>
+    """, unsafe_allow_html=True)
+    
+    with st.container(border=True):
+        st.subheader("📊 Transformer Parameters")
+        
+        c1, c2 = st.columns(2)
+        with c1:
+            transformer_kva = st.number_input(
+                "Transformer Power (kVA)", 
+                value=1000.0, 
+                step=50.0, 
+                min_value=50.0,
+                key="sc_kva"
+            )
+            uk_percent = st.number_input(
+                "Impedance Voltage Uk (%)", 
+                value=4.7, 
+                step=0.1, 
+                min_value=1.0,
+                max_value=20.0,
+                key="sc_uk"
+            )
+            system_voltage = st.selectbox(
+                "System Voltage (V)", 
+                [400, 415, 480], 
+                index=0,
+                key="sc_voltage"
+            )
+        
+        with c2:
+            st.subheader("🔌 Cable Parameters")
+            conductor_type = st.selectbox(
+                "Conductor Type",
+                ["Copper", "Aluminum"],
+                key="sc_conductor"
+            )
+            cable_size = st.selectbox(
+                "Cable Size (mm²)",
+                [120, 150, 185, 240, 300, 400],
+                index=3,
+                key="sc_cable_size"
+            )
+            num_cables = st.number_input(
+                "Number of Parallel Cables",
+                value=3,
+                step=1,
+                min_value=1,
+                max_value=6,
+                key="sc_num_cables"
+            )
+            cable_length = st.number_input(
+                "Cable Length (m)",
+                value=200.0,
+                step=10.0,
+                min_value=1.0,
+                key="sc_cable_length"
+            )
+    
+    if st.button("🔍 Calculate Short Circuit", use_container_width=True):
+        result = calculate_short_circuit(
+            transformer_kva=transformer_kva,
+            uk_percent=uk_percent,
+            voltage=system_voltage,
+            cable_size=cable_size,
+            cable_length=cable_length,
+            num_cables=num_cables,
+            conductor_type=conductor_type
+        )
+        
+        st.markdown("---")
+        st.subheader("📊 Results")
+        
+        # Display results in columns
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            st.metric("⚡ Rated Current", f"{result['rated_current']:.1f} A")
+            st.metric("🔌 Transformer Impedance", f"{result['z_transformer']:.3f} mΩ")
+        with col2:
+            st.metric("🔥 Isc at Transformer", f"{result['isc_transformer']:.2f} kA")
+            st.metric("📏 Cable Impedance", f"{result['z_cable']:.3f} mΩ")
+        with col3:
+            st.metric("🔽 Isc at Cable End", f"{result['isc_cable_end']:.2f} kA")
+            st.metric("📊 Total Impedance", f"{result['z_total']:.3f} mΩ")
+        
+        st.markdown("---")
+        
+        # Breaker check
+        breaker_rating = 10  # kA
+        isc_ka = result['isc_transformer']
+        
+        if isc_ka <= breaker_rating:
+            st.success(f"✅ Standard 10kA MCB is **SUITABLE** for this transformer location (Isc = {isc_ka:.2f} kA)")
+        else:
+            st.error(f"❌ Standard 10kA MCB is **NOT SUITABLE** for this transformer location (Isc = {isc_ka:.2f} kA > 10kA)")
+            st.warning(f"⚠️ Please use **{math.ceil(isc_ka / 5) * 5:.0f} kA** or higher breaking capacity breaker")
+        
+        st.markdown("---")
+        
+        # Detailed calculation display
+        with st.expander("📝 Detailed Calculation"):
+            st.markdown(f"""
+            <div style='padding: 10px; direction: rtl; text-align: right;'>
+                <b>مراحل محاسبه جریان اتصال کوتاه:</b><br><br>
+                
+                <b>۱. محاسبه جریان نامی ترانسفورماتور:</b><br>
+                I_n = S / (√3 × V) = {transformer_kva} × 1000 / (√3 × {system_voltage}) = <b>{result['rated_current']:.1f} A</b><br><br>
+                
+                <b>۲. محاسبه جریان اتصال کوتاه در پایانه‌های ترانس:</b><br>
+                I_sc = I_n × (100 / Uk%) = {result['rated_current']:.1f} × (100 / {uk_percent}) = <b>{result['isc_transformer']:.2f} kA</b><br><br>
+                
+                <b>۳. امپدانس ترانسفورماتور:</b><br>
+                Z_T = (Uk% / 100) × (V² / S) = ({uk_percent} / 100) × ({system_voltage}² / ({transformer_kva} × 1000)) = <b>{result['z_transformer']:.3f} mΩ</b><br><br>
+                
+                <b>۴. امپدانس کابل‌ها:</b><br>
+                {num_cables} رشته کابل {conductor_type} به سطح مقطع {cable_size} mm² به طول {cable_length} متر<br>
+                R_cable = (0.091 × {cable_length} / 1000) / {num_cables} = {result['z_cable']:.3f} mΩ (تقریبی)<br><br>
+                
+                <b>۵. امپدانس کل:</b><br>
+                Z_total = Z_T + Z_cable = {result['z_transformer']:.3f} + {result['z_cable']:.3f} = <b>{result['z_total']:.3f} mΩ</b><br><br>
+                
+                <b>۶. جریان اتصال کوتاه در انتهای کابل:</b><br>
+                I_sc_end = V / (√3 × Z_total) = {system_voltage} / (√3 × {result['z_total']:.3f} × 10⁻³) = <b>{result['isc_cable_end']:.2f} kA</b>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        # Voltage drop comparison
+        with st.expander("💡 Analysis & Recommendations"):
+            st.markdown(f"""
+            <div style='padding: 10px; direction: rtl; text-align: right;'>
+                <b>تحلیل نتایج:</b><br><br>
+                
+                ✅ جریان اتصال کوتاه در پایانه‌های ترانس: <b>{result['isc_transformer']:.2f} kA</b><br>
+                ✅ جریان اتصال کوتاه در انتهای کابل: <b>{result['isc_cable_end']:.2f} kA</b><br>
+                ✅ کاهش جریان اتصال کوتاه: <b>{(1 - result['isc_cable_end'] / result['isc_transformer']) * 100:.1f}%</b><br><br>
+                
+                <b>توصیه‌ها:</b><br>
+                • قدرت قطع کلید باید از جریان اتصال کوتاه نقطه نصب بیشتر باشد<br>
+                • برای کلید نصب شده در پایانه ترانس: نیاز به کلید با قدرت قطع حداقل <b>{math.ceil(result['isc_transformer'] / 5) * 5:.0f} kA</b><br>
+                • برای کلید نصب شده در انتهای کابل: نیاز به کلید با قدرت قطع حداقل <b>{math.ceil(result['isc_cable_end'] / 5) * 5:.0f} kA</b>
+            </div>
+            """, unsafe_allow_html=True)
+    
+    show_info_box(
+        "📋 محاسبه جریان اتصال کوتاه ترانسفورماتور",
+        [
+            'جریان اتصال کوتاه با استفاده از روش امپدانس درصدی محاسبه می‌شود',
+            'با افزایش فاصله از ترانس و اضافه شدن کابل‌ها، جریان اتصال کوتاه کاهش می‌یابد',
+            'امپدانس کابل‌ها به امپدانس ترانس اضافه شده و جریان اتصال کوتاه را محدود می‌کند',
+            'برای انتخاب کلید مناسب، قدرت قطع باید از جریان اتصال کوتاه نقطه نصب بیشتر باشد',
+            '<span class="highlight">فرمول:</span> Isc = In × (100 / Uk%) | Z_total = Z_T + Z_cable'
+        ]
+    )
+
+# ==============================================================================
+# --- Tab 7: Settings ---
+# ==============================================================================
+
+with tab7:
     st.header("⚙️ Settings")
     
     st.markdown(f"""
@@ -1333,7 +1588,7 @@ with tab6:
     st.subheader("ℹ️ About")
     st.markdown("""
     **ElectroCalc ⚡ M&F**  
-    Version: **2.0**  
+    Version: **2.1**  
     Developed for Power Systems Engineering  
     
     **Standards Used:**
@@ -1351,5 +1606,5 @@ with tab6:
     st.markdown(f"""
     ✅ **Application Status:** Online  
     ✅ **Theme:** {current_theme}  
-    ✅ **Version:** 2.0
+    ✅ **Version:** 2.1
     """)
