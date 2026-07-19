@@ -11,23 +11,17 @@ st.set_page_config(
 )
 
 # ==============================================================================
-# --- مدیریت تم و فونت در Session State ---
+# --- مدیریت تم در Session State ---
 # ==============================================================================
 
 if 'theme' not in st.session_state:
     st.session_state.theme = 'light'
-
-if 'font_size' not in st.session_state:
-    st.session_state.font_size = 'medium'  # small, medium, large
 
 def toggle_theme():
     if st.session_state.theme == 'light':
         st.session_state.theme = 'dark'
     else:
         st.session_state.theme = 'light'
-
-def set_font_size(size):
-    st.session_state.font_size = size
 
 # تعیین رنگ‌ها بر اساس تم
 if st.session_state.theme == 'light':
@@ -42,10 +36,6 @@ if st.session_state.theme == 'light':
     result_bg = "#f1f3f4"
     sidebar_bg = "#f0f2f6"
     input_bg = "#ffffff"
-    settings_bg = "#e8e8e8"
-    icon_color = "#333333"
-    font_color = "#1a1a1a"
-    header_color = "#1a1a1a"
 else:
     bg_color = "#1a1a1a"
     text_color = "#f0f0f0"
@@ -58,33 +48,6 @@ else:
     result_bg = "#2d2d2d"
     sidebar_bg = "#252525"
     input_bg = "#333333"
-    settings_bg = "#333333"
-    icon_color = "#cccccc"
-    font_color = "#f0f0f0"
-    header_color = "#f0f0f0"
-
-# تعیین سایز فونت
-if st.session_state.font_size == 'small':
-    font_size_main = "14px"
-    font_size_title = "40px"
-    font_size_tab = "16px"
-    font_size_header = "18px"
-    font_size_label = "12px"
-    font_size_result = "14px"
-elif st.session_state.font_size == 'large':
-    font_size_main = "22px"
-    font_size_title = "70px"
-    font_size_tab = "26px"
-    font_size_header = "26px"
-    font_size_label = "18px"
-    font_size_result = "22px"
-else:  # medium
-    font_size_main = "18px"
-    font_size_title = "55px"
-    font_size_tab = "20px"
-    font_size_header = "22px"
-    font_size_label = "14px"
-    font_size_result = "18px"
 
 # ==============================================================================
 # --- استایل ---
@@ -107,20 +70,14 @@ st.markdown(f"""
         padding-bottom: 30px !important;
     }}
 
-    /* ========== تنظیم فونت کلی ========== */
-    .stApp, .stApp p, .stApp label, .stApp div, .stApp span {{
-        font-size: {font_size_main} !important;
-        color: {text_color} !important;
-    }}
-
     /* ========== اسم نرم‌افزار ========== */
     .app-title {{
         text-align: center;
         padding: 5px 0 12px 0 !important;
         margin: 0 !important;
-        font-size: {font_size_title} !important;
+        font-size: 60px !important;
         font-weight: 800 !important;
-        color: {header_color} !important;
+        color: {text_color} !important;
         white-space: nowrap;
         overflow: visible;
         letter-spacing: 1px !important;
@@ -133,7 +90,7 @@ st.markdown(f"""
         color: #f9a825;
         display: inline-block;
         margin: 0 6px !important;
-        font-size: {int(font_size_title.replace("px","")) + 8}px !important;
+        font-size: 68px !important;
     }}
 
     @media screen and (max-width: 640px) {{
@@ -142,11 +99,14 @@ st.markdown(f"""
             padding-bottom: 20px !important;
         }}
         .app-title {{
-            font-size: {int(font_size_title.replace("px","")) * 0.7}px !important;
+            font-size: 38px !important;
             padding: 0px 0 10px 0 !important;
             white-space: normal !important;
             word-break: break-word !important;
             line-height: 1.3 !important;
+        }}
+        .app-title .lightning {{
+            font-size: 42px !important;
         }}
     }}
 
@@ -154,6 +114,13 @@ st.markdown(f"""
         .block-container {{
             padding-top: 15px !important;
             padding-bottom: 15px !important;
+        }}
+        .app-title {{
+            font-size: 30px !important;
+            padding: 0px 0 8px 0 !important;
+        }}
+        .app-title .lightning {{
+            font-size: 34px !important;
         }}
     }}
 
@@ -170,7 +137,7 @@ st.markdown(f"""
     }}
     
     .stTabs [role="tab"] {{
-        font-size: {font_size_tab} !important;
+        font-size: 20px !important;
         padding: 14px 28px !important;
         border-radius: 14px 14px 0px 0px !important;
         background-color: #e8e8e8 !important;
@@ -205,7 +172,7 @@ st.markdown(f"""
         opacity: 1 !important;
         transform: translateY(-4px) !important;
         box-shadow: 0 6px 20px rgba(46, 125, 50, 0.4) !important;
-        font-size: {int(font_size_tab.replace("px","")) + 1}px !important;
+        font-size: 21px !important;
         text-shadow: 0 1px 2px rgba(0,0,0,0.2) !important;
     }}
     
@@ -231,7 +198,7 @@ st.markdown(f"""
         }}
         
         .stTabs [role="tab"] {{
-            font-size: {int(font_size_tab.replace("px","")) * 0.7}px !important;
+            font-size: 15px !important;
             padding: 10px 16px !important;
             min-width: 65px !important;
             border-radius: 10px 10px 0px 0px !important;
@@ -239,13 +206,24 @@ st.markdown(f"""
             display: inline-block !important;
             font-weight: 600 !important;
         }}
+        
+        .stTabs [aria-selected="true"] {{
+            font-size: 16px !important;
+            transform: translateY(-3px) !important;
+            box-shadow: 0 4px 14px rgba(46, 125, 50, 0.35) !important;
+            color: #FFFFFF !important;
+        }}
     }}
 
     @media screen and (max-width: 400px) {{
         .stTabs [role="tab"] {{
-            font-size: {int(font_size_tab.replace("px","")) * 0.6}px !important;
+            font-size: 13px !important;
             padding: 8px 12px !important;
             min-width: 55px !important;
+        }}
+        .stTabs [aria-selected="true"] {{
+            font-size: 14px !important;
+            color: #FFFFFF !important;
         }}
     }}
     
@@ -281,7 +259,7 @@ st.markdown(f"""
     }}
     
     .result-text {{
-        font-size: {font_size_result} !important;
+        font-size: 18px !important;
         font-weight: 600 !important;
         color: #1a73e8 !important;
         margin-bottom: 5px;
@@ -322,23 +300,6 @@ st.markdown(f"""
         border-radius: 8px;
         border-right: 4px solid #ff9800;
         margin: 8px 0;
-    }}
-
-    /* ========== هدر ========== */
-    .stHeader {{
-        font-size: {font_size_header} !important;
-        color: {header_color} !important;
-    }}
-
-    /* ========== لیبل‌ها ========== */
-    label, .stMarkdown p {{
-        font-size: {font_size_label} !important;
-        color: {text_color} !important;
-    }}
-
-    /* ========== دکمه‌ها ========== */
-    .stButton > button {{
-        font-size: {font_size_label} !important;
     }}
     </style>
 """, unsafe_allow_html=True)
@@ -1120,7 +1081,7 @@ with tabs[5]:
     st.markdown("""
     <div style='background-color: #e3f2fd; padding: 15px; border-radius: 10px; margin-bottom: 20px;'>
         <b>📋 مدیریت تنظیمات نرم‌افزار</b><br>
-        در این بخش می‌توانید تنظیمات ظاهری و سایر پارامترهای نرم‌افزار را تغییر دهید.
+        در این بخش می‌توانید تنظیمات ظاهری نرم‌افزار را تغییر دهید.
     </div>
     """, unsafe_allow_html=True)
     
@@ -1139,36 +1100,6 @@ with tabs[5]:
         if st.button(f"{theme_icon} {theme_label}", use_container_width=True):
             toggle_theme()
             st.rerun()
-    
-    st.divider()
-    
-    # ========== تنظیمات فونت ==========
-    st.subheader("🔤 Font Size Settings")
-    
-    col1, col2, col3 = st.columns(3)
-    
-    with col1:
-        if st.button("🔹 Small", use_container_width=True):
-            set_font_size('small')
-            st.rerun()
-    
-    with col2:
-        if st.button("🔸 Medium (Default)", use_container_width=True):
-            set_font_size('medium')
-            st.rerun()
-    
-    with col3:
-        if st.button("🔹 Large", use_container_width=True):
-            set_font_size('large')
-            st.rerun()
-    
-    # نمایش وضعیت فعلی فونت
-    font_status = {
-        'small': 'کوچک',
-        'medium': 'متوسط (پیش‌فرض)',
-        'large': 'بزرگ'
-    }
-    st.info(f"📌 Current Font Size: **{font_status[st.session_state.font_size]}**")
     
     st.divider()
     
@@ -1194,6 +1125,5 @@ with tabs[5]:
     st.markdown(f"""
     ✅ **Application Status:** Online  
     ✅ **Theme:** {current_theme}  
-    ✅ **Font Size:** {font_status[st.session_state.font_size]}  
     ✅ **Version:** 2.0
     """)
