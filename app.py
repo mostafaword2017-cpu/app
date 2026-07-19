@@ -55,6 +55,7 @@ if st.session_state.theme == 'light':
     dual_mode_bg = "#e8f5e9"
     dual_mode_text = "#1b5e20"
     dual_mode_border = "#4CAF50"
+    # رنگ باکس تنظیمات (روشن)
     settings_box_bg = "#e3f2fd"
     settings_box_text = "#0d47a1"
     settings_box_border = "#1a73e8"
@@ -89,8 +90,9 @@ else:
     dual_mode_bg = "#0d2137"
     dual_mode_text = "#90CAF9"
     dual_mode_border = "#4FC3F7"
-    settings_box_bg = "#0d2137"
-    settings_box_text = "#90CAF9"
+    # رنگ باکس تنظیمات (تاریک - آبی سرمه‌ای)
+    settings_box_bg = "#0d2137"  # آبی سرمه‌ای
+    settings_box_text = "#90CAF9"  # آبی روشن برای خوانایی
     settings_box_border = "#4FC3F7"
 
 # ==============================================================================
@@ -99,6 +101,7 @@ else:
 
 st.markdown(f"""
     <style>
+    /* ========== تنظیم فاصله از بالای صفحه ========== */
     .main > div {{
         padding-top: 0px !important;
     }}
@@ -113,10 +116,12 @@ st.markdown(f"""
         padding-bottom: 30px !important;
     }}
 
+    /* ========== تنظیم رنگ متن کلی ========== */
     .stApp, .stApp p, .stApp label, .stApp div, .stApp span, .stApp li {{
         color: {text_color} !important;
     }}
 
+    /* ========== اسم نرم‌افزار ========== */
     .app-title {{
         text-align: center;
         padding: 5px 0 12px 0 !important;
@@ -170,6 +175,7 @@ st.markdown(f"""
         }}
     }}
 
+    /* ========== تب‌ها ========== */
     .stTabs div[role="tablist"] {{
         gap: 8px !important;
         flex-wrap: nowrap !important;
@@ -228,6 +234,7 @@ st.markdown(f"""
         color: #FFFFFF !important;
     }}
     
+    /* ========== موبایل ========== */
     @media screen and (max-width: 640px) {{
         .stApp {{
             margin-top: 0px !important;
@@ -271,6 +278,7 @@ st.markdown(f"""
         }}
     }}
     
+    /* ========== مخفی کردن المان‌های اضافی ========== */
     .stAppHeader, header[data-testid="stHeader"] {{
         display: none !important;
     }}
@@ -291,6 +299,7 @@ st.markdown(f"""
         display: none !important;
     }}
     
+    /* ========== جعبه نتایج ========== */
     .result-box {{
         text-align: center;
         padding: 15px;
@@ -325,6 +334,7 @@ st.markdown(f"""
         color: #ffffff !important;
     }}
 
+    /* ========== استایل جدید جعبه اطلاعات ========== */
     .info-box-new {{
         background-color: {info_box_bg} !important;
         padding: 18px 20px !important;
@@ -377,6 +387,7 @@ st.markdown(f"""
         font-weight: 600 !important;
     }}
 
+    /* ========== باکس دو حالت محاسبه (تب موتور) ========== */
     .dual-mode-box {{
         background-color: {dual_mode_bg} !important;
         padding: 12px !important;
@@ -395,6 +406,7 @@ st.markdown(f"""
         color: {dual_mode_text} !important;
     }}
 
+    /* ========== باکس تنظیمات (تب Settings) ========== */
     .settings-box {{
         background-color: {settings_box_bg} !important;
         padding: 15px !important;
@@ -413,6 +425,7 @@ st.markdown(f"""
         color: {settings_box_text} !important;
     }}
 
+    /* ========== تنظیم رنگ متریک‌ها ========== */
     div[data-testid="metric-container"] {{
         background-color: {card_bg} !important;
         border: 1px solid {border_color} !important;
@@ -436,14 +449,17 @@ st.markdown(f"""
         color: {text_color} !important;
     }}
 
+    /* ========== تنظیم رنگ هدرها ========== */
     .stHeader, .stSubheader, h1, h2, h3, h4 {{
         color: {header_color} !important;
     }}
 
+    /* ========== تنظیم رنگ لیبل‌ها ========== */
     label, .stMarkdown p, .stText, .stCaption {{
         color: {text_color} !important;
     }}
 
+    /* ========== تنظیم رنگ ورودی‌ها ========== */
     .stNumberInput input, .stSelectbox select {{
         color: {text_color} !important;
         background-color: {input_bg} !important;
@@ -517,7 +533,7 @@ st.markdown(f"""
 """, unsafe_allow_html=True)
 
 # ==============================================================================
-# --- تابع برای نمایش جعبه اطلاعات ---
+# --- تابع برای نمایش جعبه اطلاعات با استایل جدید ---
 # ==============================================================================
 
 def show_info_box(title, items):
@@ -653,6 +669,10 @@ def calculate_cooling_capacity(air_velocity, coil_area, temp_in, temp_out,
         'target': target_capacity
     }
 
+# ==============================================================================
+# --- توابع اصلی ---
+# ==============================================================================
+
 def calculate_cable_fixed(p_kw, length, sigma, voltage=380, max_drop_percent=2):
     p_watts = p_kw * 1000
     cos_phi = 0.8 
@@ -723,10 +743,10 @@ def calculate_ups_fixed(load_kva, backup_min, num_batteries, battery_voltage=12)
     return round(result, 1)
 
 # ==============================================================================
-# --- تب‌ها (7 تب) ---
+# --- تب‌ها (6 تب) ---
 # ==============================================================================
 
-tabs = st.tabs(["📏 Cable", "🔋 UPS", "⚙️ Motor", "🛡️ Protect", "❄️ HVAC Test", "⚡ Short Circuit", "⚙️ Settings"])
+tabs = st.tabs(["📏 Cable", "🔋 UPS", "⚙️ Motor", "🛡️ Protect", "❄️ HVAC Test", "⚙️ Settings"])
 
 # ==============================================================================
 # --- تب ۱: کابل ---
@@ -1280,440 +1300,59 @@ with tabs[4]:
         """)
 
 # ==============================================================================
-# --- تب ۶: اتصال کوتاه (Short Circuit) - اصلاح شده ---
+# --- تب ۶: تنظیمات (Settings) با باکس آبی سرمه‌ای ---
 # ==============================================================================
 
 with tabs[5]:
-    st.header("⚡ محاسبه اتصال کوتاه (Short Circuit)")
-    st.info("محاسبه جریان اتصال کوتاه برای ترانسفورماتور و ژنراتور بر اساس IEC 60909", icon="ℹ️")
+    st.header("⚙️ Settings")
     
-    # ========== انتخاب منبع ==========
-    source_type = st.radio(
-        "نوع منبع:",
-        ["🔴 ترانسفورماتور", "🟢 ژنراتور", "🔵 ترکیبی (ترانس + ژنراتور)"],
-        horizontal=True
-    )
+    # باکس تنظیمات با رنگ جدید (آبی سرمه‌ای در حالت تاریک)
+    st.markdown(f"""
+    <div class="settings-box">
+        <b>📋 مدیریت تنظیمات نرم‌افزار</b><br>
+        در این بخش می‌توانید تنظیمات ظاهری نرم‌افزار را تغییر دهید.
+    </div>
+    """, unsafe_allow_html=True)
     
-    st.markdown("---")
+    # ========== تنظیمات تم ==========
+    st.subheader("🌓 Theme Settings")
     
-    # ==========================================
-    # بخش ۱: ترانسفورماتور
-    # ==========================================
-    if source_type in ["🔴 ترانسفورماتور", "🔵 ترکیبی (ترانس + ژنراتور)"]:
-        st.subheader("🔴 مشخصات ترانسفورماتور")
-        
-        col1, col2 = st.columns(2)
-        with col1:
-            S_nom_tr = st.number_input(
-                "توان نامی ترانسفورماتور (kVA)", 
-                value=1000.0, 
-                step=50.0, 
-                min_value=10.0,
-                format="%.1f",
-                key="tr_s"
-            )
-            V_sec_tr = st.number_input(
-                "ولتاژ ثانویه (V)", 
-                value=400.0, 
-                step=50.0, 
-                min_value=100.0,
-                format="%.0f",
-                key="tr_v"
-            )
-            Uk_percent = st.number_input(
-                "ولتاژ اتصال کوتاه Uk%", 
-                value=4.7, 
-                step=0.1, 
-                min_value=0.1, 
-                max_value=30.0,
-                format="%.1f",
-                key="tr_uk",
-                help="معمولاً بین ۴ تا ۱۲ درصد - میتواند هر عددی باشد"
-            )
-        
-        with col2:
-            P_k_tr = st.number_input(
-                "تلفات اتصال کوتاه (kW)", 
-                value=10.0, 
-                step=1.0, 
-                min_value=0.0,
-                format="%.1f",
-                key="tr_pk",
-                help="اختیاری - برای محاسبه دقیق مقاومت"
-            )
-            X_over_R_tr = st.number_input(
-                "نسبت X/R", 
-                value=5.0, 
-                step=0.5, 
-                min_value=0.1,
-                format="%.1f",
-                key="tr_xr",
-                help="اختیاری - اگر تلفات وارد نشده باشد"
-            )
-            V_pri_tr = st.number_input(
-                "ولتاژ اولیه (kV)", 
-                value=20.0, 
-                step=1.0, 
-                min_value=0.4,
-                format="%.1f",
-                key="tr_vp"
-            )
+    col1, col2 = st.columns(2)
+    with col1:
+        current_theme = "🌞 Light" if st.session_state.theme == 'light' else "🌙 Dark"
+        st.info(f"Current Theme: **{current_theme}**")
     
-    # ==========================================
-    # بخش ۲: ژنراتور
-    # ==========================================
-    if source_type in ["🟢 ژنراتور", "🔵 ترکیبی (ترانس + ژنراتور)"]:
-        if source_type == "🔵 ترکیبی (ترانس + ژنراتور)":
-            st.markdown("---")
+    with col2:
+        theme_icon = "🌙" if st.session_state.theme == 'light' else "☀️"
+        theme_label = "Switch to Dark Mode" if st.session_state.theme == 'light' else "Switch to Light Mode"
         
-        st.subheader("🟢 مشخصات ژنراتور")
-        
-        col1, col2 = st.columns(2)
-        with col1:
-            S_nom_gen = st.number_input(
-                "توان نامی ژنراتور (kVA)", 
-                value=1500.0, 
-                step=50.0, 
-                min_value=10.0,
-                format="%.1f",
-                key="gen_s"
-            )
-            V_nom_gen = st.number_input(
-                "ولتاژ نامی (V)", 
-                value=400.0, 
-                step=50.0, 
-                min_value=100.0,
-                format="%.0f",
-                key="gen_v"
-            )
-            Xd_percent = st.number_input(
-                "راکتانس زیرگذرا Xd″%", 
-                value=15.0, 
-                step=0.5, 
-                min_value=1.0,
-                max_value=30.0,
-                format="%.1f",
-                key="gen_xd",
-                help="معمولاً بین ۱۲ تا ۲۰ درصد"
-            )
-        
-        with col2:
-            X_over_R_gen = st.number_input(
-                "نسبت Xd″/R", 
-                value=10.0, 
-                step=1.0, 
-                min_value=1.0,
-                format="%.1f",
-                key="gen_xr",
-                help="معمولاً بین ۵ تا ۳۰"
-            )
-            Xd_prime = st.number_input(
-                "راکتانس گذرا Xd′% (اختیاری)", 
-                value=25.0, 
-                step=0.5, 
-                min_value=0.0,
-                format="%.1f",
-                key="gen_xdp",
-                help="برای محاسبه جریان گذرا"
-            )
-            Xd_steady = st.number_input(
-                "راکتانس ماندگار Xd% (اختیاری)", 
-                value=100.0, 
-                step=5.0, 
-                min_value=0.0,
-                format="%.1f",
-                key="gen_xds",
-                help="برای محاسبه جریان ماندگار"
-            )
+        if st.button(f"{theme_icon} {theme_label}", use_container_width=True):
+            toggle_theme()
+            st.rerun()
     
-    # ==========================================
-    # بخش ۳: کابلها
-    # ==========================================
-    st.markdown("---")
-    st.subheader("📏 مشخصات کابلها (برای محاسبه در انتهای مسیر)")
+    st.divider()
     
-    with st.expander("🔧 تنظیمات کابل", expanded=True):
-        col1, col2, col3 = st.columns(3)
-        with col1:
-            cable_length = st.number_input(
-                "طول مسیر (m)", 
-                value=200.0, 
-                step=10.0, 
-                min_value=0.0,
-                format="%.0f",
-                key="cable_len"
-            )
-            cable_area = st.number_input(
-                "سطح مقطع هر رشته (mm²)", 
-                value=240.0, 
-                step=10.0, 
-                min_value=1.0,
-                format="%.0f",
-                key="cable_area"
-            )
-        
-        with col2:
-            cable_count = st.number_input(
-                "تعداد رشتههای موازی", 
-                value=3, 
-                step=1, 
-                min_value=1,
-                key="cable_count"
-            )
-            conductor_type = st.selectbox(
-                "جنس هادی",
-                ["مس", "آلومینیوم"],
-                key="conductor_type_sc"
-            )
-        
-        with col3:
-            cable_temp = st.number_input(
-                "دمای کابل (°C)", 
-                value=40.0, 
-                step=5.0, 
-                min_value=20.0,
-                format="%.0f",
-                key="cable_temp"
-            )
-            include_cable = st.checkbox(
-                "✔️ در نظر گرفتن کابل در محاسبه", 
-                value=True,
-                key="include_cable"
-            )
+    # ========== اطلاعات نرم‌افزار ==========
+    st.subheader("ℹ️ About")
+    st.markdown("""
+    **ElectroCalc ⚡ M&F**  
+    Version: **2.0**  
+    Developed for Power Systems Engineering  
     
-    # ==========================================
-    # دکمه محاسبه
-    # ==========================================
-    st.markdown("---")
+    **Standards Used:**
+    - IEC 60364 - Cable Sizing
+    - IEEE 485 - UPS Sizing
+    - IEC 60034 - Motor Calculations
+    - IEC 60947 - Breaker Selection
+    - IEC 60909 - Short Circuit
+    """)
     
-    if st.button("⚡ محاسبه جریان اتصال کوتاه", type="primary", use_container_width=True):
-        
-        results = {}
-        error_message = None
-        
-        try:
-            # ===== ترانسفورماتور =====
-            if source_type in ["🔴 ترانسفورماتور", "🔵 ترکیبی (ترانس + ژنراتور)"]:
-                
-                I_nom_tr = (S_nom_tr * 1000) / (math.sqrt(3) * V_sec_tr)
-                Z_tr = (Uk_percent / 100) * (V_sec_tr**2 / (S_nom_tr * 1000))
-                
-                if P_k_tr > 0:
-                    R_tr = (P_k_tr * 1000 * V_sec_tr**2) / (S_nom_tr * 1000)**2
-                    X_tr = math.sqrt(max(0, Z_tr**2 - R_tr**2))
-                else:
-                    if X_over_R_tr > 0:
-                        X_over_R_use = X_over_R_tr
-                    else:
-                        if Uk_percent <= 4:
-                            X_over_R_use = 3
-                        elif Uk_percent <= 6:
-                            X_over_R_use = 5
-                        elif Uk_percent <= 8:
-                            X_over_R_use = 8
-                        elif Uk_percent <= 12:
-                            X_over_R_use = 12
-                        else:
-                            X_over_R_use = 15
-                    
-                    R_tr = Z_tr / math.sqrt(1 + X_over_R_use**2)
-                    X_tr = R_tr * X_over_R_use
-                
-                I_sc_tr = (V_sec_tr / math.sqrt(3)) / Z_tr
-                I_sc_simple = I_nom_tr * (100 / Uk_percent)
-                kappa_tr = 1.02 + 0.98 * math.exp(-3 * (X_tr / R_tr)) if R_tr > 0 else 1.8
-                I_peak_tr = kappa_tr * math.sqrt(2) * I_sc_tr
-                S_sc_tr = math.sqrt(3) * V_sec_tr * I_sc_tr / 1000
-                
-                results['transformer'] = {
-                    'I_nom': I_nom_tr,
-                    'Z_tr': Z_tr,
-                    'R_tr': R_tr,
-                    'X_tr': X_tr,
-                    'X_over_R': X_tr / R_tr if R_tr > 0 else 0,
-                    'I_sc': I_sc_tr,
-                    'I_sc_simple': I_sc_simple,
-                    'S_sc': S_sc_tr,
-                    'kappa': kappa_tr,
-                    'I_peak': I_peak_tr
-                }
-            
-            # ===== ژنراتور =====
-            if source_type in ["🟢 ژنراتور", "🔵 ترکیبی (ترانس + ژنراتور)"]:
-                
-                I_nom_gen = (S_nom_gen * 1000) / (math.sqrt(3) * V_nom_gen)
-                Xd = (Xd_percent / 100) * (V_nom_gen**2 / (S_nom_gen * 1000))
-                
-                if X_over_R_gen > 0:
-                    R_gen = Xd / X_over_R_gen
-                else:
-                    R_gen = Xd / 10
-                
-                Z_gen = math.sqrt(R_gen**2 + Xd**2)
-                I_sc_sub = (V_nom_gen / math.sqrt(3)) / Xd
-                
-                if Xd_prime > 0:
-                    Xd_p = (Xd_prime / 100) * (V_nom_gen**2 / (S_nom_gen * 1000))
-                    I_sc_trans = (V_nom_gen / math.sqrt(3)) / Xd_p
-                else:
-                    I_sc_trans = None
-                
-                if Xd_steady > 0:
-                    Xd_s = (Xd_steady / 100) * (V_nom_gen**2 / (S_nom_gen * 1000))
-                    I_sc_steady = (V_nom_gen / math.sqrt(3)) / Xd_s
-                else:
-                    I_sc_steady = None
-                
-                kappa_gen = 1.02 + 0.98 * math.exp(-3 * (Xd / R_gen)) if R_gen > 0 else 1.8
-                I_peak_gen = kappa_gen * math.sqrt(2) * I_sc_sub
-                I_asym_gen = I_sc_sub * math.sqrt(1 + 2 * (kappa_gen - 1)**2)
-                
-                results['generator'] = {
-                    'I_nom': I_nom_gen,
-                    'Xd': Xd,
-                    'R_gen': R_gen,
-                    'Z_gen': Z_gen,
-                    'X_over_R': Xd / R_gen if R_gen > 0 else 0,
-                    'I_sc_sub': I_sc_sub,
-                    'I_sc_trans': I_sc_trans,
-                    'I_sc_steady': I_sc_steady,
-                    'kappa': kappa_gen,
-                    'I_peak': I_peak_gen,
-                    'I_asym': I_asym_gen
-                }
-            
-            # ===== کابلها =====
-            if include_cable and cable_length > 0:
-                
-                if conductor_type == "مس":
-                    rho_20 = 0.01724
-                    alpha = 0.00393
-                else:
-                    rho_20 = 0.02826
-                    alpha = 0.00403
-                
-                rho = rho_20 * (1 + alpha * (cable_temp - 20))
-                R_single = rho * cable_length / cable_area
-                R_cable = R_single / cable_count
-                
-                if cable_area <= 16:
-                    X_per_km = 0.085
-                elif cable_area <= 35:
-                    X_per_km = 0.075
-                elif cable_area <= 70:
-                    X_per_km = 0.065
-                elif cable_area <= 120:
-                    X_per_km = 0.055
-                elif cable_area <= 185:
-                    X_per_km = 0.045
-                else:
-                    X_per_km = 0.038
-                
-                X_cable = X_per_km * cable_length / 1000 / cable_count
-                Z_cable = math.sqrt(R_cable**2 + X_cable**2)
-                
-                results['cable'] = {
-                    'R_cable': R_cable,
-                    'X_cable': X_cable,
-                    'Z_cable': Z_cable
-                }
-            
-            # ===== نمایش نتایج =====
-            st.markdown("---")
-            st.subheader("📊 نتایج محاسبه")
-            
-            # --- نتایج ترانسفورماتور ---
-            if 'transformer' in results:
-                tr = results['transformer']
-                st.markdown("### 🔴 نتایج ترانسفورماتور")
-                
-                c1, c2, c3 = st.columns(3)
-                with c1:
-                    st.metric("جریان نامی", f"{tr['I_nom']:.1f} A")
-                    st.metric("امپدانس Z_tr", f"{tr['Z_tr']:.4f} Ω")
-                    st.metric("نسبت X/R", f"{tr['X_over_R']:.2f}")
-                with c2:
-                    st.metric("جریان اتصال کوتاه", f"{tr['I_sc']/1000:.2f} kA")
-                    st.metric("مقاومت R_tr", f"{tr['R_tr']:.4f} Ω")
-                    st.metric("ضریب پیک κ", f"{tr['kappa']:.3f}")
-                with c3:
-                    st.metric("توان اتصال کوتاه", f"{tr['S_sc']:.1f} MVA")
-                    st.metric("راکتانس X_tr", f"{tr['X_tr']:.4f} Ω")
-                    st.metric("جریان پیک I_peak", f"{tr['I_peak']/1000:.2f} kA")
-            
-            # --- نتایج ژنراتور ---
-            if 'generator' in results:
-                gen = results['generator']
-                st.markdown("### 🟢 نتایج ژنراتور")
-                
-                c1, c2, c3 = st.columns(3)
-                with c1:
-                    st.metric("جریان نامی", f"{gen['I_nom']:.1f} A")
-                    st.metric("راکتانس Xd″", f"{gen['Xd']:.4f} Ω")
-                    st.metric("نسبت X/R", f"{gen['X_over_R']:.2f}")
-                with c2:
-                    st.metric("جریان زیرگذرا", f"{gen['I_sc_sub']/1000:.2f} kA")
-                    if gen['I_sc_trans']:
-                        st.metric("جریان گذرا", f"{gen['I_sc_trans']/1000:.2f} kA")
-                    if gen['I_sc_steady']:
-                        st.metric("جریان ماندگار", f"{gen['I_sc_steady']/1000:.2f} kA")
-                with c3:
-                    st.metric("ضریب پیک κ", f"{gen['kappa']:.3f}")
-                    st.metric("جریان پیک I_peak", f"{gen['I_peak']/1000:.2f} kA")
-                    st.metric("جریان نامتقارن", f"{gen['I_asym']/1000:.2f} kA")
-            
-            # --- نتایج کابل ---
-            if 'cable' in results and include_cable and cable_length > 0:
-                cab = results['cable']
-                st.markdown("### 📏 نتایج کابلها")
-                
-                c1, c2, c3 = st.columns(3)
-                with c1:
-                    st.metric("مقاومت کل R_cable", f"{cab['R_cable']:.6f} Ω")
-                    st.metric("امپدانس Z_cable", f"{cab['Z_cable']:.6f} Ω")
-                with c2:
-                    st.metric("راکتانس X_cable", f"{cab['X_cable']:.6f} Ω")
-                
-                if 'transformer' in results:
-                    tr = results['transformer']
-                    R_total = tr['R_tr'] + cab['R_cable']
-                    X_total = tr['X_tr'] + cab['X_cable']
-                    Z_total = math.sqrt(R_total**2 + X_total**2)
-                    I_sc_end = (V_sec_tr / math.sqrt(3)) / Z_total
-                    reduction = ((tr['I_sc'] - I_sc_end) / tr['I_sc']) * 100
-                    
-                    with c3:
-                        st.metric("جریان در انتهای کابل", f"{I_sc_end/1000:.2f} kA")
-                        st.metric("کاهش جریان", f"{reduction:.1f}%")
-                    
-                    st.info(f"""
-                    **امپدانس کل مسیر (ترانس + کابل):**
-                    - R_total = {R_total:.6f} Ω
-                    - X_total = {X_total:.6f} Ω
-                    - Z_total = {Z_total:.6f} Ω
-                    """)
-            
-            # --- انتخاب کلید مناسب ---
-            st.markdown("---")
-            st.subheader("🛡️ انتخاب کلید مناسب")
-            
-            sc_values = []
-            if 'transformer' in results:
-                sc_values.append(('ترمینال ترانس', results['transformer']['I_sc']))
-                if 'cable' in results and include_cable and cable_length > 0:
-                    sc_values.append(('انتهای کابل', I_sc_end))
-            if 'generator' in results:
-                sc_values.append(('ژنراتور', results['generator']['I_sc_sub']))
-            
-            for location, current in sc_values:
-                recommended = math.ceil(current / 1000) * 1000
-                st.markdown(f"""
-                **📍 {location}:** جریان اتصال کوتاه = **{current/1000:.2f} kA**  
-                ✅ کلید پیشنهادی: **≥ {recommended} A**  
-                """)
-            
-            # --- نمایش فرمولها ---
-            with st.expander("📐 مشاهده فرمولهای محاسبه"):
-                st.markdown("""
-                **فرمولهای ترانسفورماتور:**
-                
+    st.divider()
+    
+    # ========== وضعیت ==========
+    st.subheader("🔒 Status")
+    st.markdown(f"""
+    ✅ **Application Status:** Online  
+    ✅ **Theme:** {current_theme}  
+    ✅ **Version:** 2.0
+    """)
