@@ -23,10 +23,10 @@ def toggle_theme():
     else:
         st.session_state.theme = 'light'
 
-# تعیین رنگ‌ها بر اساس تم با کنتراست بسیار بالا
+# تعیین رنگ‌ها بر اساس تم با کنتراست بالا
 if st.session_state.theme == 'light':
     bg_color = "#ffffff"
-    text_color = "#000000"  # مشکی پررنگ
+    text_color = "#000000"
     card_bg = "#f1f3f4"
     border_color = "#3c4043"
     tab_bg = "#f0f2f6"
@@ -36,11 +36,11 @@ if st.session_state.theme == 'light':
     result_bg = "#f1f3f4"
     sidebar_bg = "#f0f2f6"
     input_bg = "#ffffff"
-    metric_label_color = "#000000"  # مشکی
-    metric_value_color = "#1a73e8"  # آبی
+    metric_label_color = "#000000"
+    metric_value_color = "#1a73e8"
     info_box_bg = "#e3f2fd"
     info_box_text = "#0d47a1"
-    header_color = "#000000"  # مشکی
+    header_color = "#000000"
     selectbox_bg = "#ffffff"
     selectbox_text = "#000000"
     radio_text = "#000000"
@@ -51,23 +51,28 @@ if st.session_state.theme == 'light':
     st_warning_text = "#bf360c"
     st_success_bg = "#e8f5e9"
     st_success_text = "#1b5e20"
+    # استایل جدید برای جعبه اطلاعات
+    info_new_bg = "#e8f0fe"
+    info_new_border = "#1a73e8"
+    info_new_text = "#1a1a1a"
+    info_new_icon = "#1a73e8"
 else:
-    bg_color = "#0a0a0a"  # بسیار تیره
-    text_color = "#ffffff"  # سفید کامل
-    card_bg = "#1a1a1a"  # تیره
-    border_color = "#666666"  # حاشیه روشن‌تر
+    bg_color = "#0a0a0a"
+    text_color = "#ffffff"
+    card_bg = "#1a1a1a"
+    border_color = "#666666"
     tab_bg = "#2a2a2a"
-    tab_active = "#4CAF50"  # سبز روشن‌تر
-    button_bg = "#1E88E5"  # آبی روشن
+    tab_active = "#4CAF50"
+    button_bg = "#1E88E5"
     button_text = "#ffffff"
     result_bg = "#1a1a1a"
     sidebar_bg = "#0d0d0d"
     input_bg = "#1f1f1f"
-    metric_label_color = "#ffffff"  # سفید
-    metric_value_color = "#64B5F6"  # آبی روشن
-    info_box_bg = "#0d2137"  # آبی تیره
-    info_box_text = "#90CAF9"  # آبی روشن
-    header_color = "#ffffff"  # سفید
+    metric_label_color = "#ffffff"
+    metric_value_color = "#64B5F6"
+    info_box_bg = "#0d2137"
+    info_box_text = "#90CAF9"
+    header_color = "#ffffff"
     selectbox_bg = "#1f1f1f"
     selectbox_text = "#ffffff"
     radio_text = "#ffffff"
@@ -78,9 +83,14 @@ else:
     st_warning_text = "#ffab91"
     st_success_bg = "#0d2e1a"
     st_success_text = "#81c784"
+    # استایل جدید برای جعبه اطلاعات (حالت تاریک)
+    info_new_bg = "#1a2332"
+    info_new_border = "#4FC3F7"
+    info_new_text = "#e0e0e0"
+    info_new_icon = "#4FC3F7"
 
 # ==============================================================================
-# --- استایل با کنتراست بسیار بالا ---
+# --- استایل ---
 # ==============================================================================
 
 st.markdown(f"""
@@ -100,7 +110,7 @@ st.markdown(f"""
         padding-bottom: 30px !important;
     }}
 
-    /* ========== تنظیم رنگ متن کلی با کنتراست بالا ========== */
+    /* ========== تنظیم رنگ متن کلی ========== */
     .stApp, .stApp p, .stApp label, .stApp div, .stApp span, .stApp li {{
         color: {text_color} !important;
     }}
@@ -318,7 +328,60 @@ st.markdown(f"""
         color: #ffffff !important;
     }}
 
-    /* ========== باکس اطلاعات آبی ========== */
+    /* ========== استایل جدید جعبه اطلاعات (مشابه "نتیجه محاسبه کابل") ========== */
+    .info-box-new {{
+        background-color: {info_new_bg} !important;
+        padding: 18px 20px !important;
+        border-radius: 12px !important;
+        margin-top: 20px !important;
+        border-right: 5px solid {info_new_border} !important;
+        direction: rtl;
+        text-align: right;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1) !important;
+    }}
+    
+    .info-box-new .info-title {{
+        font-size: 18px !important;
+        font-weight: 700 !important;
+        color: {info_new_border} !important;
+        margin-bottom: 12px !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 10px !important;
+    }}
+    
+    .info-box-new .info-title::before {{
+        content: "📋";
+        font-size: 20px !important;
+    }}
+    
+    .info-box-new .info-item {{
+        padding: 6px 0 !important;
+        border-bottom: 1px solid rgba(255,255,255,0.05) !important;
+        display: flex !important;
+        align-items: flex-start !important;
+        gap: 10px !important;
+        color: {info_new_text} !important;
+        font-size: 15px !important;
+        line-height: 1.6 !important;
+    }}
+    
+    .info-box-new .info-item:last-child {{
+        border-bottom: none !important;
+    }}
+    
+    .info-box-new .info-item .bullet {{
+        color: {info_new_border} !important;
+        font-weight: 700 !important;
+        min-width: 18px !important;
+    }}
+    
+    .info-box-new .info-item .highlight {{
+        color: {info_new_border} !important;
+        font-weight: 600 !important;
+    }}
+
+    /* ========== باکس اطلاعات قدیمی (برای جاهای دیگر) ========== */
     .info-box {{
         background-color: {info_box_bg} !important;
         padding: 15px;
@@ -335,14 +398,6 @@ st.markdown(f"""
     
     .info-box, .info-box p, .info-box span, .info-box div {{
         color: {info_box_text} !important;
-    }}
-
-    .highlight-box {{
-        background-color: #fff8e1;
-        padding: 12px;
-        border-radius: 8px;
-        border-right: 4px solid #ff9800;
-        margin: 8px 0;
     }}
 
     /* ========== تنظیم رنگ متریک‌ها ========== */
@@ -392,7 +447,6 @@ st.markdown(f"""
         box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2) !important;
     }}
 
-    /* ========== تنظیم رنگ Selectbox ========== */
     .stSelectbox div[data-baseweb="select"] {{
         background-color: {selectbox_bg} !important;
         color: {selectbox_text} !important;
@@ -402,7 +456,6 @@ st.markdown(f"""
         color: {selectbox_text} !important;
     }}
 
-    /* ========== تنظیم رنگ رادیو دکمه‌ها ========== */
     .stRadio label {{
         color: {radio_text} !important;
     }}
@@ -411,7 +464,6 @@ st.markdown(f"""
         color: {radio_text} !important;
     }}
 
-    /* ========== تنظیم رنگ اسلایدر ========== */
     .stSlider label {{
         color: {slider_text} !important;
     }}
@@ -420,7 +472,6 @@ st.markdown(f"""
         color: {slider_text} !important;
     }}
 
-    /* ========== تنظیم رنگ دکمه‌ها ========== */
     .stButton > button {{
         color: {button_text} !important;
         background-color: {button_bg} !important;
@@ -434,7 +485,6 @@ st.markdown(f"""
         transform: scale(1.02) !important;
     }}
 
-    /* ========== کانتینرها ========== */
     .stContainer {{
         background-color: {card_bg} !important;
         border: 1px solid {border_color} !important;
@@ -442,7 +492,6 @@ st.markdown(f"""
         padding: 10px !important;
     }}
 
-    /* ========== استایل استریملیت (info, warning, success) ========== */
     .stAlert {{
         background-color: {st_info_bg} !important;
         color: {st_info_text} !important;
@@ -471,25 +520,6 @@ st.markdown(f"""
         color: inherit !important;
     }}
 
-    /* ========== جداول ========== */
-    .stDataFrame {{
-        color: {text_color} !important;
-    }}
-    
-    .stDataFrame table {{
-        color: {text_color} !important;
-    }}
-    
-    .stDataFrame th {{
-        color: {header_color} !important;
-        font-weight: 600 !important;
-    }}
-    
-    .stDataFrame td {{
-        color: {text_color} !important;
-    }}
-
-    /* ========== لاتکس ========== */
     .katex, .katex-display {{
         color: {text_color} !important;
     }}
@@ -509,6 +539,27 @@ st.markdown(f"""
         ElectroCalc <span class="lightning">⚡</span> M&F
     </div>
 """, unsafe_allow_html=True)
+
+# ==============================================================================
+# --- تابع برای نمایش جعبه اطلاعات با استایل جدید ---
+# ==============================================================================
+
+def show_info_box(title, items):
+    """
+    نمایش جعبه اطلاعات با استایل جدید
+    title: عنوان جعبه
+    items: لیست آیتم‌ها (هر آیتم یک رشته)
+    """
+    items_html = ""
+    for item in items:
+        items_html += f'<div class="info-item"><span class="bullet">•</span> {item}</div>'
+    
+    st.markdown(f"""
+    <div class="info-box-new">
+        <div class="info-title">{title}</div>
+        {items_html}
+    </div>
+    """, unsafe_allow_html=True)
 
 # ==============================================================================
 # --- توابع کمکی ---
@@ -713,7 +764,7 @@ def calculate_ups_fixed(load_kva, backup_min, num_batteries, battery_voltage=12)
 tabs = st.tabs(["📏 Cable", "🔋 UPS", "⚙️ Motor", "🛡️ Protect", "❄️ HVAC Test", "⚙️ Settings"])
 
 # ==============================================================================
-# --- تب ۱: کابل ---
+# --- تب ۱: کابل (با استایل جدید جعبه اطلاعات) ---
 # ==============================================================================
 
 with tabs[0]:
@@ -739,15 +790,16 @@ with tabs[0]:
             </div>
         """, unsafe_allow_html=True)
         
-        st.markdown("""
-        <div class='info-box'>
-            <b>📋 نتیجه محاسبه کابل:</b><br><br>
-            • <b>جریان نامی:</b> با توجه به توان و ولتاژ ورودی محاسبه شده است<br>
-            • <b>سایز استاندارد:</b> نزدیک‌ترین سایز بالاتر به مقدار محاسبه شده<br>
-            • <b>سایز ایمن:</b> با در نظر گرفتن ضریب اطمینان برای طول‌های بالای ۸۰ متر<br><br>
-            <b>📐 فرمول:</b> S = (P × L × 100) / (σ × V² × ΔV%)
-        </div>
-        """, unsafe_allow_html=True)
+        # استفاده از استایل جدید برای جعبه اطلاعات
+        show_info_box(
+            "📋 نتیجه محاسبه کابل",
+            [
+                'جریان نامی با توجه به توان و ولتاژ ورودی محاسبه شده است',
+                'سایز استاندارد: نزدیک‌ترین سایز بالاتر به مقدار محاسبه شده',
+                'سایز ایمن با در نظر گرفتن ضریب اطمینان برای طول‌های بالای ۸۰ متر',
+                f'<span class="highlight">فرمول:</span> S = (P × L × 100) / (σ × V² × ΔV%)'
+            ]
+        )
 
 # ==============================================================================
 # --- تب ۲: UPS ---
@@ -790,15 +842,15 @@ with tabs[1]:
         
         st.info(f"💡 For {u_kva} kVA UPS → Current = {u_kva} × 1.44 = **{ups_current:.2f} A** → Cable: **{ups_cable} mm²** → Breaker: **{ups_breaker} A**")
         
-        st.markdown("""
-        <div class='info-box'>
-            <b>📋 نتیجه محاسبه UPS:</b><br><br>
-            • <b>ظرفیت باتری:</b> بر اساس توان UPS، زمان پشتیبانی و تعداد باتری‌ها محاسبه شده است<br>
-            • <b>سایز کابل:</b> با توجه به جریان ورودی UPS و ضریب اطمینان پیشنهاد شده است<br>
-            • <b>کلید محافظ:</b> با در نظر گرفتن نوع بار (سلفی) انتخاب شده است<br><br>
-            <b>📐 فرمول:</b> Ah = (Ah_Base × kVA/10 × 32) / (N_Battery × V_Battery/12)
-        </div>
-        """, unsafe_allow_html=True)
+        show_info_box(
+            "📋 نتیجه محاسبه UPS",
+            [
+                'ظرفیت باتری بر اساس توان UPS، زمان پشتیبانی و تعداد باتری‌ها محاسبه شده است',
+                'سایز کابل با توجه به جریان ورودی UPS و ضریب اطمینان پیشنهاد شده است',
+                'کلید محافظ با در نظر گرفتن نوع بار (سلفی) انتخاب شده است',
+                f'<span class="highlight">فرمول:</span> Ah = (Ah_Base × kVA/10 × 32) / (N_Battery × V_Battery/12)'
+            ]
+        )
 
 # ==============================================================================
 # --- تب ۳: موتور ---
@@ -978,19 +1030,17 @@ with tabs[2]:
         if calc_mode == "Based on Actual Load" and actual_load < gen_kva:
             st.success(f"💡 You saved cable size by designing based on actual load ({actual_load} kVA) instead of generator max power ({gen_kva} kVA).")
         
-        st.markdown(f"""
-        <div class='info-box'>
-            <b>📋 نتیجه محاسبه ژنراتور:</b><br><br>
-            • <b>حالت محاسبه:</b> {mode_label}<br>
-            • <b>جریان طراحی:</b> {design_current:.2f} آمپر<br>
-            • <b>سایز کابل پیشنهادی:</b> {cable_size} میلی‌متر مربع ({conductor_type})<br>
-            • <b>افت ولتاژ:</b> {voltage_drop}% {'(مناسب)' if voltage_drop <= 3 else '(بیش از حد مجاز)'}<br>
-            • <b>کلید محافظ:</b> {breaker_size} آمپر (نامی) | {starting_breaker} آمپر (راه‌اندازی)<br><br>
-            <b>📐 فرمول‌ها:</b><br>
-            • I_gen = kVA × 1.44 (فرمول تجربی برای ولتاژ ۳۸۰-۴۱۵ ولت)<br>
-            • I_design = I_actual × (1 + Future Expansion%)
-        </div>
-        """, unsafe_allow_html=True)
+        show_info_box(
+            "📋 نتیجه محاسبه ژنراتور",
+            [
+                f'حالت محاسبه: {mode_label}',
+                f'جریان طراحی: {design_current:.2f} آمپر',
+                f'سایز کابل پیشنهادی: {cable_size} میلی‌متر مربع ({conductor_type})',
+                f'افت ولتاژ: {voltage_drop}% {"(مناسب)" if voltage_drop <= 3 else "(بیش از حد مجاز)"}',
+                f'کلید محافظ: {breaker_size} آمپر (نامی) | {starting_breaker} آمپر (راه‌اندازی)',
+                '<span class="highlight">فرمول‌ها:</span> I_gen = kVA × 1.44 | I_design = I_actual × (1 + Future Expansion%)'
+            ]
+        )
 
 # ==============================================================================
 # --- تب ۴: حفاظت ---
@@ -1017,15 +1067,15 @@ with tabs[3]:
         
         st.info(f"💡 For {p_curr} A {p_type} load → Cable: **{cable_size} mm²** → Breaker: **{b_size} A**")
         
-        st.markdown("""
-        <div class='info-box'>
-            <b>📋 نتیجه محاسبه حفاظت:</b><br><br>
-            • <b>کلید محافظ:</b> با توجه به جریان بار و نوع آن انتخاب شده است<br>
-            • <b>سایز کابل:</b> بر اساس جریان بار و افت ولتاژ مجاز پیشنهاد شده است<br>
-            • <b>ضریب ایمنی:</b> برای بارهای مختلف متفاوت است (مقاومتی: ۱.۲۵، سلفی: ۱.۴، موتوری: ۱.۶)<br><br>
-            <b>📐 فرمول:</b> I_breaker = I_load × K_safety
-        </div>
-        """, unsafe_allow_html=True)
+        show_info_box(
+            "📋 نتیجه محاسبه حفاظت",
+            [
+                'کلید محافظ با توجه به جریان بار و نوع آن انتخاب شده است',
+                'سایز کابل بر اساس جریان بار و افت ولتاژ مجاز پیشنهاد شده است',
+                'ضریب ایمنی برای بارهای مختلف متفاوت است (مقاومتی: ۱.۲۵، سلفی: ۱.۴، موتوری: ۱.۶)',
+                '<span class="highlight">فرمول:</span> I_breaker = I_load × K_safety'
+            ]
+        )
 
 # ==============================================================================
 # --- تب ۵: HVAC ---
@@ -1229,18 +1279,16 @@ with tabs[4]:
             for s in suggestions:
                 st.markdown(s)
     
-    st.markdown("""
-    <div class='info-box'>
-        <b>📋 روش تست:</b> تست توان سرمایشی با استفاده از بادسنج (انیمومتر) - اندازه‌گیری غیرمستقیم<br><br>
-        <b>📐 فرمول:</b> P = ṁ × Cₚ × ΔT<br><br>
-        <b>🔧 پارامترهای پیش‌فرض:</b> چگالی هوا = ۱.۲ kg/m³ | Cₚ = ۱.۰۰۵ kJ/kg·K<br><br>
-        <b>🎯 توان هدف:</b> قابل تنظیم - هر توان سرمایشی را تست کنید<br><br>
-        <b>📊 تفسیر نتایج:</b><br>
-        • ✅ PASS (≥ ۹۵% توان هدف): سیستم به توان اسمی رسیده است<br>
-        • ⚠️ WARNING (۸۰% - ۹۵% توان هدف): سیستم به توان اسمی نرسیده، نیاز به بررسی دارد<br>
-        • ❌ FAIL (< ۸۰% توان هدف): سیستم دچار مشکل جدی است
-    </div>
-    """, unsafe_allow_html=True)
+    show_info_box(
+        "📋 روش تست توان سرمایشی",
+        [
+            'تست با استفاده از بادسنج (انیمومتر) - اندازه‌گیری غیرمستقیم',
+            'فرمول: P = ṁ × Cₚ × ΔT',
+            'پارامترهای پیش‌فرض: چگالی هوا = ۱.۲ kg/m³ | Cₚ = ۱.۰۰۵ kJ/kg·K',
+            'توان هدف قابل تنظیم - هر توان سرمایشی را تست کنید',
+            '<span class="highlight">تفسیر نتایج:</span> ✅ PASS (≥ ۹۵%) | ⚠️ WARNING (۸۰%-۹۵%) | ❌ FAIL (< ۸۰%)'
+        ]
+    )
     
     with st.expander("📖 Test Procedure Guide (راهنمای انجام تست)"):
         st.markdown("""
