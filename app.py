@@ -16,18 +16,12 @@ st.set_page_config(
 
 if 'theme' not in st.session_state:
     st.session_state.theme = 'light'
-    
-if 'show_settings' not in st.session_state:
-    st.session_state.show_settings = False
 
 def toggle_theme():
     if st.session_state.theme == 'light':
         st.session_state.theme = 'dark'
     else:
         st.session_state.theme = 'light'
-
-def toggle_settings():
-    st.session_state.show_settings = not st.session_state.show_settings
 
 # تعیین رنگ‌ها بر اساس تم
 if st.session_state.theme == 'light':
@@ -58,8 +52,10 @@ if st.session_state.theme == 'light':
     st_warning_text = "#bf360c"
     st_success_bg = "#e8f5e9"
     st_success_text = "#1b5e20"
-    icon_color = "#333333"
-    settings_bg = "#f8f9fa"
+    # رنگ باکس دو حالت محاسبه (روشن)
+    dual_mode_bg = "#e8f5e9"
+    dual_mode_text = "#1b5e20"
+    dual_mode_border = "#4CAF50"
 else:
     bg_color = "#0a0a0a"
     text_color = "#ffffff"
@@ -88,8 +84,10 @@ else:
     st_warning_text = "#ffab91"
     st_success_bg = "#0d2e1a"
     st_success_text = "#81c784"
-    icon_color = "#cccccc"
-    settings_bg = "#1a1a1a"
+    # رنگ باکس دو حالت محاسبه (تاریک - آبی سرمه‌ای)
+    dual_mode_bg = "#0d2137"  # آبی سرمه‌ای
+    dual_mode_text = "#90CAF9"  # آبی روشن برای خوانایی
+    dual_mode_border = "#4FC3F7"
 
 # ==============================================================================
 # --- استایل ---
@@ -109,7 +107,7 @@ st.markdown(f"""
     
     .block-container {{
         padding-top: 30px !important;
-        padding-bottom: 100px !important;
+        padding-bottom: 30px !important;
     }}
 
     /* ========== تنظیم رنگ متن کلی ========== */
@@ -143,7 +141,7 @@ st.markdown(f"""
     @media screen and (max-width: 640px) {{
         .block-container {{
             padding-top: 20px !important;
-            padding-bottom: 90px !important;
+            padding-bottom: 20px !important;
         }}
         .app-title {{
             font-size: 38px !important;
@@ -160,7 +158,7 @@ st.markdown(f"""
     @media screen and (max-width: 400px) {{
         .block-container {{
             padding-top: 15px !important;
-            padding-bottom: 80px !important;
+            padding-bottom: 15px !important;
         }}
         .app-title {{
             font-size: 30px !important;
@@ -383,6 +381,25 @@ st.markdown(f"""
         font-weight: 600 !important;
     }}
 
+    /* ========== باکس دو حالت محاسبه (تب موتور) ========== */
+    .dual-mode-box {{
+        background-color: {dual_mode_bg} !important;
+        padding: 12px !important;
+        border-radius: 8px !important;
+        margin-bottom: 15px !important;
+        direction: rtl !important;
+        text-align: right !important;
+        border-right: 4px solid {dual_mode_border} !important;
+    }}
+    
+    .dual-mode-box b {{
+        color: {dual_mode_text} !important;
+    }}
+    
+    .dual-mode-box, .dual-mode-box p, .dual-mode-box span, .dual-mode-box div {{
+        color: {dual_mode_text} !important;
+    }}
+
     /* ========== تنظیم رنگ متریک‌ها ========== */
     div[data-testid="metric-container"] {{
         background-color: {card_bg} !important;
@@ -477,109 +494,6 @@ st.markdown(f"""
     .katex .mathnormal {{
         color: {text_color} !important;
     }}
-
-    /* ========== آیکون تنظیمات در سمت چپ پایین ========== */
-    .settings-bottom-left {{
-        position: fixed;
-        bottom: 30px;
-        left: 20px;
-        z-index: 9999;
-        display: flex;
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 10px;
-    }}
-    
-    .settings-icon-left {{
-        background-color: {tab_active} !important;
-        color: white !important;
-        border: none !important;
-        border-radius: 50% !important;
-        width: 55px !important;
-        height: 55px !important;
-        font-size: 28px !important;
-        cursor: pointer !important;
-        box-shadow: 0 4px 15px rgba(46, 125, 50, 0.4) !important;
-        transition: all 0.3s ease !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        border: 2px solid white !important;
-    }}
-    
-    .settings-icon-left:hover {{
-        transform: scale(1.1) !important;
-        box-shadow: 0 6px 25px rgba(46, 125, 50, 0.5) !important;
-    }}
-    
-    .settings-panel-left {{
-        background-color: {settings_bg} !important;
-        border: 2px solid {border_color} !important;
-        border-radius: 16px !important;
-        padding: 20px !important;
-        min-width: 220px !important;
-        box-shadow: 0 8px 30px rgba(0,0,0,0.2) !important;
-        display: { 'block' if st.session_state.show_settings else 'none' } !important;
-        margin-bottom: 10px !important;
-        direction: rtl !important;
-    }}
-    
-    .settings-panel-left .setting-item {{
-        padding: 8px 0 !important;
-        border-bottom: 1px solid {border_color} !important;
-        display: flex !important;
-        justify-content: space-between !important;
-        align-items: center !important;
-    }}
-    
-    .settings-panel-left .setting-item:last-child {{
-        border-bottom: none !important;
-    }}
-    
-    .settings-panel-left .setting-label {{
-        font-size: 14px !important;
-        font-weight: 600 !important;
-        color: {text_color} !important;
-    }}
-    
-    .settings-panel-left .theme-toggle-btn {{
-        background-color: {tab_bg} !important;
-        color: {text_color} !important;
-        border: 1px solid {border_color} !important;
-        border-radius: 8px !important;
-        padding: 6px 14px !important;
-        font-size: 13px !important;
-        cursor: pointer !important;
-        transition: all 0.3s ease !important;
-    }}
-    
-    .settings-panel-left .theme-toggle-btn:hover {{
-        background-color: {tab_active} !important;
-        color: white !important;
-    }}
-    
-    @media screen and (max-width: 640px) {{
-        .settings-bottom-left {{
-            bottom: 20px !important;
-            left: 10px !important;
-        }}
-        .settings-icon-left {{
-            width: 48px !important;
-            height: 48px !important;
-            font-size: 22px !important;
-        }}
-        .settings-panel-left {{
-            min-width: 160px !important;
-            padding: 12px !important;
-        }}
-        .settings-panel-left .setting-label {{
-            font-size: 12px !important;
-        }}
-        .settings-panel-left .theme-toggle-btn {{
-            font-size: 11px !important;
-            padding: 4px 10px !important;
-        }}
-    }}
     </style>
 """, unsafe_allow_html=True)
 
@@ -608,49 +522,6 @@ def show_info_box(title, items):
         {items_html}
     </div>
     """, unsafe_allow_html=True)
-
-# ==============================================================================
-# --- آیکون تنظیمات در سمت چپ پایین ---
-# ==============================================================================
-
-theme_icon = "🌙" if st.session_state.theme == 'light' else "☀️"
-theme_label = "Dark Mode" if st.session_state.theme == 'light' else "Light Mode"
-
-st.markdown(f"""
-    <div class="settings-bottom-left">
-        <div class="settings-panel-left" id="settingsPanel">
-            <div class="setting-item">
-                <span class="setting-label">🌓 تغییر تم</span>
-                <button class="theme-toggle-btn" onclick="location.href='?theme=toggle'">
-                    {theme_icon} {theme_label}
-                </button>
-            </div>
-            <div class="setting-item">
-                <span class="setting-label">📱 نسخه</span>
-                <span style="color: {text_color}; font-size: 13px;">v2.0</span>
-            </div>
-            <div class="setting-item">
-                <span class="setting-label">🔒 وضعیت</span>
-                <span style="color: #4CAF50; font-size: 13px;">● آنلاین</span>
-            </div>
-        </div>
-        <button class="settings-icon-left" onclick="location.href='?settings=toggle'" title="Settings">
-            ⚙️
-        </button>
-    </div>
-""", unsafe_allow_html=True)
-
-# بررسی تغییرات از طریق URL
-query_params = st.query_params
-if 'theme' in query_params and query_params['theme'] == 'toggle':
-    toggle_theme()
-    st.query_params.clear()
-    st.rerun()
-
-if 'settings' in query_params and query_params['settings'] == 'toggle':
-    toggle_settings()
-    st.query_params.clear()
-    st.rerun()
 
 # ==============================================================================
 # --- توابع کمکی ---
@@ -847,10 +718,10 @@ def calculate_ups_fixed(load_kva, backup_min, num_batteries, battery_voltage=12)
     return round(result, 1)
 
 # ==============================================================================
-# --- تب‌ها (5 تب - بدون تب تنظیمات) ---
+# --- تب‌ها (6 تب) ---
 # ==============================================================================
 
-tabs = st.tabs(["📏 Cable", "🔋 UPS", "⚙️ Motor", "🛡️ Protect", "❄️ HVAC Test"])
+tabs = st.tabs(["📏 Cable", "🔋 UPS", "⚙️ Motor", "🛡️ Protect", "❄️ HVAC Test", "⚙️ Settings"])
 
 # ==============================================================================
 # --- تب ۱: کابل ---
@@ -941,14 +812,15 @@ with tabs[1]:
         )
 
 # ==============================================================================
-# --- تب ۳: موتور ---
+# --- تب ۳: موتور (با باکس دو حالت اصلاح شده) ---
 # ==============================================================================
 
 with tabs[2]:
     st.header("⚙️ Motor / Generator Sizing with Dual Mode")
     
-    st.markdown("""
-    <div style='background-color: #e8f5e9; padding: 12px; border-radius: 8px; margin-bottom: 15px; direction: rtl; text-align: right;'>
+    # باکس دو حالت محاسبه با رنگ اصلاح شده
+    st.markdown(f"""
+    <div class="dual-mode-box">
         <b>📌 دو حالت محاسبه:</b><br>
         • <b>حالت توان نامی موتور:</b> محاسبه بر اساس حداکثر توان ژنراتور (مناسب برای طراحی اولیه)<br>
         • <b>حالت توان بار مصرفی:</b> محاسبه بر اساس بار واقعی (مناسب برای انتخاب کابل و کلید اقتصادی)
@@ -1402,3 +1274,60 @@ with tabs[4]:
         - اگر دمای کویل از نقطه شبنم پایین‌تر باشد، رطوبت تبدیل به آب شده و محاسبات دقیق‌تر نیاز به اندازه‌گیری رطوبت دارد
         - برای دقت بیشتر، اندازه‌گیری را در **یک شبکه منظم (Grid)** روی سطح کویل انجام دهید
         """)
+
+# ==============================================================================
+# --- تب ۶: تنظیمات (Settings) ---
+# ==============================================================================
+
+with tabs[5]:
+    st.header("⚙️ Settings")
+    
+    st.markdown("""
+    <div style='background-color: #e3f2fd; padding: 15px; border-radius: 10px; margin-bottom: 20px;'>
+        <b>📋 مدیریت تنظیمات نرم‌افزار</b><br>
+        در این بخش می‌توانید تنظیمات ظاهری نرم‌افزار را تغییر دهید.
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # ========== تنظیمات تم ==========
+    st.subheader("🌓 Theme Settings")
+    
+    col1, col2 = st.columns(2)
+    with col1:
+        current_theme = "🌞 Light" if st.session_state.theme == 'light' else "🌙 Dark"
+        st.info(f"Current Theme: **{current_theme}**")
+    
+    with col2:
+        theme_icon = "🌙" if st.session_state.theme == 'light' else "☀️"
+        theme_label = "Switch to Dark Mode" if st.session_state.theme == 'light' else "Switch to Light Mode"
+        
+        if st.button(f"{theme_icon} {theme_label}", use_container_width=True):
+            toggle_theme()
+            st.rerun()
+    
+    st.divider()
+    
+    # ========== اطلاعات نرم‌افزار ==========
+    st.subheader("ℹ️ About")
+    st.markdown("""
+    **ElectroCalc ⚡ M&F**  
+    Version: **2.0**  
+    Developed for Power Systems Engineering  
+    
+    **Standards Used:**
+    - IEC 60364 - Cable Sizing
+    - IEEE 485 - UPS Sizing
+    - IEC 60034 - Motor Calculations
+    - IEC 60947 - Breaker Selection
+    - IEC 60909 - Short Circuit
+    """)
+    
+    st.divider()
+    
+    # ========== وضعیت ==========
+    st.subheader("🔒 Status")
+    st.markdown(f"""
+    ✅ **Application Status:** Online  
+    ✅ **Theme:** {current_theme}  
+    ✅ **Version:** 2.0
+    """)
