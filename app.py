@@ -1775,7 +1775,7 @@ with tabs[5]:
 """)
 
         # --- جعبه اطلاعات ---
- show_info_box(
+           show_info_box(
          "📋 تفسیر نتایج اتصال کوتاه",
 [
     f'<span class="highlight">Uk% = {Uk_percent}%</span> - هرچه کمتر باشد، جریان اتصال کوتاه بیشتر است',
