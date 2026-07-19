@@ -76,7 +76,7 @@ st.markdown(f"""
     
     .block-container {{
         padding-top: 30px !important;
-        padding-bottom: 80px !important;  /* فضای برای منوی پایین */
+        padding-bottom: 100px !important;
     }}
 
     /* ========== اسم نرم‌افزار ========== */
@@ -105,7 +105,7 @@ st.markdown(f"""
     @media screen and (max-width: 640px) {{
         .block-container {{
             padding-top: 20px !important;
-            padding-bottom: 70px !important;
+            padding-bottom: 90px !important;
         }}
         .app-title {{
             font-size: 38px !important;
@@ -122,7 +122,7 @@ st.markdown(f"""
     @media screen and (max-width: 400px) {{
         .block-container {{
             padding-top: 15px !important;
-            padding-bottom: 60px !important;
+            padding-bottom: 80px !important;
         }}
         .app-title {{
             font-size: 30px !important;
@@ -311,19 +311,19 @@ st.markdown(f"""
         margin: 8px 0;
     }}
 
-    /* ========== منوی تنظیمات در پایین صفحه ========== */
-    .settings-bottom {{
+    /* ========== منوی تنظیمات در پایین سمت چپ ========== */
+    .settings-bottom-left {{
         position: fixed;
-        bottom: 20px;
-        right: 20px;
+        bottom: 30px;
+        left: 20px;
         z-index: 9999;
         display: flex;
         flex-direction: column;
-        align-items: flex-end;
+        align-items: flex-start;
         gap: 10px;
     }}
     
-    .settings-icon {{
+    .settings-icon-left {{
         background-color: {tab_active};
         color: white;
         border: none;
@@ -340,12 +340,12 @@ st.markdown(f"""
         border: 2px solid white;
     }}
     
-    .settings-icon:hover {{
+    .settings-icon-left:hover {{
         transform: scale(1.1);
         box-shadow: 0 6px 25px rgba(46, 125, 50, 0.5);
     }}
     
-    .settings-panel {{
+    .settings-panel-left {{
         background-color: {card_bg};
         border: 2px solid {border_color};
         border-radius: 16px;
@@ -357,7 +357,7 @@ st.markdown(f"""
         direction: rtl;
     }}
     
-    .settings-panel .setting-item {{
+    .settings-panel-left .setting-item {{
         padding: 8px 0;
         border-bottom: 1px solid {border_color};
         display: flex;
@@ -365,17 +365,17 @@ st.markdown(f"""
         align-items: center;
     }}
     
-    .settings-panel .setting-item:last-child {{
+    .settings-panel-left .setting-item:last-child {{
         border-bottom: none;
     }}
     
-    .settings-panel .setting-label {{
+    .settings-panel-left .setting-label {{
         font-size: 14px;
         font-weight: 600;
         color: {text_color};
     }}
     
-    .settings-panel .theme-toggle-btn {{
+    .settings-panel-left .theme-toggle-btn {{
         background-color: {tab_bg};
         color: {text_color};
         border: 1px solid {border_color};
@@ -386,22 +386,31 @@ st.markdown(f"""
         transition: all 0.3s ease;
     }}
     
-    .settings-panel .theme-toggle-btn:hover {{
+    .settings-panel-left .theme-toggle-btn:hover {{
         background-color: {tab_active};
         color: white;
     }}
     
     @media screen and (max-width: 640px) {{
-        .settings-icon {{
+        .settings-bottom-left {{
+            bottom: 20px;
+            left: 10px;
+        }}
+        .settings-icon-left {{
             width: 48px;
             height: 48px;
             font-size: 22px;
-            bottom: 15px;
-            right: 15px;
         }}
-        .settings-panel {{
-            min-width: 180px;
-            padding: 15px;
+        .settings-panel-left {{
+            min-width: 160px;
+            padding: 12px;
+        }}
+        .settings-panel-left .setting-label {{
+            font-size: 12px;
+        }}
+        .settings-panel-left .theme-toggle-btn {{
+            font-size: 11px;
+            padding: 4px 10px;
         }}
     }}
     </style>
@@ -418,16 +427,15 @@ st.markdown(f"""
 """, unsafe_allow_html=True)
 
 # ==============================================================================
-# --- منوی تنظیمات در پایین صفحه (چرخ‌دنده) ---
+# --- منوی تنظیمات در پایین سمت چپ (چرخ‌دنده) ---
 # ==============================================================================
 
-# نمایش آیکون چرخ‌دنده و منو در پایین صفحه
 theme_icon = "🌙" if st.session_state.theme == 'light' else "☀️"
 theme_label = "Dark Mode" if st.session_state.theme == 'light' else "Light Mode"
 
 st.markdown(f"""
-    <div class="settings-bottom">
-        <div class="settings-panel" id="settingsPanel">
+    <div class="settings-bottom-left">
+        <div class="settings-panel-left" id="settingsPanel">
             <div class="setting-item">
                 <span class="setting-label">🌓 تغییر تم</span>
                 <button class="theme-toggle-btn" onclick="location.href='?theme=toggle'">
@@ -438,8 +446,12 @@ st.markdown(f"""
                 <span class="setting-label">📱 نسخه</span>
                 <span style="color: {text_color}; font-size: 13px;">v2.0</span>
             </div>
+            <div class="setting-item">
+                <span class="setting-label">🔒 وضعیت</span>
+                <span style="color: #4CAF50; font-size: 13px;">● آنلاین</span>
+            </div>
         </div>
-        <button class="settings-icon" onclick="location.href='?settings=toggle'" title="Settings">
+        <button class="settings-icon-left" onclick="location.href='?settings=toggle'" title="Settings">
             ⚙️
         </button>
     </div>
