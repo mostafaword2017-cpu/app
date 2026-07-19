@@ -2,7 +2,7 @@ import streamlit as st
 import math
 
 # ==============================================================================
-# --- تنظیمات صفحه ---
+# --- Page Configuration ---
 # ==============================================================================
 st.set_page_config(
     page_title="ElectroCalc ⚡ M&F", 
@@ -11,7 +11,7 @@ st.set_page_config(
 )
 
 # ==============================================================================
-# --- مدیریت تم در Session State ---
+# --- Theme Management in Session State ---
 # ==============================================================================
 
 if 'theme' not in st.session_state:
@@ -23,7 +23,7 @@ def toggle_theme():
     else:
         st.session_state.theme = 'light'
 
-# تعیین رنگ‌ها بر اساس تم
+# Define colors based on theme
 if st.session_state.theme == 'light':
     bg_color = "#ffffff"
     text_color = "#000000"
@@ -55,7 +55,6 @@ if st.session_state.theme == 'light':
     dual_mode_bg = "#e8f5e9"
     dual_mode_text = "#1b5e20"
     dual_mode_border = "#4CAF50"
-    # رنگ باکس تنظیمات (روشن)
     settings_box_bg = "#e3f2fd"
     settings_box_text = "#0d47a1"
     settings_box_border = "#1a73e8"
@@ -90,18 +89,17 @@ else:
     dual_mode_bg = "#0d2137"
     dual_mode_text = "#90CAF9"
     dual_mode_border = "#4FC3F7"
-    # رنگ باکس تنظیمات (تاریک - آبی سرمه‌ای)
-    settings_box_bg = "#0d2137"  # آبی سرمه‌ای
-    settings_box_text = "#90CAF9"  # آبی روشن برای خوانایی
+    settings_box_bg = "#0d2137"
+    settings_box_text = "#90CAF9"
     settings_box_border = "#4FC3F7"
 
 # ==============================================================================
-# --- استایل ---
+# --- Styles ---
 # ==============================================================================
 
 st.markdown(f"""
     <style>
-    /* ========== تنظیم فاصله از بالای صفحه ========== */
+    /* ========== Top margin adjustment ========== */
     .main > div {{
         padding-top: 0px !important;
     }}
@@ -116,12 +114,12 @@ st.markdown(f"""
         padding-bottom: 30px !important;
     }}
 
-    /* ========== تنظیم رنگ متن کلی ========== */
+    /* ========== General text color ========== */
     .stApp, .stApp p, .stApp label, .stApp div, .stApp span, .stApp li {{
         color: {text_color} !important;
     }}
 
-    /* ========== اسم نرم‌افزار ========== */
+    /* ========== App title ========== */
     .app-title {{
         text-align: center;
         padding: 5px 0 12px 0 !important;
@@ -175,7 +173,7 @@ st.markdown(f"""
         }}
     }}
 
-    /* ========== تب‌ها ========== */
+    /* ========== Tabs ========== */
     .stTabs div[role="tablist"] {{
         gap: 8px !important;
         flex-wrap: nowrap !important;
@@ -234,7 +232,7 @@ st.markdown(f"""
         color: #FFFFFF !important;
     }}
     
-    /* ========== موبایل ========== */
+    /* ========== Mobile ========== */
     @media screen and (max-width: 640px) {{
         .stApp {{
             margin-top: 0px !important;
@@ -278,7 +276,7 @@ st.markdown(f"""
         }}
     }}
     
-    /* ========== مخفی کردن المان‌های اضافی ========== */
+    /* ========== Hide extra elements ========== */
     .stAppHeader, header[data-testid="stHeader"] {{
         display: none !important;
     }}
@@ -299,7 +297,7 @@ st.markdown(f"""
         display: none !important;
     }}
     
-    /* ========== جعبه نتایج ========== */
+    /* ========== Result box ========== */
     .result-box {{
         text-align: center;
         padding: 15px;
@@ -334,7 +332,7 @@ st.markdown(f"""
         color: #ffffff !important;
     }}
 
-    /* ========== استایل جدید جعبه اطلاعات ========== */
+    /* ========== New info box style ========== */
     .info-box-new {{
         background-color: {info_box_bg} !important;
         padding: 18px 20px !important;
@@ -387,7 +385,7 @@ st.markdown(f"""
         font-weight: 600 !important;
     }}
 
-    /* ========== باکس دو حالت محاسبه (تب موتور) ========== */
+    /* ========== Dual mode box (Motor tab) ========== */
     .dual-mode-box {{
         background-color: {dual_mode_bg} !important;
         padding: 12px !important;
@@ -406,7 +404,7 @@ st.markdown(f"""
         color: {dual_mode_text} !important;
     }}
 
-    /* ========== باکس تنظیمات (تب Settings) ========== */
+    /* ========== Settings box (Settings tab) ========== */
     .settings-box {{
         background-color: {settings_box_bg} !important;
         padding: 15px !important;
@@ -425,7 +423,7 @@ st.markdown(f"""
         color: {settings_box_text} !important;
     }}
 
-    /* ========== تنظیم رنگ متریک‌ها ========== */
+    /* ========== Metric colors ========== */
     div[data-testid="metric-container"] {{
         background-color: {card_bg} !important;
         border: 1px solid {border_color} !important;
@@ -449,17 +447,17 @@ st.markdown(f"""
         color: {text_color} !important;
     }}
 
-    /* ========== تنظیم رنگ هدرها ========== */
+    /* ========== Header colors ========== */
     .stHeader, .stSubheader, h1, h2, h3, h4 {{
         color: {header_color} !important;
     }}
 
-    /* ========== تنظیم رنگ لیبل‌ها ========== */
+    /* ========== Label colors ========== */
     label, .stMarkdown p, .stText, .stCaption {{
         color: {text_color} !important;
     }}
 
-    /* ========== تنظیم رنگ ورودی‌ها ========== */
+    /* ========== Input colors ========== */
     .stNumberInput input, .stSelectbox select {{
         color: {text_color} !important;
         background-color: {input_bg} !important;
@@ -523,7 +521,7 @@ st.markdown(f"""
 """, unsafe_allow_html=True)
 
 # ==============================================================================
-# --- نمایش اسم نرم‌افزار ---
+# --- Display App Title ---
 # ==============================================================================
 
 st.markdown(f"""
@@ -533,7 +531,7 @@ st.markdown(f"""
 """, unsafe_allow_html=True)
 
 # ==============================================================================
-# --- تابع برای نمایش جعبه اطلاعات با استایل جدید ---
+# --- Function to display info box with new style ---
 # ==============================================================================
 
 def show_info_box(title, items):
@@ -549,7 +547,7 @@ def show_info_box(title, items):
     """, unsafe_allow_html=True)
 
 # ==============================================================================
-# --- توابع کمکی ---
+# --- Helper Functions ---
 # ==============================================================================
 
 def get_cable_size(current_a, voltage=380, cos_phi=0.8, max_drop=2, length=50, conductor="Copper"):
@@ -642,15 +640,15 @@ def calculate_cooling_capacity(air_velocity, coil_area, temp_in, temp_out,
     
     if percentage >= 95:
         status = "PASS"
-        status_text = f"✅ سیستم به توان اسمی ({target_capacity} kW) رسیده است"
+        status_text = f"✅ System has reached nominal capacity ({target_capacity} kW)"
         status_color = "test-pass"
     elif percentage >= 80:
         status = "WARNING"
-        status_text = f"⚠️ سیستم به توان اسمی نرسیده است ({percentage:.1f}% از {target_capacity} kW)"
+        status_text = f"⚠️ System has not reached nominal capacity ({percentage:.1f}% of {target_capacity} kW)"
         status_color = "test-warning"
     else:
         status = "FAIL"
-        status_text = f"❌ سیستم دچار مشکل است ({percentage:.1f}% از {target_capacity} kW)"
+        status_text = f"❌ System has issues ({percentage:.1f}% of {target_capacity} kW)"
         status_color = "test-fail"
     
     return {
@@ -670,7 +668,7 @@ def calculate_cooling_capacity(air_velocity, coil_area, temp_in, temp_out,
     }
 
 # ==============================================================================
-# --- توابع اصلی ---
+# --- Main Functions ---
 # ==============================================================================
 
 def calculate_cable_fixed(p_kw, length, sigma, voltage=380, max_drop_percent=2):
@@ -743,13 +741,13 @@ def calculate_ups_fixed(load_kva, backup_min, num_batteries, battery_voltage=12)
     return round(result, 1)
 
 # ==============================================================================
-# --- تب‌ها (6 تب) ---
+# --- Tabs (6 tabs) ---
 # ==============================================================================
 
 tabs = st.tabs(["📏 Cable", "🔋 UPS", "⚙️ Motor", "🛡️ Protect", "❄️ HVAC Test", "⚙️ Settings"])
 
 # ==============================================================================
-# --- تب ۱: کابل ---
+# --- Tab 1: Cable ---
 # ==============================================================================
 
 with tabs[0]:
@@ -776,17 +774,17 @@ with tabs[0]:
         """, unsafe_allow_html=True)
         
         show_info_box(
-            "📋 نتیجه محاسبه کابل",
+            "📋 Cable Calculation Result",
             [
-                'جریان نامی با توجه به توان و ولتاژ ورودی محاسبه شده است',
-                'سایز استاندارد: نزدیک‌ترین سایز بالاتر به مقدار محاسبه شده',
-                'سایز ایمن با در نظر گرفتن ضریب اطمینان برای طول‌های بالای ۸۰ متر',
-                '<span class="highlight">فرمول:</span> S = (P × L × 100) / (σ × V² × ΔV%)'
+                'Rated current calculated based on power and input voltage',
+                'Standard size: nearest higher size to the calculated value',
+                'Safe size considering safety factor for lengths over 80 meters',
+                '<span class="highlight">Formula:</span> S = (P × L × 100) / (σ × V² × ΔV%)'
             ]
         )
 
 # ==============================================================================
-# --- تب ۲: UPS ---
+# --- Tab 2: UPS ---
 # ==============================================================================
 
 with tabs[1]:
@@ -827,17 +825,17 @@ with tabs[1]:
         st.info(f"💡 For {u_kva} kVA UPS → Current = {u_kva} × 1.44 = **{ups_current:.2f} A** → Cable: **{ups_cable} mm²** → Breaker: **{ups_breaker} A**")
         
         show_info_box(
-            "📋 نتیجه محاسبه UPS",
+            "📋 UPS Calculation Result",
             [
-                'ظرفیت باتری بر اساس توان UPS، زمان پشتیبانی و تعداد باتری‌ها محاسبه شده است',
-                'سایز کابل با توجه به جریان ورودی UPS و ضریب اطمینان پیشنهاد شده است',
-                'کلید محافظ با در نظر گرفتن نوع بار (سلفی) انتخاب شده است',
-                '<span class="highlight">فرمول:</span> Ah = (Ah_Base × kVA/10 × 32) / (N_Battery × V_Battery/12)'
+                'Battery capacity calculated based on UPS power, backup time, and number of batteries',
+                'Cable size suggested based on UPS input current and safety factor',
+                'Protection breaker selected considering load type (inductive)',
+                '<span class="highlight">Formula:</span> Ah = (Ah_Base × kVA/10 × 32) / (N_Battery × V_Battery/12)'
             ]
         )
 
 # ==============================================================================
-# --- تب ۳: موتور ---
+# --- Tab 3: Motor ---
 # ==============================================================================
 
 with tabs[2]:
@@ -845,9 +843,9 @@ with tabs[2]:
     
     st.markdown(f"""
     <div class="dual-mode-box">
-        <b>📌 دو حالت محاسبه:</b><br>
-        • <b>حالت توان نامی موتور:</b> محاسبه بر اساس حداکثر توان ژنراتور (مناسب برای طراحی اولیه)<br>
-        • <b>حالت توان بار مصرفی:</b> محاسبه بر اساس بار واقعی (مناسب برای انتخاب کابل و کلید اقتصادی)
+        <b>📌 Two Calculation Modes:</b><br>
+        • <b>Generator Nominal Power Mode:</b> Calculation based on maximum generator power (suitable for initial design)<br>
+        • <b>Actual Load Mode:</b> Calculation based on actual load (suitable for economical cable and breaker selection)
     </div>
     """, unsafe_allow_html=True)
     
@@ -861,13 +859,13 @@ with tabs[2]:
                 value=150.0, 
                 step=5.0, 
                 key="gen_kva",
-                help="حداکثر توان نامی ژنراتور"
+                help="Maximum nominal power of generator"
             )
             
             calc_mode = st.selectbox(
                 "Calculation Mode:",
                 ["Based on Generator Max Power", "Based on Actual Load"],
-                help="انتخاب کنید که کابل و کلید بر اساس چه توانی محاسبه شود"
+                help="Select whether cable and breaker are calculated based on which power"
             )
             
             if calc_mode == "Based on Actual Load":
@@ -877,7 +875,7 @@ with tabs[2]:
                     step=1.0, 
                     min_value=1.0,
                     key="actual_load",
-                    help="بار مصرفی واقعی (برای انتخاب کابل و کلید اقتصادی)"
+                    help="Actual consumed load (for economical cable and breaker selection)"
                 )
             else:
                 actual_load = gen_kva
@@ -913,7 +911,7 @@ with tabs[2]:
                 step=5.0, 
                 min_value=1.0,
                 key="cable_length_motor_new",
-                help="طول کابل از ژنراتور تا تابلو برق"
+                help="Cable length from generator to distribution board"
             )
         with c2:
             conductor_type = st.selectbox(
@@ -927,7 +925,7 @@ with tabs[2]:
                 max_value=100, 
                 value=0, 
                 step=10,
-                help="درصد افزایش بار احتمالی در آینده"
+                help="Percentage of possible future load increase"
             )
     
     if st.button("🔍 Calculate Generator", use_container_width=True):
@@ -1015,19 +1013,19 @@ with tabs[2]:
             st.success(f"💡 You saved cable size by designing based on actual load ({actual_load} kVA) instead of generator max power ({gen_kva} kVA).")
         
         show_info_box(
-            "📋 نتیجه محاسبه ژنراتور",
+            "📋 Generator Calculation Result",
             [
-                f'حالت محاسبه: {mode_label}',
-                f'جریان طراحی: {design_current:.2f} آمپر',
-                f'سایز کابل پیشنهادی: {cable_size} میلی‌متر مربع ({conductor_type})',
-                f'افت ولتاژ: {voltage_drop}% {"(مناسب)" if voltage_drop <= 3 else "(بیش از حد مجاز)"}',
-                f'کلید محافظ: {breaker_size} آمپر (نامی) | {starting_breaker} آمپر (راه‌اندازی)',
-                '<span class="highlight">فرمول‌ها:</span> I_gen = kVA × 1.44 | I_design = I_actual × (1 + Future Expansion%)'
+                f'Calculation mode: {mode_label}',
+                f'Design current: {design_current:.2f} A',
+                f'Recommended cable size: {cable_size} mm² ({conductor_type})',
+                f'Voltage drop: {voltage_drop}% {"(Acceptable)" if voltage_drop <= 3 else "(Exceeds limit)"}',
+                f'Protection breaker: {breaker_size} A (Rated) | {starting_breaker} A (Starting)',
+                '<span class="highlight">Formulas:</span> I_gen = kVA × 1.44 | I_design = I_actual × (1 + Future Expansion%)'
             ]
         )
 
 # ==============================================================================
-# --- تب ۴: حفاظت ---
+# --- Tab 4: Protection ---
 # ==============================================================================
 
 with tabs[3]:
@@ -1052,17 +1050,17 @@ with tabs[3]:
         st.info(f"💡 For {p_curr} A {p_type} load → Cable: **{cable_size} mm²** → Breaker: **{b_size} A**")
         
         show_info_box(
-            "📋 نتیجه محاسبه حفاظت",
+            "📋 Protection Calculation Result",
             [
-                'کلید محافظ با توجه به جریان بار و نوع آن انتخاب شده است',
-                'سایز کابل بر اساس جریان بار و افت ولتاژ مجاز پیشنهاد شده است',
-                'ضریب ایمنی برای بارهای مختلف متفاوت است (مقاومتی: ۱.۲۵، سلفی: ۱.۴، موتوری: ۱.۶)',
-                '<span class="highlight">فرمول:</span> I_breaker = I_load × K_safety'
+                'Protection breaker selected based on load current and type',
+                'Cable size suggested based on load current and allowable voltage drop',
+                'Safety factor varies for different loads (Resistive: 1.25, Inductive: 1.4, Motor: 1.6)',
+                '<span class="highlight">Formula:</span> I_breaker = I_load × K_safety'
             ]
         )
 
 # ==============================================================================
-# --- تب ۵: HVAC ---
+# --- Tab 5: HVAC ---
 # ==============================================================================
 
 with tabs[4]:
@@ -1191,9 +1189,9 @@ with tabs[4]:
         if fan_info:
             st.markdown(f"""
             <div style='background-color: #f5f5f5; padding: 10px; border-radius: 8px; margin-bottom: 10px; direction: rtl; text-align: right;'>
-                <b>🔧 اطلاعات فن‌ها:</b>
-                {fan_info['num_fans']} فن با قطر {fan_info['fan_diameter']} سانتی‌متر 
-                → سطح مقطع کل: {fan_info['total_area']:.4f} متر مربع
+                <b>🔧 Fan Information:</b>
+                {fan_info['num_fans']} fans with diameter {fan_info['fan_diameter']} cm 
+                → Total cross-section: {fan_info['total_area']:.4f} m²
             </div>
             """, unsafe_allow_html=True)
         
@@ -1218,103 +1216,102 @@ with tabs[4]:
                     {result['status_text']}
                 </div>
                 <div style='font-size: 20px; font-weight: 600;'>
-                    توان محاسبه شده: <span style='color: #1a73e8;'>{result['capacity']} کیلووات</span>
-                    &nbsp;|&nbsp; درصد توان: <span style='color: #1a73e8;'>{result['percentage']}%</span>
-                    &nbsp;|&nbsp; وضعیت: <span style='color: #1a73e8;'>{result['status']}</span>
+                    Calculated Power: <span style='color: #1a73e8;'>{result['capacity']} kW</span>
+                    &nbsp;|&nbsp; Power Percentage: <span style='color: #1a73e8;'>{result['percentage']}%</span>
+                    &nbsp;|&nbsp; Status: <span style='color: #1a73e8;'>{result['status']}</span>
                 </div>
             </div>
         """, unsafe_allow_html=True)
         
-        with st.expander("📝 جزئیات محاسبات"):
+        with st.expander("📝 Calculation Details"):
             st.markdown(f"""
             <div style='padding: 10px; direction: rtl; text-align: right;'>
-                <b>مراحل محاسبه:</b><br><br>
-                ۱. <b>دبی حجمی هوا:</b> Q = سرعت باد × سطح مقطع = {air_velocity} × {coil_area:.4f} = <b>{result['volume_flow']} m³/s</b><br><br>
-                ۲. <b>دبی جرمی هوا:</b> ṁ = Q × ρ = {result['volume_flow']} × {air_density} = <b>{result['mass_flow']} kg/s</b><br><br>
-                ۳. <b>اختلاف دما:</b> ΔT = T_ورودی - T_خروجی = {temp_in} - {temp_out} = <b>{result['delta_t']} °C</b><br><br>
-                ۴. <b>توان سرمایشی:</b> P = ṁ × Cₚ × ΔT = {result['mass_flow']} × {cp} × {result['delta_t']} = <b>{result['capacity']} کیلووات</b>
+                <b>Calculation Steps:</b><br><br>
+                1. <b>Air Volume Flow:</b> Q = Air Velocity × Cross Section = {air_velocity} × {coil_area:.4f} = <b>{result['volume_flow']} m³/s</b><br><br>
+                2. <b>Air Mass Flow:</b> ṁ = Q × ρ = {result['volume_flow']} × {air_density} = <b>{result['mass_flow']} kg/s</b><br><br>
+                3. <b>Temperature Difference:</b> ΔT = T_inlet - T_outlet = {temp_in} - {temp_out} = <b>{result['delta_t']} °C</b><br><br>
+                4. <b>Cooling Power:</b> P = ṁ × Cₚ × ΔT = {result['mass_flow']} × {cp} × {result['delta_t']} = <b>{result['capacity']} kW</b>
             </div>
             """, unsafe_allow_html=True)
         
-        with st.expander("💡 پیشنهادات"):
+        with st.expander("💡 Recommendations"):
             suggestions = []
             
             if result['capacity'] < target_capacity:
                 needed_velocity = (target_capacity * air_velocity) / result['capacity']
                 if needed_velocity > air_velocity:
-                    suggestions.append(f"🔹 افزایش سرعت باد به حدود **{needed_velocity:.2f} متر بر ثانیه** (از {air_velocity} متر بر ثانیه)")
+                    suggestions.append(f"🔹 Increase air velocity to approximately **{needed_velocity:.2f} m/s** (from {air_velocity} m/s)")
                 
                 if fan_info:
                     needed_area = (target_capacity * coil_area) / result['capacity']
                     if needed_area > coil_area:
                         needed_fans = (needed_area / fan_info['single_fan_area'])
-                        suggestions.append(f"🔹 افزایش تعداد فن‌ها به حدود **{math.ceil(needed_fans)}** عدد (از {fan_info['num_fans']} عدد)")
+                        suggestions.append(f"🔹 Increase number of fans to approximately **{math.ceil(needed_fans)}** units (from {fan_info['num_fans']} units)")
                 
                 needed_delta = (target_capacity * result['delta_t']) / result['capacity']
                 if needed_delta > result['delta_t']:
                     needed_temp_out = temp_in - needed_delta
-                    suggestions.append(f"🔹 کاهش دمای خروجی به حدود **{needed_temp_out:.1f} درجه سانتی‌گراد** (از {temp_out} درجه سانتی‌گراد)")
+                    suggestions.append(f"🔹 Reduce outlet temperature to approximately **{needed_temp_out:.1f} °C** (from {temp_out} °C)")
                 
                 if not suggestions:
-                    suggestions.append("🔸 سیستم نیاز به بررسی کامل دارد.")
+                    suggestions.append("🔸 System requires complete review.")
             else:
-                suggestions.append(f"✅ سیستم به توان اسمی {target_capacity} کیلووات رسیده است.")
+                suggestions.append(f"✅ System has reached nominal capacity of {target_capacity} kW.")
             
             for s in suggestions:
                 st.markdown(s)
     
     show_info_box(
-        "📋 روش تست توان سرمایشی",
+        "📋 Cooling Capacity Test Method",
         [
-            'تست با استفاده از بادسنج (انیمومتر) - اندازه‌گیری غیرمستقیم',
-            'فرمول: P = ṁ × Cₚ × ΔT',
-            'پارامترهای پیش‌فرض: چگالی هوا = ۱.۲ kg/m³ | Cₚ = ۱.۰۰۵ kJ/kg·K',
-            'توان هدف قابل تنظیم - هر توان سرمایشی را تست کنید',
-            '<span class="highlight">تفسیر نتایج:</span> ✅ PASS (≥ ۹۵%) | ⚠️ WARNING (۸۰%-۹۵%) | ❌ FAIL (< ۸۰%)'
+            'Test using anemometer - indirect measurement',
+            'Formula: P = ṁ × Cₚ × ΔT',
+            'Default parameters: Air density = 1.2 kg/m³ | Cₚ = 1.005 kJ/kg·K',
+            'Target power adjustable - test any cooling capacity',
+            '<span class="highlight">Result Interpretation:</span> ✅ PASS (≥ 95%) | ⚠️ WARNING (80%-95%) | ❌ FAIL (< 80%)'
         ]
     )
     
-    with st.expander("📖 Test Procedure Guide (راهنمای انجام تست)"):
+    with st.expander("📖 Test Procedure Guide"):
         st.markdown("""
-        ### 🔍 مراحل انجام تست:
+        ### 🔍 Test Steps:
         
-        1. **تنظیم توان هدف** - توان اسمی سیستم خود را وارد کنید
+        1. **Set Target Capacity** - Enter your system's nominal cooling capacity
         
-        2. **اندازه‌گیری سرعت باد** با بادسنج در نقاط مختلف کویل و گرفتن میانگین
+        2. **Measure Air Velocity** with an anemometer at multiple points on the coil and take the average
         
-        3. **انتخاب روش محاسبه سطح مقطع:**
-           - **ورود دستی:** سطح مقطع را مستقیم وارد کنید
-           - **محاسبه از روی فن‌ها:** تعداد و قطر فن‌ها را وارد کنید تا سطح مقطع خودکار محاسبه شود
+        3. **Select Coil Area Calculation Method:**
+           - **Manual Entry:** Enter the coil area directly
+           - **Calculate from Fans:** Enter number and diameter of fans for automatic area calculation
         
-        4. **اندازه‌گیری دمای ورودی و خروجی** هوا با دماسنج دقیق
+        4. **Measure Inlet and Outlet Air Temperatures** with a precise thermometer
         
-        5. **وارد کردن مقادیر** در فرم بالا و کلیک روی دکمه تست
+        5. **Enter values** in the form above and click the test button
         
         ---
         
-        ### ⚠️ نکات مهم:
+        ### ⚠️ Important Notes:
         
-        - تست باید در **شرایط پایدار** (Steady-State) انجام شود
-        - اگر دمای کویل از نقطه شبنم پایین‌تر باشد، رطوبت تبدیل به آب شده و محاسبات دقیق‌تر نیاز به اندازه‌گیری رطوبت دارد
-        - برای دقت بیشتر، اندازه‌گیری را در **یک شبکه منظم (Grid)** روی سطح کویل انجام دهید
+        - Test should be performed in **steady-state** conditions
+        - If coil temperature is below the dew point, moisture condenses and calculations require humidity measurement for accuracy
+        - For better accuracy, take measurements in a **regular grid pattern** across the coil surface
         """)
 
 # ==============================================================================
-# --- تب ۶: تنظیمات (Settings) با باکس آبی سرمه‌ای ---
+# --- Tab 6: Settings ---
 # ==============================================================================
 
 with tabs[5]:
     st.header("⚙️ Settings")
     
-    # باکس تنظیمات با رنگ جدید (آبی سرمه‌ای در حالت تاریک)
     st.markdown(f"""
     <div class="settings-box">
-        <b>📋 مدیریت تنظیمات نرم‌افزار</b><br>
-        در این بخش می‌توانید تنظیمات ظاهری نرم‌افزار را تغییر دهید.
+        <b>📋 Application Settings Management</b><br>
+        In this section you can change the application's appearance settings.
     </div>
     """, unsafe_allow_html=True)
     
-    # ========== تنظیمات تم ==========
+    # ========== Theme Settings ==========
     st.subheader("🌓 Theme Settings")
     
     col1, col2 = st.columns(2)
@@ -1332,7 +1329,7 @@ with tabs[5]:
     
     st.divider()
     
-    # ========== اطلاعات نرم‌افزار ==========
+    # ========== About ==========
     st.subheader("ℹ️ About")
     st.markdown("""
     **ElectroCalc ⚡ M&F**  
@@ -1349,7 +1346,7 @@ with tabs[5]:
     
     st.divider()
     
-    # ========== وضعیت ==========
+    # ========== Status ==========
     st.subheader("🔒 Status")
     st.markdown(f"""
     ✅ **Application Status:** Online  
