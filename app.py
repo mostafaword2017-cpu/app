@@ -23,10 +23,10 @@ def toggle_theme():
     else:
         st.session_state.theme = 'light'
 
-# تعیین رنگ‌ها بر اساس تم با کنتراست بالا
+# تعیین رنگ‌ها بر اساس تم با کنتراست بسیار بالا
 if st.session_state.theme == 'light':
     bg_color = "#ffffff"
-    text_color = "#1a1a1a"
+    text_color = "#000000"  # مشکی پررنگ
     card_bg = "#f1f3f4"
     border_color = "#3c4043"
     tab_bg = "#f0f2f6"
@@ -36,31 +36,51 @@ if st.session_state.theme == 'light':
     result_bg = "#f1f3f4"
     sidebar_bg = "#f0f2f6"
     input_bg = "#ffffff"
-    metric_label_color = "#1a1a1a"
-    metric_value_color = "#1a73e8"
+    metric_label_color = "#000000"  # مشکی
+    metric_value_color = "#1a73e8"  # آبی
     info_box_bg = "#e3f2fd"
     info_box_text = "#0d47a1"
-    header_color = "#1a1a1a"
+    header_color = "#000000"  # مشکی
+    selectbox_bg = "#ffffff"
+    selectbox_text = "#000000"
+    radio_text = "#000000"
+    slider_text = "#000000"
+    st_info_bg = "#e3f2fd"
+    st_info_text = "#0d47a1"
+    st_warning_bg = "#fff3e0"
+    st_warning_text = "#bf360c"
+    st_success_bg = "#e8f5e9"
+    st_success_text = "#1b5e20"
 else:
-    bg_color = "#0e0e0e"  # پس‌زمینه بسیار تیره
-    text_color = "#f0f0f0"  # سفید مایل به خاکستری
-    card_bg = "#1e1e1e"  # کارت تیره
-    border_color = "#444444"  # حاشیه مشخص
-    tab_bg = "#2a2a2a"  # تب‌های غیرفعال
-    tab_active = "#388E3C"  # سبز پررنگ‌تر برای فعال
-    button_bg = "#1976D2"  # آبی پررنگ
+    bg_color = "#0a0a0a"  # بسیار تیره
+    text_color = "#ffffff"  # سفید کامل
+    card_bg = "#1a1a1a"  # تیره
+    border_color = "#666666"  # حاشیه روشن‌تر
+    tab_bg = "#2a2a2a"
+    tab_active = "#4CAF50"  # سبز روشن‌تر
+    button_bg = "#1E88E5"  # آبی روشن
     button_text = "#ffffff"
-    result_bg = "#1e1e1e"
-    sidebar_bg = "#1a1a1a"
-    input_bg = "#2a2a2a"
-    metric_label_color = "#e0e0e0"  # سفید برای لیبل متریک
-    metric_value_color = "#64B5F6"  # آبی روشن برای مقادیر
-    info_box_bg = "#1a2332"  # آبی تیره
+    result_bg = "#1a1a1a"
+    sidebar_bg = "#0d0d0d"
+    input_bg = "#1f1f1f"
+    metric_label_color = "#ffffff"  # سفید
+    metric_value_color = "#64B5F6"  # آبی روشن
+    info_box_bg = "#0d2137"  # آبی تیره
     info_box_text = "#90CAF9"  # آبی روشن
-    header_color = "#ffffff"  # سفید برای هدرها
+    header_color = "#ffffff"  # سفید
+    selectbox_bg = "#1f1f1f"
+    selectbox_text = "#ffffff"
+    radio_text = "#ffffff"
+    slider_text = "#ffffff"
+    st_info_bg = "#0d2137"
+    st_info_text = "#90CAF9"
+    st_warning_bg = "#3e1a00"
+    st_warning_text = "#ffab91"
+    st_success_bg = "#0d2e1a"
+    st_success_text = "#81c784"
 
 # ==============================================================================
-# --- استایل با کنتراست بالا ---
+# --- استایل با کنتراست بسیار بالا ---
 # ==============================================================================
 
 st.markdown(f"""
@@ -81,7 +101,7 @@ st.markdown(f"""
     }}
 
     /* ========== تنظیم رنگ متن کلی با کنتراست بالا ========== */
-    .stApp, .stApp p, .stApp label, .stApp div, .stApp span {{
+    .stApp, .stApp p, .stApp label, .stApp div, .stApp span, .stApp li {{
         color: {text_color} !important;
     }}
 
@@ -97,7 +117,7 @@ st.markdown(f"""
         overflow: visible;
         letter-spacing: 1px !important;
         line-height: 1.2 !important;
-        border-bottom: 3px solid #e8e8e8 !important;
+        border-bottom: 3px solid #888888 !important;
         margin-bottom: 8px !important;
     }}
     
@@ -147,7 +167,7 @@ st.markdown(f"""
         justify-content: center !important;
         display: flex !important;
         padding: 6px 0 5px 0 !important;
-        border-bottom: 3px solid #c0c0c0 !important;
+        border-bottom: 3px solid #666666 !important;
         margin-top: 0px !important;
     }}
     
@@ -165,7 +185,7 @@ st.markdown(f"""
         border-bottom: none !important;
         transition: all 0.3s ease !important;
         cursor: pointer !important;
-        opacity: 0.9 !important;
+        opacity: 0.85 !important;
         margin-bottom: -2px !important;
         box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
     }}
@@ -298,6 +318,7 @@ st.markdown(f"""
         color: #ffffff !important;
     }}
 
+    /* ========== باکس اطلاعات آبی ========== */
     .info-box {{
         background-color: {info_box_bg} !important;
         padding: 15px;
@@ -312,7 +333,7 @@ st.markdown(f"""
         color: {info_box_text} !important;
     }}
     
-    .info-box, .info-box p, .info-box span {{
+    .info-box, .info-box p, .info-box span, .info-box div {{
         color: {info_box_text} !important;
     }}
 
@@ -335,7 +356,7 @@ st.markdown(f"""
     div[data-testid="metric-container"] label {{
         color: {metric_label_color} !important;
         font-size: 14px !important;
-        font-weight: 500 !important;
+        font-weight: 600 !important;
     }}
     
     div[data-testid="metric-container"] .stMetricValue {{
@@ -349,12 +370,12 @@ st.markdown(f"""
     }}
 
     /* ========== تنظیم رنگ هدرها ========== */
-    .stHeader, .stSubheader, h1, h2, h3 {{
+    .stHeader, .stSubheader, h1, h2, h3, h4 {{
         color: {header_color} !important;
     }}
 
     /* ========== تنظیم رنگ لیبل‌ها ========== */
-    label, .stMarkdown p, .stText {{
+    label, .stMarkdown p, .stText, .stCaption {{
         color: {text_color} !important;
     }}
 
@@ -364,6 +385,39 @@ st.markdown(f"""
         background-color: {input_bg} !important;
         border: 1px solid {border_color} !important;
         border-radius: 6px !important;
+    }}
+    
+    .stNumberInput input:focus, .stSelectbox select:focus {{
+        border-color: {tab_active} !important;
+        box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2) !important;
+    }}
+
+    /* ========== تنظیم رنگ Selectbox ========== */
+    .stSelectbox div[data-baseweb="select"] {{
+        background-color: {selectbox_bg} !important;
+        color: {selectbox_text} !important;
+    }}
+    
+    .stSelectbox div[data-baseweb="select"] div {{
+        color: {selectbox_text} !important;
+    }}
+
+    /* ========== تنظیم رنگ رادیو دکمه‌ها ========== */
+    .stRadio label {{
+        color: {radio_text} !important;
+    }}
+    
+    .stRadio div[role="radiogroup"] label {{
+        color: {radio_text} !important;
+    }}
+
+    /* ========== تنظیم رنگ اسلایدر ========== */
+    .stSlider label {{
+        color: {slider_text} !important;
+    }}
+    
+    .stSlider div[data-baseweb="slider"] {{
+        color: {slider_text} !important;
     }}
 
     /* ========== تنظیم رنگ دکمه‌ها ========== */
@@ -377,6 +431,7 @@ st.markdown(f"""
     
     .stButton > button:hover {{
         opacity: 0.85 !important;
+        transform: scale(1.02) !important;
     }}
 
     /* ========== کانتینرها ========== */
@@ -387,13 +442,59 @@ st.markdown(f"""
         padding: 10px !important;
     }}
 
-    /* ========== رادیو دکمه‌ها ========== */
-    .stRadio label {{
+    /* ========== استایل استریملیت (info, warning, success) ========== */
+    .stAlert {{
+        background-color: {st_info_bg} !important;
+        color: {st_info_text} !important;
+    }}
+    
+    .stAlert p, .stAlert div {{
+        color: {st_info_text} !important;
+    }}
+    
+    .stAlert.info {{
+        background-color: {st_info_bg} !important;
+        color: {st_info_text} !important;
+    }}
+    
+    .stAlert.warning {{
+        background-color: {st_warning_bg} !important;
+        color: {st_warning_text} !important;
+    }}
+    
+    .stAlert.success {{
+        background-color: {st_success_bg} !important;
+        color: {st_success_text} !important;
+    }}
+    
+    .stAlert.info p, .stAlert.warning p, .stAlert.success p {{
+        color: inherit !important;
+    }}
+
+    /* ========== جداول ========== */
+    .stDataFrame {{
+        color: {text_color} !important;
+    }}
+    
+    .stDataFrame table {{
+        color: {text_color} !important;
+    }}
+    
+    .stDataFrame th {{
+        color: {header_color} !important;
+        font-weight: 600 !important;
+    }}
+    
+    .stDataFrame td {{
         color: {text_color} !important;
     }}
 
-    /* ========== اسلایدر ========== */
-    .stSlider label {{
+    /* ========== لاتکس ========== */
+    .katex, .katex-display {{
+        color: {text_color} !important;
+    }}
+    
+    .katex .mathnormal {{
         color: {text_color} !important;
     }}
     </style>
