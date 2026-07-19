@@ -640,15 +640,15 @@ def calculate_cooling_capacity(air_velocity, coil_area, temp_in, temp_out,
     
     if percentage >= 95:
         status = "PASS"
-        status_text = f"✅ سیستم به توان اسمی ({target_capacity} kW) رسیده است"
+        status_text = f"✅ System has reached nominal capacity ({target_capacity} kW)"
         status_color = "test-pass"
     elif percentage >= 80:
         status = "WARNING"
-        status_text = f"⚠️ سیستم به توان اسمی نرسیده است ({percentage:.1f}% از {target_capacity} kW)"
+        status_text = f"⚠️ System has not reached nominal capacity ({percentage:.1f}% of {target_capacity} kW)"
         status_color = "test-warning"
     else:
         status = "FAIL"
-        status_text = f"❌ سیستم دچار مشکل است ({percentage:.1f}% از {target_capacity} kW)"
+        status_text = f"❌ System has issues ({percentage:.1f}% of {target_capacity} kW)"
         status_color = "test-fail"
     
     return {
@@ -751,25 +751,25 @@ tabs = st.tabs(["📏 Cable", "🔋 UPS", "⚙️ Motor", "🛡️ Protect", "�
 # ==============================================================================
 
 with tabs[0]:
-    st.header("📐 سایزینگ کابل")
+    st.header("📐 Cable Sizing")
     with st.container(border=True):
         c1, c2 = st.columns(2)
         with c1:
-            p_in = st.number_input("توان (کیلووات)", value=85.0, step=1.0, key="p_c")
-            l_in = st.number_input("طول (متر)", value=90.0, step=5.0, key="l_c")
+            p_in = st.number_input("Power (kW)", value=85.0, step=1.0, key="p_c")
+            l_in = st.number_input("Length (m)", value=90.0, step=5.0, key="l_c")
         with c2:
-            s_in = st.number_input("سیگما (هدایت الکتریکی)", value=56.0, step=1.0, key="s_c")
-            d_in = st.number_input("افت ولتاژ مجاز (%)", value=2.0, step=0.1, key="d_c")
+            s_in = st.number_input("Sigma (Conductivity)", value=56.0, step=1.0, key="s_c")
+            d_in = st.number_input("Voltage Drop (%)", value=2.0, step=0.1, key="d_c")
     
-    if st.button("🔍 محاسبه کابل", use_container_width=True):
+    if st.button("🔍 Calculate Cable", use_container_width=True):
         curr, f_size, s_size, raw = calculate_cable_fixed(p_in, l_in, s_in, 380, d_in)
         st.latex(r"S = \frac{P \times L \times 100}{\sigma \times V^2 \times \Delta V\%}")
         st.markdown(f"""
             <div class='result-box'>
-                <div class='result-text'>⚡ جریان: {curr} آمپر</div>
-                <div class='result-text' style='color: #1b5e20;'>📏 سایز استاندارد: {f_size} میلی‌متر مربع</div>
-                <div class='result-text' style='color: #e65100;'>🚀 سایز ایمن: {s_size} میلی‌متر مربع</div>
-                <p style='color: #5f6368;'>محاسبه دقیق: {raw} میلی‌متر مربع</p>
+                <div class='result-text'>⚡ Current: {curr} A</div>
+                <div class='result-text' style='color: #1b5e20;'>📏 Standard: {f_size} mm²</div>
+                <div class='result-text' style='color: #e65100;'>🚀 Safe Size: {s_size} mm²</div>
+                <p style='color: #5f6368;'>Exact Calc: {raw} mm²</p>
             </div>
         """, unsafe_allow_html=True)
         
@@ -788,18 +788,18 @@ with tabs[0]:
 # ==============================================================================
 
 with tabs[1]:
-    st.header("🔋 سایزینگ UPS با کابل و کلید")
+    st.header("🔋 UPS Sizing with Cable & Breaker")
     with st.container(border=True):
         c1, c2 = st.columns(2)
         with c1:
-            u_kva = st.number_input("توان UPS (kVA)", value=40.0, step=1.0, key="u_kva")
-            u_min = st.number_input("زمان پشتیبانی (دقیقه)", value=15, step=5, key="u_min")
-            ups_voltage = st.selectbox("ولتاژ ورودی (V)", [380, 400, 415], index=0, key="ups_voltage")
+            u_kva = st.number_input("UPS Power (kVA)", value=40.0, step=1.0, key="u_kva")
+            u_min = st.number_input("Backup Time (min)", value=15, step=5, key="u_min")
+            ups_voltage = st.selectbox("Input Voltage (V)", [380, 400, 415], index=0, key="ups_voltage")
         with c2:
-            u_bat = st.number_input("تعداد باتری‌ها", value=32, step=1, key="u_bat")
-            u_volt = st.selectbox("ولتاژ باتری", [12, 24], index=0, key="u_volt")
+            u_bat = st.number_input("Number of Batteries", value=32, step=1, key="u_bat")
+            u_volt = st.selectbox("Battery Voltage", [12, 24], index=0, key="u_volt")
     
-    if st.button("🔍 محاسبه UPS", use_container_width=True):
+    if st.button("🔍 Calculate UPS", use_container_width=True):
         res = calculate_ups_fixed(u_kva, u_min, u_bat, u_volt)
         volt_text = "12V" if u_volt == 12 else "24V"
         
@@ -811,18 +811,18 @@ with tabs[1]:
         
         st.markdown(f"""
             <div class='result-box'>
-                <div class='result-text'>📦 ظرفیت باتری: {res} آمپر-ساعت</div>
-                <div class='result-text' style='color: #0d47a1;'>🔋 تعداد باتری‌های مورد نیاز: {u_bat} عدد</div>
-                <div class='result-text' style='color: #e65100;'>⚡ ولتاژ سیستم: {volt_text}</div>
-                <div class='result-text' style='color: #1b5e20;'>📏 کابل پیشنهادی: {ups_cable} میلی‌متر مربع</div>
-                <div class='result-text' style='color: #d32f2f;'>🛡️ کلید پیشنهادی: {ups_breaker} آمپر</div>
+                <div class='result-text'>📦 Battery Capacity: {res} Ah</div>
+                <div class='result-text' style='color: #0d47a1;'>🔋 Required Batteries: {u_bat} Units</div>
+                <div class='result-text' style='color: #e65100;'>⚡ System Voltage: {volt_text}</div>
+                <div class='result-text' style='color: #1b5e20;'>📏 Recommended Cable: {ups_cable} mm²</div>
+                <div class='result-text' style='color: #d32f2f;'>🛡️ Recommended Breaker: {ups_breaker} A</div>
             </div>
         """, unsafe_allow_html=True)
         
         if u_volt == 24:
-            st.info("💡 در سیستم ۲۴ ولت، ظرفیت آمپر-ساعت مورد نیاز نصف سیستم ۱۲ ولت است")
+            st.info("💡 With 24V system, required Ah is HALF of 12V system")
         
-        st.info(f"💡 برای UPS {u_kva} kVA → جریان = {u_kva} × ۱.۴۴ = **{ups_current:.2f} آمپر** → کابل: **{ups_cable} میلی‌متر مربع** → کلید: **{ups_breaker} آمپر**")
+        st.info(f"💡 For {u_kva} kVA UPS → Current = {u_kva} × 1.44 = **{ups_current:.2f} A** → Cable: **{ups_cable} mm²** → Breaker: **{ups_breaker} A**")
         
         show_info_box(
             "📋 نتیجه محاسبه UPS",
@@ -839,96 +839,96 @@ with tabs[1]:
 # ==============================================================================
 
 with tabs[2]:
-    st.header("⚙️ سایزینگ موتور / ژنراتور با دو حالت محاسبه")
+    st.header("⚙️ Motor / Generator Sizing with Dual Mode")
     
     st.markdown(f"""
     <div class="dual-mode-box">
-        <b>📌 دو حالت محاسبه:</b><br>
-        • <b>حالت توان نامی ژنراتور:</b> محاسبه بر اساس حداکثر توان ژنراتور (مناسب برای طراحی اولیه)<br>
-        • <b>حالت بار مصرفی واقعی:</b> محاسبه بر اساس بار واقعی (مناسب برای انتخاب کابل و کلید اقتصادی)
+        <b>📌 Two Calculation Modes:</b><br>
+        • <b>Generator Nominal Power Mode:</b> Calculation based on maximum generator power (suitable for initial design)<br>
+        • <b>Actual Load Mode:</b> Calculation based on actual load (suitable for economical cable and breaker selection)
     </div>
     """, unsafe_allow_html=True)
     
     with st.container(border=True):
-        st.subheader("🎯 مشخصات ژنراتور")
+        st.subheader("🎯 Generator Specifications")
         
         c1, c2 = st.columns(2)
         with c1:
             gen_kva = st.number_input(
-                "حداکثر توان ژنراتور (kVA)", 
+                "Generator Max Power (kVA)", 
                 value=150.0, 
                 step=5.0, 
                 key="gen_kva",
-                help="حداکثر توان نامی ژنراتور"
+                help="Maximum nominal power of generator"
             )
             
             calc_mode = st.selectbox(
-                "حالت محاسبه:",
-                ["بر اساس حداکثر توان ژنراتور", "بر اساس بار مصرفی واقعی"],
-                help="انتخاب کنید که کابل و کلید بر اساس چه توانی محاسبه شود"
+                "Calculation Mode:",
+                ["Based on Generator Max Power", "Based on Actual Load"],
+                help="Select whether cable and breaker are calculated based on which power"
             )
             
-            if calc_mode == "بر اساس بار مصرفی واقعی":
+            if calc_mode == "Based on Actual Load":
                 actual_load = st.number_input(
-                    "بار مصرفی واقعی (kVA)", 
+                    "Actual Load (kVA)", 
                     value=85.0, 
                     step=1.0, 
                     min_value=1.0,
                     key="actual_load",
-                    help="بار مصرفی واقعی (برای انتخاب کابل و کلید اقتصادی)"
+                    help="Actual consumed load (for economical cable and breaker selection)"
                 )
             else:
                 actual_load = gen_kva
         
         with c2:
             efficiency = st.number_input(
-                "راندمان (η)", 
+                "Efficiency (η)", 
                 value=0.85, 
                 step=0.01, 
                 key="motor_eff_new"
             )
             power_factor = st.number_input(
-                "ضریب توان (cos φ)", 
+                "Power Factor (cos φ)", 
                 value=0.8, 
                 step=0.01, 
                 key="motor_cos_new"
             )
     
     with st.container(border=True):
-        st.subheader("🔌 پارامترهای کابل و نصب")
+        st.subheader("🔌 Cable & Installation Parameters")
         
         c1, c2 = st.columns(2)
         with c1:
             system_voltage = st.selectbox(
-                "ولتاژ سیستم (V)", 
+                "System Voltage (V)", 
                 [380, 400, 415, 480], 
                 index=2,
                 key="motor_voltage_new"
             )
             cable_length = st.number_input(
-                "طول کابل (متر)", 
+                "Cable Length (m)", 
                 value=30.0, 
                 step=5.0, 
                 min_value=1.0,
                 key="cable_length_motor_new",
-                help="طول کابل از ژنراتور تا تابلو برق"
+                help="Cable length from generator to distribution board"
             )
         with c2:
             conductor_type = st.selectbox(
-                "نوع هادی",
-                ["مس", "آلومینیوم"],
+                "Conductor Type",
+                ["Copper", "Aluminum"],
                 key="conductor_type"
             )
             future_expansion = st.slider(
-                "توسعه آینده (%)", 
+                "Future Expansion (%)", 
                 min_value=0, 
                 max_value=100, 
                 value=0, 
                 step=10,
-                help="درصد افزایش بار احتمالی در آینده"
+                help="Percentage of possible future load increase"
             )
     
-    if st.button("🔍 محاسبه ژنراتور", use_container_width=True):
+    if st.button("🔍 Calculate Generator", use_container_width=True):
         gen_current = gen_kva * 1.44
         starting_current = gen_current * 6
         
@@ -938,12 +938,12 @@ with tabs[2]:
         future_factor = 1 + (future_expansion / 100)
         design_current = actual_current * future_factor
         
-        if calc_mode == "بر اساس حداکثر توان ژنراتور":
+        if calc_mode == "Based on Generator Max Power":
             base_for_cable = gen_current
-            mode_label = "حداکثر توان ژنراتور"
+            mode_label = "Generator Max Power"
         else:
             base_for_cable = design_current
-            mode_label = f"بار واقعی ({actual_load} kVA) + توسعه آینده ({future_expansion}%)"
+            mode_label = f"Actual Load ({actual_load} kVA) + Future Expansion ({future_expansion}%)"
         
         cable_size = get_cable_size(
             base_for_cable, 
@@ -967,50 +967,50 @@ with tabs[2]:
         starting_breaker = get_breaker_size(actual_starting_current * future_factor, "Motor")
         
         st.markdown("---")
-        st.subheader("📊 نتایج")
+        st.subheader("📊 Results")
         
         col1, col2 = st.columns(2)
         with col1:
-            st.metric("⚡ جریان حداکثر ژنراتور", f"{gen_current:.2f} A")
-            st.metric("⚡ جریان بار واقعی", f"{actual_current:.2f} A")
-            st.metric("📐 جریان طراحی", f"{design_current:.2f} A", 
-                     delta=f"بر اساس: {mode_label}")
+            st.metric("⚡ Generator Max Current", f"{gen_current:.2f} A")
+            st.metric("⚡ Actual Load Current", f"{actual_current:.2f} A")
+            st.metric("📐 Design Current", f"{design_current:.2f} A", 
+                     delta=f"Based on: {mode_label}")
         
         with col2:
-            st.metric("🚀 جریان راه‌اندازی", f"{actual_starting_current:.2f} A")
-            st.metric("📏 کابل پیشنهادی", f"{cable_size} mm²", 
-                     delta=f"هادی: {conductor_type}")
-            st.metric("📉 افت ولتاژ", f"{voltage_drop}%",
-                     delta="مناسب" if voltage_drop <= 3 else "بالا!")
+            st.metric("🚀 Starting Current", f"{actual_starting_current:.2f} A")
+            st.metric("📏 Recommended Cable", f"{cable_size} mm²", 
+                     delta=f"Conductor: {conductor_type}")
+            st.metric("📉 Voltage Drop", f"{voltage_drop}%",
+                     delta="OK" if voltage_drop <= 3 else "High!")
         
         st.markdown("---")
         
         st.markdown(f"""
             <div class='result-box'>
-                <div class='result-text'>🔌 سایزینگ کابل</div>
+                <div class='result-text'>🔌 Cable Sizing</div>
                 <div style='font-size: 16px;'>
-                    <b>بر اساس:</b> {mode_label}<br>
-                    <b>جریان طراحی:</b> {design_current:.2f} آمپر<br>
-                    <b>کابل پیشنهادی:</b> {cable_size} میلی‌متر مربع ({conductor_type})<br>
-                    <b>افت ولتاژ:</b> {voltage_drop}% {'✅ قابل قبول' if voltage_drop <= 3 else '⚠️ کابل بزرگ‌تر در نظر گرفته شود'}
+                    <b>Based on:</b> {mode_label}<br>
+                    <b>Design Current:</b> {design_current:.2f} A<br>
+                    <b>Recommended Cable:</b> {cable_size} mm² ({conductor_type})<br>
+                    <b>Voltage Drop:</b> {voltage_drop}% {'✅ Acceptable' if voltage_drop <= 3 else '⚠️ Consider larger cable'}
                 </div>
             </div>
             
             <div class='result-box'>
-                <div class='result-text'>🛡️ سایزینگ کلید</div>
+                <div class='result-text'>🛡️ Breaker Sizing</div>
                 <div style='font-size: 16px;'>
-                    <b>کلید نامی:</b> {breaker_size} آمپر<br>
-                    <b>کلید راه‌اندازی:</b> {starting_breaker} آمپر<br>
-                    <b>نوع بار:</b> موتور (سلفی)
+                    <b>Rated Breaker:</b> {breaker_size} A<br>
+                    <b>Starting Breaker:</b> {starting_breaker} A<br>
+                    <b>Load Type:</b> Motor (Inductive)
                 </div>
             </div>
         """, unsafe_allow_html=True)
         
         if voltage_drop > 3:
-            st.warning(f"⚠️ افت ولتاژ {voltage_drop}% است که از حد مجاز ۳٪ بیشتر است. کابل را به {get_cable_size(base_for_cable, system_voltage, power_factor, 2, cable_length * 1.5, conductor_type)} میلی‌متر مربع افزایش دهید.")
+            st.warning(f"⚠️ Voltage drop is {voltage_drop}% which exceeds the recommended 3% limit. Consider increasing cable size to {get_cable_size(base_for_cable, system_voltage, power_factor, 2, cable_length * 1.5, conductor_type)} mm².")
         
-        if calc_mode == "بر اساس بار مصرفی واقعی" and actual_load < gen_kva:
-            st.success(f"💡 با طراحی بر اساس بار واقعی ({actual_load} kVA) به جای حداکثر توان ژنراتور ({gen_kva} kVA)، در سایز کابل صرفه‌جویی کرده‌اید.")
+        if calc_mode == "Based on Actual Load" and actual_load < gen_kva:
+            st.success(f"💡 You saved cable size by designing based on actual load ({actual_load} kVA) instead of generator max power ({gen_kva} kVA).")
         
         show_info_box(
             "📋 نتیجه محاسبه ژنراتور",
@@ -1020,7 +1020,7 @@ with tabs[2]:
                 f'سایز کابل پیشنهادی: {cable_size} میلی‌متر مربع ({conductor_type})',
                 f'افت ولتاژ: {voltage_drop}% {"(مناسب)" if voltage_drop <= 3 else "(بیش از حد مجاز)"}',
                 f'کلید محافظ: {breaker_size} آمپر (نامی) | {starting_breaker} آمپر (راه‌اندازی)',
-                '<span class="highlight">فرمول‌ها:</span> I_gen = kVA × ۱.۴۴ | I_design = I_actual × (۱ + درصد توسعه آینده)'
+                '<span class="highlight">فرمول‌ها:</span> I_gen = kVA × 1.44 | I_design = I_actual × (1 + Future Expansion%)'
             ]
         )
 
@@ -1029,33 +1029,25 @@ with tabs[2]:
 # ==============================================================================
 
 with tabs[3]:
-    st.header("🛡️ حفاظت و سایزینگ کلید")
+    st.header("🛡️ Protection & Breaker Sizing")
     with st.container(border=True):
-        p_curr = st.number_input("جریان بار (آمپر)", value=100.0, step=1.0, key="p_curr")
-        p_type = st.selectbox("نوع بار", ["مقاومتی", "سلفی", "موتوری"], key="p_type")
-        system_voltage = st.selectbox("ولتاژ سیستم (V)", [380, 400, 415], index=0, key="sys_voltage")
+        p_curr = st.number_input("Load Current (A)", value=100.0, step=1.0, key="p_curr")
+        p_type = st.selectbox("Load Type", ["Resistive", "Inductive", "Motor"], key="p_type")
+        system_voltage = st.selectbox("System Voltage (V)", [380, 400, 415], index=0, key="sys_voltage")
     
-    if st.button("🔍 محاسبه حفاظت", use_container_width=True):
-        # تبدیل نوع بار به انگلیسی برای توابع
-        load_type_map = {
-            "مقاومتی": "Resistive",
-            "سلفی": "Inductive",
-            "موتوری": "Motor"
-        }
-        p_type_en = load_type_map[p_type]
-        
-        b_size = get_breaker_size(p_curr, p_type_en)
+    if st.button("🔍 Calculate Protection", use_container_width=True):
+        b_size = get_breaker_size(p_curr, p_type)
         cable_size = get_cable_size(p_curr, system_voltage, 0.8, 2, 50)
         
         st.markdown(f"""
             <div class='result-box'>
-                <div class='result-text'>🛡️ کلید پیشنهادی: {b_size} آمپر</div>
-                <div class='result-text' style='color: #1b5e20;'>📏 کابل پیشنهادی: {cable_size} میلی‌متر مربع</div>
-                <div class='result-text' style='color: #5f6368;'>📊 نوع بار: {p_type}</div>
+                <div class='result-text'>🛡️ Suggested Breaker: {b_size} A</div>
+                <div class='result-text' style='color: #1b5e20;'>📏 Recommended Cable: {cable_size} mm²</div>
+                <div class='result-text' style='color: #5f6368;'>📊 Load Type: {p_type}</div>
             </div>
         """, unsafe_allow_html=True)
         
-        st.info(f"💡 برای بار {p_curr} آمپر از نوع {p_type} → کابل: **{cable_size} میلی‌متر مربع** → کلید: **{b_size} آمپر**")
+        st.info(f"💡 For {p_curr} A {p_type} load → Cable: **{cable_size} mm²** → Breaker: **{b_size} A**")
         
         show_info_box(
             "📋 نتیجه محاسبه حفاظت",
@@ -1072,13 +1064,13 @@ with tabs[3]:
 # ==============================================================================
 
 with tabs[4]:
-    st.header("❄️ تست توان سرمایشی HVAC")
+    st.header("❄️ HVAC Cooling Capacity Test")
 
     with st.container(border=True):
-        st.subheader("🎯 تنظیم توان هدف")
+        st.subheader("🎯 Target Capacity Setting")
         
         target_capacity = st.number_input(
-            "توان هدف (کیلووات)", 
+            "Target Capacity (kW)", 
             value=30.0, 
             step=1.0, 
             min_value=1.0,
@@ -1086,25 +1078,25 @@ with tabs[4]:
         )
     
     with st.container(border=True):
-        st.subheader("📊 ورودی‌های اندازه‌گیری")
+        st.subheader("📊 Measurement Inputs")
         
         c1, c2 = st.columns(2)
         with c1:
             air_velocity = st.number_input(
-                "سرعت باد (متر بر ثانیه)", 
+                "Air Velocity (m/s)", 
                 value=2.0, 
                 step=0.1, 
                 format="%.1f"
             )
             
             area_method = st.radio(
-                "روش محاسبه سطح مقطع کویل:",
-                ["ورود دستی", "محاسبه از روی فن‌ها"]
+                "Coil Area Calculation Method:",
+                ["Manual Entry", "Calculate from Fans"]
             )
             
-            if area_method == "ورود دستی":
+            if area_method == "Manual Entry":
                 coil_area = st.number_input(
-                    "سطح مقطع کویل (متر مربع)", 
+                    "Coil Area (m²)", 
                     value=1.0, 
                     step=0.05, 
                     format="%.2f"
@@ -1114,14 +1106,14 @@ with tabs[4]:
                 col_f1, col_f2 = st.columns(2)
                 with col_f1:
                     num_fans = st.number_input(
-                        "تعداد فن‌ها", 
+                        "Number of Fans", 
                         value=6, 
                         step=1, 
                         min_value=1
                     )
                 with col_f2:
                     fan_diameter = st.number_input(
-                        "قطر فن (سانتی‌متر)", 
+                        "Fan Diameter (cm)", 
                         value=30.0, 
                         step=1.0, 
                         min_value=1.0,
@@ -1134,11 +1126,11 @@ with tabs[4]:
                 single_fan_area = math.pi * (fan_radius ** 2)
                 
                 st.info(f"""
-                    **📐 سطح مقطع کویل محاسبه شده از روی فن‌ها:**
-                    - تعداد فن‌ها: {num_fans}
-                    - قطر فن: {fan_diameter} سانتی‌متر
-                    - سطح مقطع هر فن: {single_fan_area:.4f} متر مربع
-                    - **سطح مقطع کل کویل: {coil_area:.4f} متر مربع**
+                    **📐 Coil Area Calculated from Fans:**
+                    - Number of Fans: {num_fans}
+                    - Fan Diameter: {fan_diameter} cm
+                    - Single Fan Area: {single_fan_area:.4f} m²
+                    - **Total Coil Area: {coil_area:.4f} m²**
                 """)
                 
                 fan_info = {
@@ -1150,24 +1142,24 @@ with tabs[4]:
         
         with c2:
             temp_in = st.number_input(
-                "دمای هوای ورودی (°C)", 
+                "Inlet Air Temp (°C)", 
                 value=35.0, 
                 step=0.5, 
                 format="%.1f"
             )
             temp_out = st.number_input(
-                "دمای هوای خروجی (°C)", 
+                "Outlet Air Temp (°C)", 
                 value=23.0, 
                 step=0.5, 
                 format="%.1f"
             )
     
     with st.container(border=True):
-        st.subheader("⚙️ پارامترهای پیشرفته")
+        st.subheader("⚙️ Advanced Parameters")
         c1, c2 = st.columns(2)
         with c1:
             air_density = st.number_input(
-                "چگالی هوا (kg/m³)", 
+                "Air Density (kg/m³)", 
                 value=1.2, 
                 step=0.01, 
                 format="%.2f"
@@ -1180,7 +1172,7 @@ with tabs[4]:
                 format="%.3f"
             )
     
-    if st.button("❄️ اجرای تست سرمایشی", use_container_width=True):
+    if st.button("❄️ Run Cooling Test", use_container_width=True):
         result = calculate_cooling_capacity(
             air_velocity=air_velocity,
             coil_area=coil_area,
@@ -1192,26 +1184,26 @@ with tabs[4]:
         )
         
         st.markdown("---")
-        st.subheader("📊 نتایج تست")
+        st.subheader("📊 Test Results")
         
         if fan_info:
             st.markdown(f"""
             <div style='background-color: #f5f5f5; padding: 10px; border-radius: 8px; margin-bottom: 10px; direction: rtl; text-align: right;'>
-                <b>🔧 اطلاعات فن‌ها:</b>
-                {fan_info['num_fans']} فن با قطر {fan_info['fan_diameter']} سانتی‌متر 
-                → سطح مقطع کل: {fan_info['total_area']:.4f} متر مربع
+                <b>🔧 Fan Information:</b>
+                {fan_info['num_fans']} fans with diameter {fan_info['fan_diameter']} cm 
+                → Total cross-section: {fan_info['total_area']:.4f} m²
             </div>
             """, unsafe_allow_html=True)
         
         col1, col2, col3 = st.columns(3)
         with col1:
-            st.metric("🌬️ دبی حجمی", f"{result['volume_flow']} m³/s")
-            st.metric("🌡️ اختلاف دما (ΔT)", f"{result['delta_t']} °C")
+            st.metric("🌬️ Volume Flow", f"{result['volume_flow']} m³/s")
+            st.metric("🌡️ Temperature Diff (ΔT)", f"{result['delta_t']} °C")
         with col2:
-            st.metric("⚖️ دبی جرمی", f"{result['mass_flow']} kg/s")
-            st.metric("🎯 توان هدف", f"{result['target']} kW")
+            st.metric("⚖️ Mass Flow", f"{result['mass_flow']} kg/s")
+            st.metric("🎯 Target Capacity", f"{result['target']} kW")
         with col3:
-            st.metric("❄️ توان سرمایشی", f"{result['capacity']} kW", 
+            st.metric("❄️ Cooling Capacity", f"{result['capacity']} kW", 
                      delta=f"{result['percentage']}%")
         
         st.markdown("---")
@@ -1224,47 +1216,47 @@ with tabs[4]:
                     {result['status_text']}
                 </div>
                 <div style='font-size: 20px; font-weight: 600;'>
-                    توان محاسبه شده: <span style='color: #1a73e8;'>{result['capacity']} کیلووات</span>
-                    &nbsp;|&nbsp; درصد توان: <span style='color: #1a73e8;'>{result['percentage']}%</span>
-                    &nbsp;|&nbsp; وضعیت: <span style='color: #1a73e8;'>{result['status']}</span>
+                    Calculated Power: <span style='color: #1a73e8;'>{result['capacity']} kW</span>
+                    &nbsp;|&nbsp; Power Percentage: <span style='color: #1a73e8;'>{result['percentage']}%</span>
+                    &nbsp;|&nbsp; Status: <span style='color: #1a73e8;'>{result['status']}</span>
                 </div>
             </div>
         """, unsafe_allow_html=True)
         
-        with st.expander("📝 جزئیات محاسبات"):
+        with st.expander("📝 Calculation Details"):
             st.markdown(f"""
             <div style='padding: 10px; direction: rtl; text-align: right;'>
-                <b>مراحل محاسبه:</b><br><br>
-                ۱. <b>دبی حجمی هوا:</b> Q = سرعت باد × سطح مقطع = {air_velocity} × {coil_area:.4f} = <b>{result['volume_flow']} m³/s</b><br><br>
-                ۲. <b>دبی جرمی هوا:</b> ṁ = Q × ρ = {result['volume_flow']} × {air_density} = <b>{result['mass_flow']} kg/s</b><br><br>
-                ۳. <b>اختلاف دما:</b> ΔT = T_ورودی - T_خروجی = {temp_in} - {temp_out} = <b>{result['delta_t']} °C</b><br><br>
-                ۴. <b>توان سرمایشی:</b> P = ṁ × Cₚ × ΔT = {result['mass_flow']} × {cp} × {result['delta_t']} = <b>{result['capacity']} کیلووات</b>
+                <b>Calculation Steps:</b><br><br>
+                1. <b>Air Volume Flow:</b> Q = Air Velocity × Cross Section = {air_velocity} × {coil_area:.4f} = <b>{result['volume_flow']} m³/s</b><br><br>
+                2. <b>Air Mass Flow:</b> ṁ = Q × ρ = {result['volume_flow']} × {air_density} = <b>{result['mass_flow']} kg/s</b><br><br>
+                3. <b>Temperature Difference:</b> ΔT = T_inlet - T_outlet = {temp_in} - {temp_out} = <b>{result['delta_t']} °C</b><br><br>
+                4. <b>Cooling Power:</b> P = ṁ × Cₚ × ΔT = {result['mass_flow']} × {cp} × {result['delta_t']} = <b>{result['capacity']} kW</b>
             </div>
             """, unsafe_allow_html=True)
         
-        with st.expander("💡 پیشنهادات"):
+        with st.expander("💡 Recommendations"):
             suggestions = []
             
             if result['capacity'] < target_capacity:
                 needed_velocity = (target_capacity * air_velocity) / result['capacity']
                 if needed_velocity > air_velocity:
-                    suggestions.append(f"🔹 افزایش سرعت باد به حدود **{needed_velocity:.2f} متر بر ثانیه** (از {air_velocity} متر بر ثانیه)")
+                    suggestions.append(f"🔹 Increase air velocity to approximately **{needed_velocity:.2f} m/s** (from {air_velocity} m/s)")
                 
                 if fan_info:
                     needed_area = (target_capacity * coil_area) / result['capacity']
                     if needed_area > coil_area:
                         needed_fans = (needed_area / fan_info['single_fan_area'])
-                        suggestions.append(f"🔹 افزایش تعداد فن‌ها به حدود **{math.ceil(needed_fans)}** عدد (از {fan_info['num_fans']} عدد)")
+                        suggestions.append(f"🔹 Increase number of fans to approximately **{math.ceil(needed_fans)}** units (from {fan_info['num_fans']} units)")
                 
                 needed_delta = (target_capacity * result['delta_t']) / result['capacity']
                 if needed_delta > result['delta_t']:
                     needed_temp_out = temp_in - needed_delta
-                    suggestions.append(f"🔹 کاهش دمای خروجی به حدود **{needed_temp_out:.1f} درجه سانتی‌گراد** (از {temp_out} درجه سانتی‌گراد)")
+                    suggestions.append(f"🔹 Reduce outlet temperature to approximately **{needed_temp_out:.1f} °C** (from {temp_out} °C)")
                 
                 if not suggestions:
-                    suggestions.append("🔸 سیستم نیاز به بررسی کامل دارد.")
+                    suggestions.append("🔸 System requires complete review.")
             else:
-                suggestions.append(f"✅ سیستم به توان اسمی {target_capacity} کیلووات رسیده است.")
+                suggestions.append(f"✅ System has reached nominal capacity of {target_capacity} kW.")
             
             for s in suggestions:
                 st.markdown(s)
@@ -1280,29 +1272,29 @@ with tabs[4]:
         ]
     )
     
-    with st.expander("📖 راهنمای انجام تست"):
+    with st.expander("📖 Test Procedure Guide"):
         st.markdown("""
-        ### 🔍 مراحل انجام تست:
+        ### 🔍 Test Steps:
         
-        1. **تنظیم توان هدف** - توان اسمی سیستم خود را وارد کنید
+        1. **Set Target Capacity** - Enter your system's nominal cooling capacity
         
-        2. **اندازه‌گیری سرعت باد** با بادسنج در نقاط مختلف کویل و گرفتن میانگین
+        2. **Measure Air Velocity** with an anemometer at multiple points on the coil and take the average
         
-        3. **انتخاب روش محاسبه سطح مقطع:**
-           - **ورود دستی:** سطح مقطع را مستقیم وارد کنید
-           - **محاسبه از روی فن‌ها:** تعداد و قطر فن‌ها را وارد کنید تا سطح مقطع خودکار محاسبه شود
+        3. **Select Coil Area Calculation Method:**
+           - **Manual Entry:** Enter the coil area directly
+           - **Calculate from Fans:** Enter number and diameter of fans for automatic area calculation
         
-        4. **اندازه‌گیری دمای ورودی و خروجی** هوا با دماسنج دقیق
+        4. **Measure Inlet and Outlet Air Temperatures** with a precise thermometer
         
-        5. **وارد کردن مقادیر** در فرم بالا و کلیک روی دکمه تست
+        5. **Enter values** in the form above and click the test button
         
         ---
         
-        ### ⚠️ نکات مهم:
+        ### ⚠️ Important Notes:
         
-        - تست باید در **شرایط پایدار** (Steady-State) انجام شود
-        - اگر دمای کویل از نقطه شبنم پایین‌تر باشد، رطوبت تبدیل به آب شده و محاسبات دقیق‌تر نیاز به اندازه‌گیری رطوبت دارد
-        - برای دقت بیشتر، اندازه‌گیری را در **یک شبکه منظم (Grid)** روی سطح کویل انجام دهید
+        - Test should be performed in **steady-state** conditions
+        - If coil temperature is below the dew point, moisture condenses and calculations require humidity measurement for accuracy
+        - For better accuracy, take measurements in a **regular grid pattern** across the coil surface
         """)
 
 # ==============================================================================
@@ -1310,26 +1302,26 @@ with tabs[4]:
 # ==============================================================================
 
 with tabs[5]:
-    st.header("⚙️ تنظیمات")
+    st.header("⚙️ Settings")
     
     st.markdown(f"""
     <div class="settings-box">
-        <b>📋 مدیریت تنظیمات نرم‌افزار</b><br>
-        در این بخش می‌توانید تنظیمات ظاهری نرم‌افزار را تغییر دهید.
+        <b>📋 Application Settings Management</b><br>
+        In this section you can change the application's appearance settings.
     </div>
     """, unsafe_allow_html=True)
     
     # ========== Theme Settings ==========
-    st.subheader("🌓 تنظیمات تم")
+    st.subheader("🌓 Theme Settings")
     
     col1, col2 = st.columns(2)
     with col1:
-        current_theme = "🌞 روشن" if st.session_state.theme == 'light' else "🌙 تاریک"
-        st.info(f"تم فعلی: **{current_theme}**")
+        current_theme = "🌞 Light" if st.session_state.theme == 'light' else "🌙 Dark"
+        st.info(f"Current Theme: **{current_theme}**")
     
     with col2:
         theme_icon = "🌙" if st.session_state.theme == 'light' else "☀️"
-        theme_label = "تغییر به حالت تاریک" if st.session_state.theme == 'light' else "تغییر به حالت روشن"
+        theme_label = "Switch to Dark Mode" if st.session_state.theme == 'light' else "Switch to Light Mode"
         
         if st.button(f"{theme_icon} {theme_label}", use_container_width=True):
             toggle_theme()
@@ -1338,26 +1330,26 @@ with tabs[5]:
     st.divider()
     
     # ========== About ==========
-    st.subheader("ℹ️ درباره نرم‌افزار")
+    st.subheader("ℹ️ About")
     st.markdown("""
     **ElectroCalc ⚡ M&F**  
-    نسخه: **۲.۰**  
-    توسعه یافته برای مهندسی سیستم‌های قدرت  
+    Version: **2.0**  
+    Developed for Power Systems Engineering  
     
-    **استانداردهای مورد استفاده:**
-    - IEC 60364 - سایزینگ کابل
-    - IEEE 485 - سایزینگ UPS
-    - IEC 60034 - محاسبات موتور
-    - IEC 60947 - انتخاب کلید
-    - IEC 60909 - اتصال کوتاه
+    **Standards Used:**
+    - IEC 60364 - Cable Sizing
+    - IEEE 485 - UPS Sizing
+    - IEC 60034 - Motor Calculations
+    - IEC 60947 - Breaker Selection
+    - IEC 60909 - Short Circuit
     """)
     
     st.divider()
     
     # ========== Status ==========
-    st.subheader("🔒 وضعیت")
+    st.subheader("🔒 Status")
     st.markdown(f"""
-    ✅ **وضعیت نرم‌افزار:** آنلاین  
-    ✅ **تم:** {current_theme}  
-    ✅ **نسخه:** ۲.۰
+    ✅ **Application Status:** Online  
+    ✅ **Theme:** {current_theme}  
+    ✅ **Version:** 2.0
     """)
