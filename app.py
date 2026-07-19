@@ -1812,11 +1812,11 @@ with col1:
 st.info(f"Current Theme: **{current_theme}**")
 
 with col2:
-theme_icon = "🌙" if st.session_state.theme == 'light' else "☀️"
-theme_label = "Switch to Dark Mode" if st.session_state.theme == 'light' else "Switch to Light Mode"
+    theme_icon = "🌙" if st.session_state.theme == 'light' else "☀️"
+    theme_label = "Switch to Dark Mode" if st.session_state.theme == 'light' else "Switch to Light Mode"
 
 if st.button(f"{theme_icon} {theme_label}", use_container_width=True):
-toggle_theme()
+    toggle_theme()
 st.rerun()
 
 st.divider()
