@@ -36,9 +36,11 @@ if st.session_state.theme == 'light':
     result_bg = "#f1f3f4"
     sidebar_bg = "#f0f2f6"
     input_bg = "#ffffff"
+    metric_label_color = "#1a1a1a"
+    metric_value_color = "#1a73e8"
 else:
     bg_color = "#1a1a1a"
-    text_color = "#f0f0f0"
+    text_color = "#ffffff"  # سفید برای حالت تاریک
     card_bg = "#2d2d2d"
     border_color = "#555555"
     tab_bg = "#333333"
@@ -48,6 +50,8 @@ else:
     result_bg = "#2d2d2d"
     sidebar_bg = "#252525"
     input_bg = "#333333"
+    metric_label_color = "#ffffff"  # سفید برای لیبل متریک‌ها
+    metric_value_color = "#4FC3F7"  # آبی روشن برای مقادیر متریک در حالت تاریک
 
 # ==============================================================================
 # --- استایل ---
@@ -68,6 +72,11 @@ st.markdown(f"""
     .block-container {{
         padding-top: 30px !important;
         padding-bottom: 30px !important;
+    }}
+
+    /* ========== تنظیم رنگ متن کلی ========== */
+    .stApp, .stApp p, .stApp label, .stApp div, .stApp span {{
+        color: {text_color} !important;
     }}
 
     /* ========== اسم نرم‌افزار ========== */
@@ -300,6 +309,44 @@ st.markdown(f"""
         border-radius: 8px;
         border-right: 4px solid #ff9800;
         margin: 8px 0;
+    }}
+
+    /* ========== تنظیم رنگ متریک‌ها ========== */
+    div[data-testid="metric-container"] label {{
+        color: {metric_label_color} !important;
+        font-size: 14px !important;
+    }}
+    
+    div[data-testid="metric-container"] .stMetricValue {{
+        color: {metric_value_color} !important;
+        font-size: 24px !important;
+        font-weight: 700 !important;
+    }}
+    
+    div[data-testid="metric-container"] .stMetricDelta {{
+        color: {text_color} !important;
+    }}
+
+    /* ========== تنظیم رنگ هدرها ========== */
+    .stHeader, .stSubheader {{
+        color: {text_color} !important;
+    }}
+
+    /* ========== تنظیم رنگ لیبل‌ها ========== */
+    label, .stMarkdown p {{
+        color: {text_color} !important;
+    }}
+
+    /* ========== تنظیم رنگ ورودی‌ها ========== */
+    .stNumberInput input, .stSelectbox select {{
+        color: {text_color} !important;
+        background-color: {input_bg} !important;
+    }}
+
+    /* ========== تنظیم رنگ دکمه‌ها ========== */
+    .stButton > button {{
+        color: {button_text} !important;
+        background-color: {button_bg} !important;
     }}
     </style>
 """, unsafe_allow_html=True)
