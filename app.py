@@ -1643,7 +1643,8 @@ with tabs[5]:
                 X_per_km = 0.038
             
             # 🔹 فرمول ۵: راکتانس معادل کابل
-            X_cable = X_per_km * cable_length / 1000 / cable_count            
+            X_cable = X_per_km * cable_length / 1000 / cable_count
+            
             # 🔹 فرمول ۶: امپدانس کابل
             Z_cable = math.sqrt(R_cable**2 + X_cable**2)
             
@@ -1770,13 +1771,13 @@ with tabs[5]:
             **فرمولهای ترانسفورماتور:**
             
             **فرمولهای ژنراتور:**
-
+            
             **فرمولهای کابل:**
 """)
 
-        # --- جعبه اطلاعات ---
-           show_info_box(
-            "📋 تفسیر نتایج اتصال کوتاه",
+# --- جعبه اطلاعات ---
+show_info_box(
+"📋 تفسیر نتایج اتصال کوتاه",
 [
     f'<span class="highlight">Uk% = {Uk_percent}%</span> - هرچه کمتر باشد، جریان اتصال کوتاه بیشتر است',
     'جریان اتصال کوتاه در ترمینال ترانس: حداکثر مقدار ممکن',
@@ -1793,10 +1794,10 @@ with tabs[5]:
 # ==============================================================================
 
 with tabs[6]:
-     st.header("⚙️ Settings")
+st.header("⚙️ Settings")
 
-     st.markdown(f"""
-     <div class="settings-box">
+st.markdown(f"""
+<div class="settings-box">
 <b>📋 مدیریت تنظیمات نرم‌افزار</b><br>
 در این بخش می‌توانید تنظیمات ظاهری نرم‌افزار را تغییر دهید.
 </div>
