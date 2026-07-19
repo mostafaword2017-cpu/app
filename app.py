@@ -1794,7 +1794,7 @@ show_info_box(
 # ==============================================================================
 
 with tabs[6]:
-st.header("⚙️ Settings")
+    st.header("⚙️ Settings")
 
 st.markdown(f"""
 <div class="settings-box">
