@@ -177,7 +177,7 @@ st.markdown(f"""
     }}
 
     .stTabs div[role="tablist"] {{
-        gap: 8px !important;
+        gap: 6px !important;
         flex-wrap: nowrap !important;
         overflow-x: auto !important;
         justify-content: center !important;
@@ -188,13 +188,13 @@ st.markdown(f"""
     }}
     
     .stTabs [role="tab"] {{
-        font-size: 18px !important;
-        padding: 12px 22px !important;
-        border-radius: 14px 14px 0px 0px !important;
+        font-size: 14px !important;
+        padding: 10px 16px !important;
+        border-radius: 12px 12px 0px 0px !important;
         background-color: {tab_bg} !important;
         color: {text_color} !important;
         white-space: nowrap !important;
-        min-width: 80px !important;
+        min-width: 60px !important;
         text-align: center !important;
         font-weight: 600 !important;
         border: 2px solid {border_color} !important;
@@ -223,7 +223,7 @@ st.markdown(f"""
         opacity: 1 !important;
         transform: translateY(-4px) !important;
         box-shadow: 0 6px 20px rgba(46, 125, 50, 0.4) !important;
-        font-size: 19px !important;
+        font-size: 15px !important;
         text-shadow: 0 1px 2px rgba(0,0,0,0.2) !important;
     }}
     
@@ -240,7 +240,7 @@ st.markdown(f"""
         }}
         
         .stTabs div[role="tablist"] {{
-            gap: 4px !important;
+            gap: 3px !important;
             padding: 4px 0 4px 0 !important;
             justify-content: flex-start !important;
             overflow-x: auto !important;
@@ -248,17 +248,17 @@ st.markdown(f"""
         }}
         
         .stTabs [role="tab"] {{
-            font-size: 13px !important;
-            padding: 8px 12px !important;
-            min-width: 55px !important;
-            border-radius: 10px 10px 0px 0px !important;
+            font-size: 11px !important;
+            padding: 6px 10px !important;
+            min-width: 45px !important;
+            border-radius: 8px 8px 0px 0px !important;
             flex: 0 0 auto !important;
             display: inline-block !important;
             font-weight: 600 !important;
         }}
         
         .stTabs [aria-selected="true"] {{
-            font-size: 14px !important;
+            font-size: 12px !important;
             transform: translateY(-3px) !important;
             box-shadow: 0 4px 14px rgba(46, 125, 50, 0.35) !important;
             color: #FFFFFF !important;
@@ -267,12 +267,12 @@ st.markdown(f"""
 
     @media screen and (max-width: 400px) {{
         .stTabs [role="tab"] {{
-            font-size: 11px !important;
-            padding: 6px 8px !important;
-            min-width: 45px !important;
+            font-size: 10px !important;
+            padding: 5px 8px !important;
+            min-width: 38px !important;
         }}
         .stTabs [aria-selected="true"] {{
-            font-size: 12px !important;
+            font-size: 11px !important;
             color: #FFFFFF !important;
         }}
     }}
@@ -811,12 +811,12 @@ def calculate_short_circuit(transformer_kva, uk_percent, voltage=400,
     }
 
 # ==============================================================================
-# --- Tabs (7 tabs) - تعریف تب‌ها ---
+# --- Tabs (7 tabs) - تعریف تب‌ها با نام‌های فارسی کوتاه ---
 # ==============================================================================
 
 tab1, tab2, tab3, tab4, tab5, tab6, tab7 = st.tabs([
-    "📏 Cable", "🔋 UPS", "⚙️ Motor", "🛡️ Protect", 
-    "❄️ HVAC Test", "🔌 Short Circuit", "⚙️ Settings"
+    "📏 کابل", "🔋 UPS", "⚙️ موتور", "🛡️ حفاظت", 
+    "❄️ سرمایش", "🔌 اتصال کوتاه", "⚙️ تنظیمات"
 ])
 
 # ==============================================================================
