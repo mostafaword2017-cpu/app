@@ -611,6 +611,10 @@ def get_cable_size(current_a, voltage=380, cos_phi=0.8, max_drop=2, length=50, c
     return selected
 
 def get_breaker_size(current_a, load_type="Motor"):
+    """
+    محاسبه سایز کلید محافظ بر اساس جریان و نوع بار
+    پشتیبانی از کلیدهای MCB (تا 125A)، MCCB (تا 1600A) و ACB (بالای 1600A)
+    """
     if load_type == "Motor":
         multiplier = 1.6
     elif load_type == "Inductive":
@@ -619,11 +623,18 @@ def get_breaker_size(current_a, load_type="Motor"):
         multiplier = 1.25
     
     required = current_a * multiplier
-    standard_breakers = [6, 10, 16, 20, 25, 32, 40, 50, 63, 80, 100, 125, 160, 200, 250, 315, 400, 500, 630]
+    
+    # رنج استاندارد کلیدهای موجود در بازار (تا 1600 آمپر)
+    standard_breakers = [
+        6, 10, 16, 20, 25, 32, 40, 50, 63, 80, 100, 125,  # MCB
+        160, 200, 250, 315, 400, 500, 630, 800, 1000, 1250, 1600  # MCCB
+    ]
     
     for breaker in standard_breakers:
         if breaker >= required:
             return breaker
+    
+    # اگر جریان از 1600 بیشتر بود، بزرگترین سایز موجود را برمی‌گرداند
     return standard_breakers[-1]
 
 def calculate_voltage_drop(current_a, length, cable_size, voltage=415, cos_phi=0.8, conductor="Copper"):
@@ -1103,10 +1114,29 @@ with tab3:
 
 with tab4:
     st.header("🛡️ حفاظت و سایزینگ کلید")
+    
+    st.markdown(f"""
+    <div class="info-box-new" style="margin-bottom: 15px;">
+        <div class="info-title">📌 راهنمای انتخاب کلید</div>
+        <div class="info-item"><span class="bullet">•</span> <b>MCB:</b> تا ۱۲۵ آمپر (مصارف خانگی و تجاری سبک)</div>
+        <div class="info-item"><span class="bullet">•</span> <b>MCCB:</b> تا ۱۶۰۰ آمپر (مصارف صنعتی)</div>
+        <div class="info-item"><span class="bullet">•</span> <b>ACB:</b> بالای ۱۶۰۰ آمپر (مصارف سنگین)</div>
+        <div class="info-item"><span class="bullet">•</span> ضریب ایمنی: مقاومتی ۱.۲۵ | سلفی ۱.۴ | موتوری ۱.۶</div>
+    </div>
+    """, unsafe_allow_html=True)
+    
     with st.container(border=True):
         p_curr = st.number_input("جریان بار (آمپر)", value=100.0, step=1.0, key="p_curr")
         p_type = st.selectbox("نوع بار", ["مقاومتی", "سلفی", "موتوری"], key="p_type")
         system_voltage = st.selectbox("ولتاژ سیستم (V)", [380, 400, 415], index=0, key="sys_voltage")
+        
+        # نمایش رنج کلید بر اساس جریان
+        if p_curr <= 125:
+            st.info("💡 **نوع کلید پیشنهادی:** MCB (مناسب برای جریان‌های تا ۱۲۵ آمپر)")
+        elif p_curr <= 1600:
+            st.info("💡 **نوع کلید پیشنهادی:** MCCB (مناسب برای جریان‌های تا ۱۶۰۰ آمپر)")
+        else:
+            st.info("💡 **نوع کلید پیشنهادی:** ACB (مناسب برای جریان‌های بالای ۱۶۰۰ آمپر)")
     
     if st.button("🔍 محاسبه حفاظت", use_container_width=True):
         # تبدیل نوع بار به انگلیسی برای توابع
@@ -1120,22 +1150,48 @@ with tab4:
         b_size = get_breaker_size(p_curr, p_type_en)
         cable_size = get_cable_size(p_curr, system_voltage, 0.8, 2, 50)
         
+        # تعیین نوع کلید
+        if b_size <= 125:
+            breaker_type = "MCB"
+        elif b_size <= 1600:
+            breaker_type = "MCCB"
+        else:
+            breaker_type = "ACB"
+        
+        # تعیین ضریب ایمنی
+        safety_factors = {
+            "مقاومتی": 1.25,
+            "سلفی": 1.4,
+            "موتوری": 1.6
+        }
+        safety_factor = safety_factors[p_type]
+        
         st.markdown(f"""
             <div class='result-box'>
-                <div class='result-text'>🛡️ کلید پیشنهادی: {b_size} آمپر</div>
+                <div class='result-text'>🛡️ کلید پیشنهادی: {b_size} آمپر ({breaker_type})</div>
                 <div class='result-text' style='color: #1b5e20;'>📏 کابل پیشنهادی: {cable_size} میلی‌متر مربع</div>
                 <div class='result-text' style='color: #5f6368;'>📊 نوع بار: {p_type}</div>
+                <div class='result-text' style='color: #0d47a1;'>🔧 ضریب ایمنی: {safety_factor}</div>
             </div>
         """, unsafe_allow_html=True)
         
-        st.info(f"💡 برای بار {p_curr} آمپر از نوع {p_type} → کابل: **{cable_size} میلی‌متر مربع** → کلید: **{b_size} آمپر**")
+        # نمایش توضیحات تکمیلی
+        if b_size <= 125:
+            st.success(f"✅ کلید {b_size} آمپر از نوع **MCB** برای این کاربرد مناسب است.")
+        elif b_size <= 1600:
+            st.success(f"✅ کلید {b_size} آمپر از نوع **MCCB** برای این کاربرد مناسب است.")
+        else:
+            st.warning(f"⚠️ کلید {b_size} آمپر از نوع **ACB** برای این کاربرد مناسب است.")
+        
+        st.info(f"💡 برای بار {p_curr} آمپر از نوع {p_type} → کابل: **{cable_size} میلی‌متر مربع** → کلید: **{b_size} آمپر ({breaker_type})**")
         
         show_info_box(
             "📋 نتیجه محاسبه حفاظت",
             [
                 'کلید محافظ با توجه به جریان بار و نوع آن انتخاب شده است',
+                f'نوع کلید: {breaker_type} - {b_size} آمپر',
                 'سایز کابل بر اساس جریان بار و افت ولتاژ مجاز پیشنهاد شده است',
-                'ضریب ایمنی برای بارهای مختلف متفاوت است (مقاومتی: ۱.۲۵، سلفی: ۱.۴، موتوری: ۱.۶)',
+                f'ضریب ایمنی: {safety_factor}',
                 '<span class="highlight">فرمول:</span> I_breaker = I_load × K_safety'
             ]
         )
