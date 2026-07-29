@@ -561,54 +561,112 @@ def show_info_box(title, items):
 # ==============================================================================
 
 def get_cable_size(current_a, voltage=380, cos_phi=0.8, max_drop=2, length=50, conductor="Copper"):
-    standard_sizes = [1.5, 2.5, 4, 6, 10, 16, 25, 35, 50, 70, 95, 120, 150, 185, 240, 300]
+    """
+    محاسبه سایز کابل با پشتیبانی از کابل‌های موازی برای جریان‌های بالا
+    """
+    # سایزهای استاندارد کابل (تا 1000mm²)
+    standard_sizes = [1.5, 2.5, 4, 6, 10, 16, 25, 35, 50, 70, 95, 120, 150, 185, 240, 300, 400, 500, 630, 800, 1000]
     
     if conductor == "Copper":
         current_capacity = {
             1.5: 18, 2.5: 24, 4: 32, 6: 41, 10: 57, 16: 76,
             25: 101, 35: 125, 50: 151, 70: 192, 95: 232,
-            120: 269, 150: 300, 185: 341, 240: 400, 300: 460
+            120: 269, 150: 300, 185: 341, 240: 400, 300: 460,
+            400: 540, 500: 630, 630: 740, 800: 880, 1000: 1000
         }
         conductivity = 56
     else:
         current_capacity = {
             1.5: 14, 2.5: 18, 4: 25, 6: 32, 10: 44, 16: 60,
             25: 80, 35: 100, 50: 120, 70: 150, 95: 185,
-            120: 215, 150: 240, 185: 270, 240: 320, 300: 370
+            120: 215, 150: 240, 185: 270, 240: 320, 300: 370,
+            400: 440, 500: 510, 630: 600, 800: 710, 1000: 810
         }
         conductivity = 35
     
     safety_factor = 1.25
     required_current = current_a * safety_factor
     
-    selected_index = 0
-    for i, (size, capacity) in enumerate(current_capacity.items()):
+    # پیدا کردن سایز مناسب برای جریان مورد نیاز
+    selected_size = None
+    for size, capacity in current_capacity.items():
         if capacity >= required_current:
-            selected_index = i
+            selected_size = size
             break
-    else:
-        selected_index = len(standard_sizes) - 1
     
-    if selected_index < len(standard_sizes) - 1:
-        selected_index += 1
+    # اگر سایز مناسبی پیدا نشد، از بزرگترین سایز استفاده می‌کنیم
+    if selected_size is None:
+        selected_size = max(standard_sizes)
     
-    selected = standard_sizes[selected_index]
-    
+    # محاسبه سطح مقطع مورد نیاز بر اساس افت ولتاژ
     try:
         area_drop = (current_a * length * 1.732 * cos_phi * 100) / (conductivity * voltage * max_drop)
-        if area_drop > selected:
-            for size in standard_sizes:
-                if size >= area_drop:
-                    idx = standard_sizes.index(size)
-                    if idx < len(standard_sizes) - 1:
-                        selected = standard_sizes[idx + 1]
-                    else:
-                        selected = size
-                    break
     except:
-        pass
+        area_drop = 0
     
-    return selected
+    # انتخاب سایز نهایی (حداکثر بین جریان و افت ولتاژ)
+    final_size = max(selected_size, area_drop) if area_drop > 0 else selected_size
+    
+    # پیدا کردن نزدیک‌ترین سایز استاندارد بالاتر
+    for size in standard_sizes:
+        if size >= final_size:
+            final_size = size
+            break
+    
+    # محاسبه تعداد رشته‌های موازی برای کابل‌های بزرگ
+    # حداکثر جریان برای یک رشته 300mm²
+    max_current_per_cable = current_capacity.get(300, 460)
+    
+    # اگر جریان مورد نیاز از ظرفیت یک کابل 300mm² بیشتر باشد، از کابل‌های موازی استفاده می‌کنیم
+    if current_a > max_current_per_cable * 0.8:  # 80% برای در نظر گرفتن ضریب کاهش
+        # تعداد رشته‌های موازی مورد نیاز
+        num_parallel = math.ceil(current_a / (max_current_per_cable * 0.8))
+        # اطمینان از اینکه تعداد رشته‌ها از 1 کمتر نباشد
+        num_parallel = max(1, num_parallel)
+        
+        # جریان هر رشته
+        current_per_cable = current_a / num_parallel
+        
+        # پیدا کردن سایز مناسب برای هر رشته
+        cable_size_per_parallel = None
+        for size, capacity in current_capacity.items():
+            if capacity >= current_per_cable * safety_factor:
+                cable_size_per_parallel = size
+                break
+        
+        if cable_size_per_parallel is None:
+            cable_size_per_parallel = 300
+        
+        # اگر سایز محاسبه شده از 300mm² بیشتر شد، سایز را کاهش داده و تعداد رشته‌ها را افزایش می‌دهیم
+        if cable_size_per_parallel > 300:
+            # افزایش تعداد رشته‌ها با سایز 300mm²
+            num_parallel = math.ceil(current_a / (current_capacity.get(300, 460) * 0.8))
+            cable_size_per_parallel = 300
+        
+        # اطمینان از اینکه تعداد رشته‌ها بیشتر از 6 نباشد (محدودیت عملی)
+        if num_parallel > 6:
+            num_parallel = 6
+            cable_size_per_parallel = max(standard_sizes)
+        
+        return {
+            'single_size': final_size,
+            'parallel_count': num_parallel,
+            'size_per_parallel': cable_size_per_parallel,
+            'total_capacity': num_parallel * current_capacity.get(cable_size_per_parallel, 0),
+            'is_parallel': num_parallel > 1,
+            'current_per_cable': round(current_per_cable, 1),
+            'recommended_text': f"{num_parallel}×{cable_size_per_parallel} mm²" if num_parallel > 1 else f"{final_size} mm²"
+        }
+    
+    return {
+        'single_size': final_size,
+        'parallel_count': 1,
+        'size_per_parallel': final_size,
+        'total_capacity': current_capacity.get(final_size, 0),
+        'is_parallel': False,
+        'current_per_cable': current_a,
+        'recommended_text': f"{final_size} mm²"
+    }
 
 def get_breaker_size(current_a, load_type="Motor"):
     """
@@ -831,38 +889,103 @@ tab1, tab2, tab3, tab4, tab5, tab6, tab7 = st.tabs([
 ])
 
 # ==============================================================================
-# --- Tab 1: Cable ---
+# --- Tab 1: Cable (نسخه کامل با پشتیبانی از کابل‌های موازی) ---
 # ==============================================================================
 
 with tab1:
     st.header("📐 سایزینگ کابل")
+    
+    st.markdown(f"""
+    <div class="info-box-new" style="margin-bottom: 15px;">
+        <div class="info-title">📌 راهنمای انتخاب کابل</div>
+        <div class="info-item"><span class="bullet">•</span> برای جریان‌های بالا، از چند رشته کابل به صورت موازی استفاده می‌شود</div>
+        <div class="info-item"><span class="bullet">•</span> حداکثر جریان برای هر رشته کابل ۳۰۰mm² حدود ۴۶۰ آمپر است</div>
+        <div class="info-item"><span class="bullet">•</span> تعداد رشته‌های موازی بر اساس جریان کل محاسبه می‌شود</div>
+        <div class="info-item"><span class="bullet">•</span> حداکثر ۶ رشته موازی (به دلیل محدودیت‌های عملی)</div>
+    </div>
+    """, unsafe_allow_html=True)
+    
     with st.container(border=True):
         c1, c2 = st.columns(2)
         with c1:
-            p_in = st.number_input("توان (کیلووات)", value=85.0, step=1.0, key="p_c")
+            p_in = st.number_input("توان (کیلووات)", value=850.0, step=10.0, key="p_c")
             l_in = st.number_input("طول (متر)", value=90.0, step=5.0, key="l_c")
         with c2:
             s_in = st.number_input("سیگما (هدایت الکتریکی)", value=56.0, step=1.0, key="s_c")
             d_in = st.number_input("افت ولتاژ مجاز (%)", value=2.0, step=0.1, key="d_c")
+            conductor_type = st.selectbox("نوع هادی", ["مس", "آلومینیوم"], key="cond_type")
     
     if st.button("🔍 محاسبه کابل", use_container_width=True):
-        curr, f_size, s_size, raw = calculate_cable_fixed(p_in, l_in, s_in, 380, d_in)
+        # محاسبه جریان
+        curr = (p_in * 1000) / (math.sqrt(3) * 380 * 0.8)
+        
+        # تبدیل نوع هادی به انگلیسی
+        conductor_en = "Copper" if conductor_type == "مس" else "Aluminum"
+        
+        # محاسبه سایز کابل با تابع جدید
+        cable_result = get_cable_size(
+            curr, 
+            380, 
+            0.8, 
+            d_in, 
+            l_in,
+            conductor_en
+        )
+        
+        # محاسبه افت ولتاژ
+        voltage_drop = calculate_voltage_drop(
+            curr, 
+            l_in, 
+            cable_result['size_per_parallel'], 
+            380, 
+            0.8,
+            conductor_en
+        )
+        
         st.latex(r"S = \frac{P \times L \times 100}{\sigma \times V^2 \times \Delta V\%}")
+        
         st.markdown(f"""
             <div class='result-box'>
-                <div class='result-text'>⚡ جریان: {curr} آمپر</div>
-                <div class='result-text' style='color: #1b5e20;'>📏 سایز استاندارد: {f_size} میلی‌متر مربع</div>
-                <div class='result-text' style='color: #e65100;'>🚀 سایز ایمن: {s_size} میلی‌متر مربع</div>
-                <p style='color: #5f6368;'>محاسبه دقیق: {raw} میلی‌متر مربع</p>
-            </div>
+                <div class='result-text'>⚡ جریان کل: {curr:.1f} آمپر</div>
         """, unsafe_allow_html=True)
+        
+        # نمایش نتیجه کابل
+        if cable_result['is_parallel']:
+            st.markdown(f"""
+                <div class='result-text' style='color: #1b5e20;'>📏 کابل پیشنهادی: {cable_result['recommended_text']}</div>
+                <div style='font-size: 16px; text-align: right; direction: rtl; padding: 10px;'>
+                    <b>تعداد رشته‌های موازی:</b> {cable_result['parallel_count']} رشته<br>
+                    <b>سایز هر رشته:</b> {cable_result['size_per_parallel']} mm²<br>
+                    <b>جریان هر رشته:</b> {cable_result['current_per_cable']:.1f} A<br>
+                    <b>ظرفیت کل:</b> {cable_result['total_capacity']} A
+                    {' ✅' if cable_result['total_capacity'] >= curr * 1.25 else ' ⚠️'}
+                </div>
+                <p style='color: #5f6368; margin-top: 5px;'>
+                    💡 برای توزیع یکنواخت جریان، کابل‌ها باید هم‌طول و با مشخصات یکسان باشند
+                </p>
+            </div>
+            """, unsafe_allow_html=True)
+        else:
+            st.markdown(f"""
+                <div class='result-text' style='color: #1b5e20;'>📏 کابل پیشنهادی: {cable_result['recommended_text']}</div>
+                <div style='font-size: 16px; text-align: right; direction: rtl; padding: 10px;'>
+                    <b>سایز کابل:</b> {cable_result['single_size']} mm²<br>
+                    <b>ظرفیت جریان:</b> {cable_result['total_capacity']} A
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        st.metric("📉 افت ولتاژ", f"{voltage_drop}%", 
+                 delta="مناسب" if voltage_drop <= 3 else "نیاز به بررسی")
         
         show_info_box(
             "📋 نتیجه محاسبه کابل",
             [
-                'جریان نامی با توجه به توان و ولتاژ ورودی محاسبه شده است',
-                'سایز استاندارد: نزدیک‌ترین سایز بالاتر به مقدار محاسبه شده',
-                'سایز ایمن با در نظر گرفتن ضریب اطمینان برای طول‌های بالای ۸۰ متر',
+                f'جریان نامی: {curr:.1f} آمپر',
+                f'نوع هادی: {conductor_type}',
+                f'کابل پیشنهادی: {cable_result["recommended_text"]}',
+                f'تعداد رشته‌های موازی: {cable_result["parallel_count"]}',
+                f'افت ولتاژ: {voltage_drop}% {"(مناسب)" if voltage_drop <= 3 else "(بیش از حد مجاز)"}',
                 '<span class="highlight">فرمول:</span> S = (P × L × 100) / (σ × V² × ΔV%)'
             ]
         )
@@ -888,8 +1011,17 @@ with tab2:
         volt_text = "12V" if u_volt == 12 else "24V"
         
         ups_current = u_kva * 1.44
-        ups_cable = get_cable_size(ups_current, ups_voltage, 0.8, 2, 50)
+        ups_cable_result = get_cable_size(ups_current, ups_voltage, 0.8, 2, 50)
+        ups_cable = ups_cable_result['recommended_text']
         ups_breaker = get_breaker_size(ups_current, "Inductive")
+        
+        # تعیین نوع کلید
+        if ups_breaker <= 125:
+            breaker_type = "MCB"
+        elif ups_breaker <= 1600:
+            breaker_type = "MCCB"
+        else:
+            breaker_type = "ACB"
         
         st.latex(r"Ah = \frac{Ah_{Base} \times \frac{kVA}{10} \times 32}{N_{Battery} \times \frac{V_{Battery}}{12}}")
         
@@ -898,15 +1030,15 @@ with tab2:
                 <div class='result-text'>📦 ظرفیت باتری: {res} آمپر-ساعت</div>
                 <div class='result-text' style='color: #0d47a1;'>🔋 تعداد باتری‌های مورد نیاز: {u_bat} عدد</div>
                 <div class='result-text' style='color: #e65100;'>⚡ ولتاژ سیستم: {volt_text}</div>
-                <div class='result-text' style='color: #1b5e20;'>📏 کابل پیشنهادی: {ups_cable} میلی‌متر مربع</div>
-                <div class='result-text' style='color: #d32f2f;'>🛡️ کلید پیشنهادی: {ups_breaker} آمپر</div>
+                <div class='result-text' style='color: #1b5e20;'>📏 کابل پیشنهادی: {ups_cable}</div>
+                <div class='result-text' style='color: #d32f2f;'>🛡️ کلید پیشنهادی: {ups_breaker} آمپر ({breaker_type})</div>
             </div>
         """, unsafe_allow_html=True)
         
         if u_volt == 24:
             st.info("💡 در سیستم ۲۴ ولت، ظرفیت آمپر-ساعت مورد نیاز نصف سیستم ۱۲ ولت است")
         
-        st.info(f"💡 برای UPS {u_kva} kVA → جریان = {u_kva} × ۱.۴۴ = **{ups_current:.2f} آمپر** → کابل: **{ups_cable} میلی‌متر مربع** → کلید: **{ups_breaker} آمپر**")
+        st.info(f"💡 برای UPS {u_kva} kVA → جریان = {u_kva} × ۱.۴۴ = **{ups_current:.2f} آمپر** → کابل: **{ups_cable}** → کلید: **{ups_breaker} آمپر ({breaker_type})**")
         
         show_info_box(
             "📋 نتیجه محاسبه UPS",
@@ -1029,7 +1161,7 @@ with tab3:
             base_for_cable = design_current
             mode_label = f"بار واقعی ({actual_load} kVA) + توسعه آینده ({future_expansion}%)"
         
-        cable_size = get_cable_size(
+        cable_result = get_cable_size(
             base_for_cable, 
             system_voltage, 
             power_factor, 
@@ -1041,7 +1173,7 @@ with tab3:
         voltage_drop = calculate_voltage_drop(
             base_for_cable, 
             cable_length, 
-            cable_size, 
+            cable_result['size_per_parallel'], 
             system_voltage, 
             power_factor,
             conductor_type
@@ -1049,6 +1181,14 @@ with tab3:
         
         breaker_size = get_breaker_size(base_for_cable, "Motor")
         starting_breaker = get_breaker_size(actual_starting_current * future_factor, "Motor")
+        
+        # تعیین نوع کلید
+        if breaker_size <= 125:
+            breaker_type = "MCB"
+        elif breaker_size <= 1600:
+            breaker_type = "MCCB"
+        else:
+            breaker_type = "ACB"
         
         st.markdown("---")
         st.subheader("📊 نتایج")
@@ -1062,7 +1202,7 @@ with tab3:
         
         with col2:
             st.metric("🚀 جریان راه‌اندازی", f"{actual_starting_current:.2f} A")
-            st.metric("📏 کابل پیشنهادی", f"{cable_size} mm²", 
+            st.metric("📏 کابل پیشنهادی", cable_result['recommended_text'], 
                      delta=f"هادی: {conductor_type}")
             st.metric("📉 افت ولتاژ", f"{voltage_drop}%",
                      delta="مناسب" if voltage_drop <= 3 else "بالا!")
@@ -1075,7 +1215,8 @@ with tab3:
                 <div style='font-size: 16px;'>
                     <b>بر اساس:</b> {mode_label}<br>
                     <b>جریان طراحی:</b> {design_current:.2f} آمپر<br>
-                    <b>کابل پیشنهادی:</b> {cable_size} میلی‌متر مربع ({conductor_type})<br>
+                    <b>کابل پیشنهادی:</b> {cable_result['recommended_text']} ({conductor_type})<br>
+                    <b>تعداد رشته‌های موازی:</b> {cable_result['parallel_count']}<br>
                     <b>افت ولتاژ:</b> {voltage_drop}% {'✅ قابل قبول' if voltage_drop <= 3 else '⚠️ کابل بزرگ‌تر در نظر گرفته شود'}
                 </div>
             </div>
@@ -1083,7 +1224,7 @@ with tab3:
             <div class='result-box'>
                 <div class='result-text'>🛡️ سایزینگ کلید</div>
                 <div style='font-size: 16px;'>
-                    <b>کلید نامی:</b> {breaker_size} آمپر<br>
+                    <b>کلید نامی:</b> {breaker_size} آمپر ({breaker_type})<br>
                     <b>کلید راه‌اندازی:</b> {starting_breaker} آمپر<br>
                     <b>نوع بار:</b> موتور (سلفی)
                 </div>
@@ -1091,7 +1232,7 @@ with tab3:
         """, unsafe_allow_html=True)
         
         if voltage_drop > 3:
-            st.warning(f"⚠️ افت ولتاژ {voltage_drop}% است که از حد مجاز ۳٪ بیشتر است. کابل را به {get_cable_size(base_for_cable, system_voltage, power_factor, 2, cable_length * 1.5, conductor_type)} میلی‌متر مربع افزایش دهید.")
+            st.warning(f"⚠️ افت ولتاژ {voltage_drop}% است که از حد مجاز ۳٪ بیشتر است.")
         
         if calc_mode == "بر اساس بار مصرفی واقعی" and actual_load < gen_kva:
             st.success(f"💡 با طراحی بر اساس بار واقعی ({actual_load} kVA) به جای حداکثر توان ژنراتور ({gen_kva} kVA)، در سایز کابل صرفه‌جویی کرده‌اید.")
@@ -1101,9 +1242,10 @@ with tab3:
             [
                 f'حالت محاسبه: {mode_label}',
                 f'جریان طراحی: {design_current:.2f} آمپر',
-                f'سایز کابل پیشنهادی: {cable_size} میلی‌متر مربع ({conductor_type})',
+                f'سایز کابل پیشنهادی: {cable_result["recommended_text"]} ({conductor_type})',
+                f'تعداد رشته‌های موازی: {cable_result["parallel_count"]}',
                 f'افت ولتاژ: {voltage_drop}% {"(مناسب)" if voltage_drop <= 3 else "(بیش از حد مجاز)"}',
-                f'کلید محافظ: {breaker_size} آمپر (نامی) | {starting_breaker} آمپر (راه‌اندازی)',
+                f'کلید محافظ: {breaker_size} آمپر ({breaker_type}) | {starting_breaker} آمپر (راه‌اندازی)',
                 '<span class="highlight">فرمول‌ها:</span> I_gen = kVA × ۱.۴۴ | I_design = I_actual × (۱ + درصد توسعه آینده)'
             ]
         )
@@ -1148,7 +1290,7 @@ with tab4:
         p_type_en = load_type_map[p_type]
         
         b_size = get_breaker_size(p_curr, p_type_en)
-        cable_size = get_cable_size(p_curr, system_voltage, 0.8, 2, 50)
+        cable_result = get_cable_size(p_curr, system_voltage, 0.8, 2, 50)
         
         # تعیین نوع کلید
         if b_size <= 125:
@@ -1169,7 +1311,7 @@ with tab4:
         st.markdown(f"""
             <div class='result-box'>
                 <div class='result-text'>🛡️ کلید پیشنهادی: {b_size} آمپر ({breaker_type})</div>
-                <div class='result-text' style='color: #1b5e20;'>📏 کابل پیشنهادی: {cable_size} میلی‌متر مربع</div>
+                <div class='result-text' style='color: #1b5e20;'>📏 کابل پیشنهادی: {cable_result['recommended_text']}</div>
                 <div class='result-text' style='color: #5f6368;'>📊 نوع بار: {p_type}</div>
                 <div class='result-text' style='color: #0d47a1;'>🔧 ضریب ایمنی: {safety_factor}</div>
             </div>
@@ -1183,14 +1325,14 @@ with tab4:
         else:
             st.warning(f"⚠️ کلید {b_size} آمپر از نوع **ACB** برای این کاربرد مناسب است.")
         
-        st.info(f"💡 برای بار {p_curr} آمپر از نوع {p_type} → کابل: **{cable_size} میلی‌متر مربع** → کلید: **{b_size} آمپر ({breaker_type})**")
+        st.info(f"💡 برای بار {p_curr} آمپر از نوع {p_type} → کابل: **{cable_result['recommended_text']}** → کلید: **{b_size} آمپر ({breaker_type})**")
         
         show_info_box(
             "📋 نتیجه محاسبه حفاظت",
             [
                 'کلید محافظ با توجه به جریان بار و نوع آن انتخاب شده است',
                 f'نوع کلید: {breaker_type} - {b_size} آمپر',
-                'سایز کابل بر اساس جریان بار و افت ولتاژ مجاز پیشنهاد شده است',
+                f'کابل پیشنهادی: {cable_result["recommended_text"]}',
                 f'ضریب ایمنی: {safety_factor}',
                 '<span class="highlight">فرمول:</span> I_breaker = I_load × K_safety'
             ]
